@@ -6,6 +6,44 @@ The goal is to steal all the things that make C++ such a great language (memory 
 
 Sane is the acronym of *Software engineers Are Not Evil*. 
 
+This documentation starts with the base syntax, and then goes into the advanced concepts (generative programming, active libraries, handling of asynchronous execution, ...)
+
+<!-- TOC -->
+
+- [What is Sane ?](#what-is-sane-)
+- [Base syntax](#base-syntax)
+    - [Simplifications](#simplifications)
+    - [Line continuation](#line-continuation)
+    - [Simplifications](#simplifications-1)
+    - [Parameters](#parameters)
+    - [Qualifiers](#qualifiers)
+- [Templates](#templates)
+    - [Surdefinitions](#surdefinitions)
+    - [Classes](#classes)
+    - [Variadic arguments](#variadic-arguments)
+    - [Spread operator](#spread-operator)
+- [Objects](#objects)
+    - [Constructors](#constructors)
+    - [Getsetters](#getsetters)
+    - [Strings, arrays and maps](#strings-arrays-and-maps)
+- [Memory](#memory)
+    - [Rvalues](#rvalues)
+    - [Heap and stack](#heap-and-stack)
+- [Generative pprogramming](#generative-pprogramming)
+    - [Compile-time execution](#compile-time-execution)
+    - [Computed names](#computed-names)
+    - [CT Symbolic computations](#ct-symbolic-computations)
+    - [ct_eval](#ct_eval)
+    - [Ab initio primitives](#ab-initio-primitives)
+- [Active libraries](#active-libraries)
+    - [Selection](#selection)
+- [Examples of active libraries](#examples-of-active-libraries)
+    - [Auto-tuning](#auto-tuning)
+    - [String storage](#string-storage)
+- [Asynchronous code](#asynchronous-code)
+
+<!-- /TOC -->
+
 <!-- Zero-cost enforcements and abstractions are always present, but when it comes to compromises, new ideas or specific needs, we believe that the choice must come from teams  -->
 
 <!-- enabling much better **control** (notably via **active libraries** for *powerful, transparent and controllable* extensions) and  (streamlined syntax, assumed meta and generative programming, deep introspection, etc...).
@@ -48,7 +86,7 @@ foo
     a + b
 ```
 
-If you're a frantic one-liner machine, you're still welcome to play the game :)
+If on a contrary you're a frantic one-liner machine, you're still welcome to play the game :)
 
 ```python
 # ';' acts as a carriage return
@@ -620,5 +658,5 @@ class Enum[ id, name, item_names ]
 
 async/await are cool but intrusive and procedural, whereas data driven would be more relevant.
 
-Besides, a runtime can’t be defined by a language, it has to be a library: needs are the same if you’re on the embeded world, if you’re developping a game, and so on...
+Besides, a runtime can’t be defined by a language, it has to be a library: needs are the same if you’re on the embeded world, if you’re developping a game, and so on…
 
