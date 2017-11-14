@@ -211,7 +211,7 @@ foo 4, 5, arg_name: 6, "bar"
 
 ## Spread operator
 
-The `...` operator can also be used expand stuff, notably for calls and list definitions.
+The `...` operator can also be used to expand stuff, notably for calls and list definitions.
 
 `...` works with every kinds of lists containing a compile-time runnable `spread` method.
 
