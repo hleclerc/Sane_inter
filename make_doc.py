@@ -4,6 +4,7 @@ from pygments.lexer import RegexLexer, include
 from pygments.style import Style
 from pygments.token import Token
 import pygments.unistring as uni
+import markdown2
 import pygments
 import re
 
@@ -38,7 +39,7 @@ class SaneLexer(RegexLexer):
             ( r'(def|class)\b', Token.Keyword.Declaration ),
             ( r'(raii|enum|init_of|if|else|while|for|if_ws|while_ws|for_ws|return|try|catch|throw|continue|break|wpc)\b', Token.Keyword ),
 
-            ( r'(switchable|private|protected|import|from|export|mixin|with|wfp|when|pertinence|virtual|static|extends|inline|throw|and|or|xor|not|in|abstract|global|ref|override|is_a|is_not_a)\b', Token.Keyword ),
+            ( r'(switchable|mut|private|protected|import|from|export|mixin|with|wfp|when|pertinence|virtual|static|extends|inline|throw|and|or|xor|not|in|abstract|global|ref|override|is_a|is_not_a)\b', Token.Keyword ),
             ( r'(true|false|null|NaN|Infinity|undefined)\b', Token.Keyword.Constant),
             ( r'(sizeof|sizeof_bits|typeof|load|aligof|aligof_bits|assert|operator|convert|destroy|construct|info|infon|move|__arguments|null_ptr|super|globals|self|this|pass|true|false|current_scope)\b', Token.Name.Builtin),
     
@@ -82,13 +83,57 @@ class SaneStyle(Style):
         Number:                 '#93488f',
     }
 
-c = file( "_README.md" ).read()
-o = open( "README.md","w" ) 
+#
+def id_filt( s ):
+    return filter( lambda x: x.isalpha(), s )
 
-l = c.split( "```python" )
-o.write( l[ 0 ] )
-del l[ 0 ]
-for i in l:
-    m = i.split( "```" )
-    o.write( pygments.highlight( m[ 0 ], SaneLexer(), HtmlFormatter( style = SaneStyle, noclasses = True ) ) )
-    o.write( m[ 1 ] )
+# parse
+c = file( "_README.md" ).read()
+sections = []
+
+skip = False
+for l in c.split( "\n" ):
+    if l.startswith( "```python" ):
+        skip = True
+    elif l.startswith( "```" ):
+        skip = False
+
+    if skip == False and l.startswith( "# " ):
+        sections.append( [ l[ 2: ], "" ] )
+    else:
+        sections[ -1 ][ 1 ] += l + "\n"
+
+# header
+o = open( "index.html","w" ) 
+o.write( file( "doc/header.html" ).read() )
+
+# TOC
+o.write( '<nav class="col-sm-3 col-md-2 d-none d-sm-block bg-light sidebar">\n' )
+o.write( '<ul class="nav nav-pills flex-column">\n' )
+for s in sections:
+    o.write( '<li class="nav-item"> <a class="nav-link" href="#' + id_filt( s[ 0 ] ) + '">' + s[ 0 ] + '</a> </li>\n' ) # <span class="sr-only">(current)</span>
+o.write( '</ul>\n' )
+o.write( '</nav>\n' )
+
+# content
+o.write( '<main role="main" class="col-sm-9 ml-sm-auto col-md-10 pt-3">\n' )
+
+for s in sections:
+    o.write( '<section id="' + id_filt( s[ 0 ] ) + '">\n' )
+    o.write( '<h1>' + s[ 0 ] + '</h1>\n' )
+    l = s[ 1 ].split( "```python" )
+    o.write( markdown2.markdown( l[ 0 ] ) )
+    del l[ 0 ]
+    for i in l:
+        m = i.split( "```" )
+        o.write( pygments.highlight( m[ 0 ], SaneLexer(), HtmlFormatter( style = SaneStyle, noclasses = True ) ) )
+        try:
+            o.write( markdown2.markdown( m[ 1 ] ) )
+        except UnicodeEncodeError as e:
+            print( e )
+    o.write( '</section>\n' )
+
+o.write( '</main>\n' )
+
+# footer
+o.write( file( "doc/footer.html" ).read() )

@@ -1,48 +1,20 @@
 # What is Sane ?
 
-Sane is a general purpose programming language designed for **programming efficiency** and **execution performance**.
+Sane is a code generator, designed to significantly facilitate and accelerate the development of codes optimized for **speed and memory occupancy**.
 
-The goal is to steal all the things that make C++ such a great language (memory model, templates, ...), with a **streamlined syntax** and **much wider meta-programming abilities**, leading to more **control** and **practicality**.
+In itself, the language does not provide any abstraction that would drive the programmers away from the hardware, or that would need perpetual workarounds due to a stubborn dogmatism. In place of that, Sane allows and promotes the use and development of **active libraries** (libraries that take part in the process of compilation). Teams and developers can therefore **choose the *right* level of abstraction**, depending on the context.
 
-Sane is the acronym of *Software engineers Are Not Evil*. 
+Sane is basically very close to C++, except for the **streamlined syntax**, the **compilation processes**, and the dramatically improved **compile-time abilities**.
 
-This documentation starts with the base syntax, and then goes into the advanced concepts (generative programming, active libraries, handling of asynchronous execution, ...)
+<!-- (notably for **generative programming** and **compiler aided decisions**) -->
 
-<!-- TOC -->
+Sane is the acronym of *Software engineers Are Not Evil*.
 
-- [What is Sane ?](#what-is-sane-)
-- [Base syntax](#base-syntax)
-    - [Simplifications](#simplifications)
-    - [Line continuation](#line-continuation)
-    - [Simplifications](#simplifications-1)
-    - [Parameters](#parameters)
-    - [Qualifiers](#qualifiers)
-- [Templates](#templates)
-    - [Surdefinitions](#surdefinitions)
-    - [Classes](#classes)
-    - [Variadic arguments](#variadic-arguments)
-    - [Spread operator](#spread-operator)
-- [Objects](#objects)
-    - [Constructors](#constructors)
-    - [Getsetters](#getsetters)
-    - [Strings, arrays and maps](#strings-arrays-and-maps)
-- [Memory](#memory)
-    - [Rvalues](#rvalues)
-    - [Heap and stack](#heap-and-stack)
-- [Generative pprogramming](#generative-pprogramming)
-    - [Compile-time execution](#compile-time-execution)
-    - [Computed names](#computed-names)
-    - [CT Symbolic computations](#ct-symbolic-computations)
-    - [ct_eval](#ct_eval)
-    - [Ab initio primitives](#ab-initio-primitives)
-- [Active libraries](#active-libraries)
-    - [Selection](#selection)
-- [Examples of active libraries](#examples-of-active-libraries)
-    - [Auto-tuning](#auto-tuning)
-    - [String storage](#string-storage)
-- [Asynchronous code](#asynchronous-code)
+<!-- Otherwise, the name could have been BSWDNPA (Blocking The Steering Wheel Does Not Prevent Accidents). -->
 
-<!-- /TOC -->
+## Organization of this document
+
+This documentation starts with the base syntax. Some differences with the base C++ are then emphasized, to drive thereafter to generative programming. This base documentation is followed by examples of commonly used *optional* abstractions (asynchronous execution, security enforcements, ...).
 
 <!-- Zero-cost enforcements and abstractions are always present, but when it comes to compromises, new ideas or specific needs, we believe that the choice must come from teams  -->
 
@@ -50,7 +22,6 @@ This documentation starts with the base syntax, and then goes into the advanced 
 
 We believe that we are able to decide what kind of enforcements and abstractions we need, depending on the context. Zero-cost security enforcements are always 
  Things like enforced security, automated handling of asynchronicity, auto-vectorization or  can be absolutely awesome and strongly differentiating, but it depends of the kind of program, the stage (prototype, ...), the stakes, ... Thus, these kind of features are not in the core language but are in libraries 
-
 -->
 
 <!-- libraries. -->
@@ -59,34 +30,33 @@ We believe that we are able to decide what kind of enforcements and abstractions
 
 ## Simplifications
 
-To promote fast reading and writing, `()` for calls, functions definitions, ifs, ... become optional. Semicolon, braces and returns are under the same treatment.
+For calls, functions definitions, ifs, ... the parentheses become optional. Semicolon, braces and returns have undergone the same treatment.
 
 ```python
-# 'a' and 'b' are (unconstrained) parameters of the function 'foo'
+# 'foo' is a function with two (unconstrained) parameters 'a' and 'b'
 def foo a, b
     info a + b
 
-# <=> foo( 5, min( 10, 15 ) )
+# equivalent to foo( 5, min( 10, 15 ) )
+# (Auto-calls are handled right to left)
 foo 5, min 10, 15
 ```
 
-## Line continuation
-
-Line continuations are automatically handled, either because of operators or block structures.
+Line continuations are automatic (thanks notably to operators and block structures).
 
 ```python
 # b is the rhs of the '+'
 foo 10, a +
     b
 
-# argument list can be specified in block lines
-# (',' in this case is not needed)
+# argument list can be specified in block lines.
+# In this case, the comma become optionnal
 foo
     10
     a + b
 ```
 
-If on a contrary you're a frantic one-liner machine, you're still welcome to play the game :)
+But frantic one-liners, are still welcome to play the game :)
 
 ```python
 # ';' acts as a carriage return
@@ -96,15 +66,14 @@ def foo a, b; info a + b
 def bar a, b; ( c := a + b; 2 * c )
 ```
 
-## Simplifications
-
-As a rule of thumb, *obvious* simplifications are enabled whenever possible.
+As a rule of thumb, if the compiler can take care of an *obvious* simplification, this simplification is enabled for the greater goods.
 
 ```python
-# An example with lambda functions:
+# Std def of a lambda functions without parameter
 l0 := () => 17 # std def of a lambda func without parameter
-l1 := => 17 # ':=' can't be an argument spec => we have an
-            # eqivalent def
+# in the following line, as ':=' can't be an argument spec.
+# we safely assume that '=> 17' is a no parm lambda
+l1 := => 17
 
 # works of course with all the kinds of operators
 foo
@@ -114,10 +83,11 @@ foo
 
 ## Parameters
 
-Parameters of callable objects (`def`s, `classes`s, `lambda`s, ...) can have default values, constraints and can be selected using their names.
+Parameters of callable objects (`def`s, `classes`s, `lambda`s, ...) can have default values, constraints (with free parameters) and can be selected using their names.
 
 ```python
 # a must be a SI32 (32 bits signed integer)
+# b and c have default values 'a + 1' and 'b + 1'
 def foo a: SI32, b? a + 1, c? b + 1
     a + b + c
 
@@ -125,48 +95,55 @@ def foo a: SI32, b? a + 1, c? b + 1
 foo 15, c: 18
 ```
 
-By default, arguments is passed as immutable references. The `mut` keyword enables to "deconstify" them.
+By default, arguments is passed as *immutable references*.
+
+"Deconstification" is possible, using the `mut` keyword.
 
 ```python
+# modification of b is possible inside this function
 def foo a, mut b
-    b += a # OK
-    # a += 1 would generate a compilation error
+    b += a
 
+# => 25
 b := 10
 foo 15, b
-info b # => 25
+info b
 ```
 
 ## Qualifiers
 
-`private`, `protected`, `static` or any other qualifier of the same kind may be associated with one or several declarations at the same time.
-
-> It enables a clearer separation between internal and public attributes, static and dynamic variables, and so on…
+Qualifiers like `private`, `protected`, `static`, `global`... may be associated with one or several declarations at the same time if written in sub-blocks.
 
 ```python
 class Mesh[ ElemTypes ]
+    # A public method
     def area
-        elems.sum e => e.with_coords( e.nodes.map n => nodes[ n ] ).area()
+        elems.sum e => e.with_coords( e.nodes.map n => nodes[ n ] ).area
 
-    # private section is visually separated by a different indentation
+    # A private section (with two attributes)
     private
         nodes: Vec[ Node ]
-        elems: HetVec[ ...ElemTypes ] # HetVec = Heterogeneous Vector
+        elems: HetVec[ ...ElemTypes ]
 ```
 
 
 # Templates
 
-Every `def`, `class` and `lambda` definition are actually templates. For instance, `def` actually defines an object able to *generate at Compile-Time* (CT) a function or a method.
+The word "template" refers to that of C++. Template in Sane works roughly in the same way as in C++: functions code are actually generated according to the input types and needed compile-time known values. It enables a first-level of compile-time or static polymorphism.
 
-It behaves basically as C++ templates, excepted the syntax (simplifications, handling of traits, ...) and the very important fact that the compiler is actually a server enabling **per function caching and hashing**, to get far better binary sizes and compilation speeds.
+The main differences with C++ are that:
 
-## Surdefinitions
+* By default, every callable (`def`, `class`, `lambda`, ...) is a template. There's no special syntax for templates.
+* The compiler acts like a server, enabling aggressive **per function caching and hashing**, for the compilation speed and the binary sizes.
+* **Template parameters can be of any type**, 
+* Selection of surdefinitions work with **programmable criteria** than can work at compile-time (preferred) or run-time (if needed).
 
-An arbitrary number or surdefinitions may lie on the same scope. Selection may depend on compile-time or run-time programmable priorities (`pertinence`) and programmable conditions (`when`).
+## Priorities and conditions
+
+An arbitrary number or surdefinitions may lie on the same scope. Selection may depend on programmable priorities (`pertinence`) and programmable conditions (`when`).
 
 ```python
-# computed priority (to choose )
+# computed priority
 def pow mat: Matrix, n: PositiveInteger 
             pertinence - cost_mult( mat, mat ) * log n
     n & 1 ? mat * pow( mat, n - 1 )
@@ -180,9 +157,9 @@ def pow mat: Matrix, n: Number
     e.P.trans * pow( e.D, n ) * e.P
 ```
 
-Besides, argument constraint may act on run-time type information (leading to construction of multi-dimensional vtables if necessary, with of course optimizations if the types are actually known at compile-time).
+## Multidimensionnal vtables
 
-> There are different kinds of vtables in Sane. Adding a pointer at the beginning is the default solution (very good on a general purpose) but several others exist, to adapt to the contexts.
+Argument constraints may also act on run-time information.
 
 ```python
 # run-time selection using bidimensionnal vtables
@@ -193,11 +170,11 @@ def weight a: GeometricObject, b: GeometricObject, density? 7800
     density * intersection_area a, b
 ```
 
-## Classes
+> (Remark: there are different kinds of vtables in Sane. Adding a pointer at the beginning is the default solution -- very good on a general purpose -- but other choices exist)
 
-**Classes parameters can be of any kind**, as long as copy and equality can be CT handled (in a symbolic way or not).
+## Template classes
 
-Template parameters can then be of any type (strings, array, ...), even if it involves memory allocation, files or any kinds of symbolic content allowed to be CT handled.
+**Classes parameters can be of any type**, as long as copy and equality can be CT (Compile-Time) handled -- in a symbolic way or not. This does not exclude the types that may imply memory allocation (symbolically handled) nor the types that imply input/output (if authorized).
 
 ```python
 # `sizes` can be defined using any kind of array
@@ -205,7 +182,7 @@ class PoolBySize[ sizes: ArrayLike, mt? true, name? "anon" ]
     class Item
         free_ptr: NullableAT # nullable address
         page_vec: Vec[ AT ]  # contiguous array of addresses
-    # StaticMap constructs a tree at compile time
+    # StaticMap constructs a Compile-Time tree
     map: StaticMap[ sizes, Item ] 
     ...
 
@@ -403,10 +380,6 @@ Variables can be created on the heap, with the (heap or mixed) allocator of your
 
 If not specified, variables are of course created on *a* stack. By default, variables are created on the current stack. Nevertheless, as an optimization, if they are intended to be returned, they can be created directly on a caller stack. Beside, they can be created on intermediate or partial in presence of a variant of coroutine.
 
-<!-- Paris 13eme bnf -> Catsanevas, poste grands instruments, telescopes et satellites, grands volumes, 1 ou plusieurs projets. Dataprocessing center, veille techno. -->
-<!-- Gif, saclay DR4, RER B -> -->
-<!-- 2 sortes de postes, Noémie, FSEP (arbitrage au niveau des instituts, plus tard) -->
-
 ```python
 def foo
     vec 0 .. 1e6
@@ -427,7 +400,7 @@ a := "456"
 q := \a # -> a Ptr[ String ] pointing in a
 ```
 
-# Generative pprogramming
+# Generative programming
 
 Metaprogramming is at the heart of the facilities offered to ease and speed up the development processes, while ensuring the best performances.
 
@@ -464,15 +437,15 @@ i := MyClass[ s ] # we store the symbolic repr
 j := MyClass[ 17 ] # but here, the equality operator forces the computation
 ```
 
-<!-- Generative Programming involves generally programs that generate programs. In lot of cases, the point is to ensure that some computations are done before runtime, notably for performance, syntax, factorizations, interoperability…
+<!-- Generative Programming involves generally programs that generate programs. In lot of cases, the point is to ensure that some computations are done before runtime, notably for performance, syntax, factorizations, interoperability...
 
-When programs for code generation are separate from the program to be finally executed, one could use the term external code generation. External code generation is an obvious and very flexible, but generally leads to uncomfortable maintainability issues (problems with tracing, with clarity, with builders generally not designed for that, …).
+When programs for code generation are separate from the program to be finally executed, one could use the term external code generation. External code generation is an obvious and very flexible, but generally leads to uncomfortable maintainability issues (problems with tracing, with clarity, with builders generally not designed for that, ...).
 
 With the handling of compile time computations, Sane provides tools for embedded code generation. In enables the largest scope of possibilities while leading code far clearer and easier to maintain. -->
 
 ## Computed names
 
-All variable names (whether it’s for look up or for creation) may be computed (using `$`s).
+All variable names (whether it's for look up or for creation) may be computed (using `$`s).
 
 ```python
 # creation of a variable named 'i18n'
@@ -535,7 +508,7 @@ These symbolic representations can be seen as the level above the AST representa
 
 It is for instance used in the module `vectorize` (providing ways to simplify the writing of loops with SIMD instructions). In all the cases, transformations are triggered by standard calls and are a library concern (meaning that you have the choice to select them, to modify or create new ones for full control and extensibility).
 
-## ct_eval
+## Ct_eval
 
 For the extreme cases, it is possible to pass an arbitrary string to the compiler (as long of course as it can be CT computed).
 
@@ -551,7 +524,7 @@ info foo() # => 6
 
 In the same vein, it is possible to handle structures instead of text (as e.g. handling a DOM vs the html text).
 
-Almost every objects handled by the compiler is actually accessible and modifiable within the language. It’s valid for types, scopes, definition of methods, classes, and so on.
+Almost every objects handled by the compiler is actually accessible and modifiable within the language. It's valid for types, scopes, definition of methods, classes, and so on.
 
 Compilation objects can thus be created *ab initio*, to be consecutively handled by the compiler.
 
@@ -573,7 +546,7 @@ info i # => T( a: 100 )
 
 In Sane, functions implementations can be selected according to their a posteriori usage.
 
-When functions (or methods) that are qualified switchable are called, Sane marks theirs outputs in the graph (including captured variables). Before code emission, these marks are sent to the registered “switch procedures”, allowing to change the actual implementations.
+When functions (or methods) that are qualified switchable are called, Sane marks theirs outputs in the graph (including captured variables). Before code emission, these marks are sent to the registered "switch procedures", allowing to change the actual implementations.
 
 There possibilities are used in a lot of essential optimisations. For instance, the concatenation operator works only with two variables (because it is an operator). If we want to concatenate more than two variables using this operator, we may end up with a lot of intermediate allocations and copies. A posteriori selection enable to gather the concatenations to avoid the waste.
 
@@ -624,7 +597,7 @@ STORAGE
 
 Strings created using double quotes are by default of type String (which is a clone of the std::string defined in clang). It is very convenient for a vast majority of applications, but for large sizes, it may involve dynamic memory allocation. For some performance critical or embeded applications it is simply a no go.
 
-Incidentally, allocation is understood by the compiler. If the there’s no real need for this dynamic memory because it is finally copied elsewhere, the allocation and desallocation won’t take place at all.
+Incidentally, allocation is understood by the compiler. If the there's no real need for this dynamic memory because it is finally copied elsewhere, the allocation and desallocation won't take place at all.
 
 ```python
 # there's a *symbolic* allocation, actually not executed at all
@@ -637,7 +610,7 @@ strlen p + 2 # returns length - 2
 
 INTERPOLATION
 
-String interpolations ("...${...}...") may also involve memory allocation which may be abad thing e.g. if not done with the right allocator… But it actually occurs only if really needed, depending on the target of the string.
+String interpolations ("...${...}...") may also involve memory allocation which may be abad thing e.g. if not done with the right allocator... But it actually occurs only if really needed, depending on the target of the string.
 
 In Sane, "...${...}..." creates a symbolic graph
 
@@ -661,5 +634,5 @@ class Enum[ id, name, item_names ]
 
 async/await are cool but intrusive and procedural, whereas data driven would be more relevant.
 
-Besides, a runtime can’t be defined by a language, it has to be a library: needs are the same if you’re on the embeded world, if you’re developping a game, and so on…
+Besides, a runtime can't be defined by a language, it has to be a library: needs are the same if you're on the embeded world, if you're developping a game, and so on...
 
