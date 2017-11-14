@@ -61,81 +61,81 @@ We believe that we are able to decide what kind of enforcements and abstractions
 
 To promote fast reading and writing, `()` for calls, functions definitions, ifs, ... become optional. Semicolon, braces and returns are under the same treatment.
 
-```python
-# 'a' and 'b' are (unconstrained) parameters of the function 'foo'
-def foo a, b
-    info a + b
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># &#39;a&#39; and &#39;b&#39; are (unconstrained) parameters of the function &#39;foo&#39;</span>
+<span style="color: #00aaff">def</span> <span style="color: #000000">foo</span> <span style="color: #000000">a</span>, <span style="color: #000000">b</span>
+    <span style="color: #000000">info</span> <span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #000000">b</span>
 
-# <=> foo( 5, min( 10, 15 ) )
-foo 5, min 10, 15
-```
+<span style="color: #938d7f; font-style: italic"># &lt;=&gt; foo( 5, min( 10, 15 ) )</span>
+<span style="color: #000000">foo</span> <span style="color: #93488f">5</span>, <span style="color: #000000">min</span> <span style="color: #93488f">10</span>, <span style="color: #93488f">15</span>
+</pre></div>
+
 
 ## Line continuation
 
 Line continuations are automatically handled, either because of operators or block structures.
 
-```python
-# b is the rhs of the '+'
-foo 10, a +
-    b
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># b is the rhs of the &#39;+&#39;</span>
+<span style="color: #000000">foo</span> <span style="color: #93488f">10</span>, <span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">+</span>
+    <span style="color: #000000">b</span>
 
-# argument list can be specified in block lines
-# (',' in this case is not needed)
-foo
-    10
-    a + b
-```
+<span style="color: #938d7f; font-style: italic"># argument list can be specified in block lines</span>
+<span style="color: #938d7f; font-style: italic"># (&#39;,&#39; in this case is not needed)</span>
+<span style="color: #000000">foo</span>
+    <span style="color: #93488f">10</span>
+    <span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #000000">b</span>
+</pre></div>
+
 
 If on a contrary you're a frantic one-liner machine, you're still welcome to play the game :)
 
-```python
-# ';' acts as a carriage return
-def foo a, b; info a + b
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># &#39;;&#39; acts as a carriage return</span>
+<span style="color: #00aaff">def</span> <span style="color: #000000">foo</span> <span style="color: #000000">a</span>, <span style="color: #000000">b</span>; <span style="color: #000000">info</span> <span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #000000">b</span>
 
-# '()' allows for block definitions
-def bar a, b; ( c := a + b; 2 * c )
-```
+<span style="color: #938d7f; font-style: italic"># &#39;()&#39; allows for block definitions</span>
+<span style="color: #00aaff">def</span> <span style="color: #000000">bar</span> <span style="color: #000000">a</span>, <span style="color: #000000">b</span>; ( <span style="color: #000000">c</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #000000">b</span>; <span style="color: #93488f">2</span> <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">c</span> )
+</pre></div>
+
 
 ## Simplifications
 
 As a rule of thumb, *obvious* simplifications are enabled whenever possible.
 
-```python
-# An example with lambda functions:
-l0 := () => 17 # std def of a lambda func without parameter
-l1 := => 17 # ':=' can't be an argument spec => we have an
-            # eqivalent def
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># An example with lambda functions:</span>
+<span style="color: #000000">l0</span> <span style="color: #6d3642; font-weight: bold">:=</span> () <span style="color: #6d3642; font-weight: bold">=&gt;</span> <span style="color: #93488f">17</span> <span style="color: #938d7f; font-style: italic"># std def of a lambda func without parameter</span>
+<span style="color: #000000">l1</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #6d3642; font-weight: bold">=&gt;</span> <span style="color: #93488f">17</span> <span style="color: #938d7f; font-style: italic"># &#39;:=&#39; can&#39;t be an argument spec =&gt; we have an</span>
+            <span style="color: #938d7f; font-style: italic"># eqivalent def</span>
 
-# works of course with all the kinds of operators
-foo
-    => 17 # unnamed arg
-    arg: => 17 # named arg
-```
+<span style="color: #938d7f; font-style: italic"># works of course with all the kinds of operators</span>
+<span style="color: #000000">foo</span>
+    <span style="color: #6d3642; font-weight: bold">=&gt;</span> <span style="color: #93488f">17</span> <span style="color: #938d7f; font-style: italic"># unnamed arg</span>
+    <span style="color: #000000">arg</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #6d3642; font-weight: bold">=&gt;</span> <span style="color: #93488f">17</span> <span style="color: #938d7f; font-style: italic"># named arg</span>
+</pre></div>
+
 
 ## Parameters
 
 Parameters of callable objects (`def`s, `classes`s, `lambda`s, ...) can have default values, constraints and can be selected using their names.
 
-```python
-# a must be a SI32 (32 bits signed integer)
-def foo a: SI32, b? a + 1, c? b + 1
-    a + b + c
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># a must be a SI32 (32 bits signed integer)</span>
+<span style="color: #00aaff">def</span> <span style="color: #000000">foo</span> <span style="color: #000000">a</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">SI32</span>, <span style="color: #000000">b</span><span style="color: #6d3642; font-weight: bold">?</span> <span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #93488f">1</span>, <span style="color: #000000">c</span><span style="color: #6d3642; font-weight: bold">?</span> <span style="color: #000000">b</span> <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #93488f">1</span>
+    <span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #000000">b</span> <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #000000">c</span>
 
-# argument may be named. Default values are computed on the go
-foo 15, c: 18
-```
+<span style="color: #938d7f; font-style: italic"># argument may be named. Default values are computed on the go</span>
+<span style="color: #000000">foo</span> <span style="color: #93488f">15</span>, <span style="color: #000000">c</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #93488f">18</span>
+</pre></div>
+
 
 By default, arguments is passed as immutable references. The `mut` keyword enables to "deconstify" them.
 
-```python
-def foo a, mut b
-    b += a # OK
-    # a += 1 would generate a compilation error
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #00aaff">def</span> <span style="color: #000000">foo</span> <span style="color: #000000">a</span>, <span style="color: #000000">mut</span> <span style="color: #000000">b</span>
+    <span style="color: #000000">b</span> <span style="color: #6d3642; font-weight: bold">+=</span> <span style="color: #000000">a</span> <span style="color: #938d7f; font-style: italic"># OK</span>
+    <span style="color: #938d7f; font-style: italic"># a += 1 would generate a compilation error</span>
 
-b := 10
-foo 15, b
-info b # => 25
-```
+<span style="color: #000000">b</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #93488f">10</span>
+<span style="color: #000000">foo</span> <span style="color: #93488f">15</span>, <span style="color: #000000">b</span>
+<span style="color: #000000">info</span> <span style="color: #000000">b</span> <span style="color: #938d7f; font-style: italic"># =&gt; 25</span>
+</pre></div>
+
 
 ## Qualifiers
 
@@ -143,16 +143,16 @@ info b # => 25
 
 > It enables a clearer separation between internal and public attributes, static and dynamic variables, and so on…
 
-```python
-class Mesh[ ElemTypes ]
-    def area
-        elems.sum e => e.with_coords( e.nodes.map n => nodes[ n ] ).area()
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #00aaff">class</span> <span style="color: #000000">Mesh</span>[ <span style="color: #000000">ElemTypes</span> ]
+    <span style="color: #00aaff">def</span> <span style="color: #000000">area</span>
+        <span style="color: #000000">elems</span>.<span style="color: #000000">sum</span> <span style="color: #000000">e</span> <span style="color: #6d3642; font-weight: bold">=&gt;</span> <span style="color: #000000">e</span>.<span style="color: #000000">with_coords</span>( <span style="color: #000000">e</span>.<span style="color: #000000">nodes</span>.<span style="color: #000000">map</span> <span style="color: #000000">n</span> <span style="color: #6d3642; font-weight: bold">=&gt;</span> <span style="color: #000000">nodes</span>[ <span style="color: #000000">n</span> ] ).<span style="color: #000000">area</span>()
 
-    # private section is visually separated by a different indentation
-    private
-        nodes: Vec[ Node ]
-        elems: HetVec[ ...ElemTypes ] # HetVec = Heterogeneous Vector
-```
+    <span style="color: #938d7f; font-style: italic"># private section is visually separated by a different indentation</span>
+    <span style="color: #005782">private</span>
+        <span style="color: #000000">nodes</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">Vec</span>[ <span style="color: #000000">Node</span> ]
+        <span style="color: #000000">elems</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">HetVec</span>[ ...<span style="color: #000000">ElemTypes</span> ] <span style="color: #938d7f; font-style: italic"># HetVec = Heterogeneous Vector</span>
+</pre></div>
+
 
 
 # Templates
@@ -165,33 +165,33 @@ It behaves basically as C++ templates, excepted the syntax (simplifications, han
 
 An arbitrary number or surdefinitions may lie on the same scope. Selection may depend on compile-time or run-time programmable priorities (`pertinence`) and programmable conditions (`when`).
 
-```python
-# computed priority (to choose )
-def pow mat: Matrix, n: PositiveInteger 
-            pertinence - cost_mult( mat, mat ) * log n
-    n & 1 ? mat * pow( mat, n - 1 )
-          : pow( mat * mat, n / 2 )
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># computed priority (to choose )</span>
+<span style="color: #00aaff">def</span> <span style="color: #000000">pow</span> <span style="color: #000000">mat</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">Matrix</span>, <span style="color: #000000">n</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">PositiveInteger</span> 
+            <span style="color: #005782">pertinence</span> <span style="color: #6d3642; font-weight: bold">-</span> <span style="color: #000000">cost_mult</span>( <span style="color: #000000">mat</span>, <span style="color: #000000">mat</span> ) <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">log</span> <span style="color: #000000">n</span>
+    <span style="color: #000000">n</span> <span style="color: #6d3642; font-weight: bold">&amp;</span> <span style="color: #93488f">1</span> <span style="color: #6d3642; font-weight: bold">?</span> <span style="color: #000000">mat</span> <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">pow</span>( <span style="color: #000000">mat</span>, <span style="color: #000000">n</span> <span style="color: #6d3642; font-weight: bold">-</span> <span style="color: #93488f">1</span> )
+          <span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">pow</span>( <span style="color: #000000">mat</span> <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">mat</span>, <span style="color: #000000">n</span> <span style="color: #6d3642; font-weight: bold">/</span> <span style="color: #93488f">2</span> )
 
-# + computed condition (handled at compile time in this case)
-def pow mat: Matrix, n: Number
-            when mat.sub_types.some( T => T.is_approximate )
-            pertinence - cost_eigen( mat )
-    e := eigen mat
-    e.P.trans * pow( e.D, n ) * e.P
-```
+<span style="color: #938d7f; font-style: italic"># + computed condition (handled at compile time in this case)</span>
+<span style="color: #00aaff">def</span> <span style="color: #000000">pow</span> <span style="color: #000000">mat</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">Matrix</span>, <span style="color: #000000">n</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">Number</span>
+            <span style="color: #005782">when</span> <span style="color: #000000">mat</span>.<span style="color: #000000">sub_types</span>.<span style="color: #000000">some</span>( <span style="color: #000000">T</span> <span style="color: #6d3642; font-weight: bold">=&gt;</span> <span style="color: #000000">T</span>.<span style="color: #000000">is_approximate</span> )
+            <span style="color: #005782">pertinence</span> <span style="color: #6d3642; font-weight: bold">-</span> <span style="color: #000000">cost_eigen</span>( <span style="color: #000000">mat</span> )
+    <span style="color: #000000">e</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">eigen</span> <span style="color: #000000">mat</span>
+    <span style="color: #000000">e</span>.<span style="color: #000000">P</span>.<span style="color: #000000">trans</span> <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">pow</span>( <span style="color: #000000">e</span>.<span style="color: #000000">D</span>, <span style="color: #000000">n</span> ) <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">e</span>.<span style="color: #000000">P</span>
+</pre></div>
+
 
 Besides, argument constraint may act on run-time type information (leading to construction of multi-dimensional vtables if necessary, with of course optimizations if the types are actually known at compile-time).
 
 > There are different kinds of vtables in Sane. Adding a pointer at the beginning is the default solution (very good on a general purpose) but several others exist, to adapt to the contexts.
 
-```python
-# run-time selection using bidimensionnal vtables
-def intersection_area virtual a: Square, virtual b: Triangle
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># run-time selection using bidimensionnal vtables</span>
+<span style="color: #00aaff">def</span> <span style="color: #000000">intersection_area</span> <span style="color: #005782">virtual</span> <span style="color: #000000">a</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">Square</span>, <span style="color: #005782">virtual</span> <span style="color: #000000">b</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">Triangle</span>
     ...
 
-def weight a: GeometricObject, b: GeometricObject, density? 7800
-    density * intersection_area a, b
-```
+<span style="color: #00aaff">def</span> <span style="color: #000000">weight</span> <span style="color: #000000">a</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">GeometricObject</span>, <span style="color: #000000">b</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">GeometricObject</span>, <span style="color: #000000">density</span><span style="color: #6d3642; font-weight: bold">?</span> <span style="color: #93488f">7800</span>
+    <span style="color: #000000">density</span> <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">intersection_area</span> <span style="color: #000000">a</span>, <span style="color: #000000">b</span>
+</pre></div>
+
 
 ## Classes
 
@@ -199,49 +199,49 @@ def weight a: GeometricObject, b: GeometricObject, density? 7800
 
 Template parameters can then be of any type (strings, array, ...), even if it involves memory allocation, files or any kinds of symbolic content allowed to be CT handled.
 
-```python
-# `sizes` can be defined using any kind of array
-class PoolBySize[ sizes: ArrayLike, mt? true, name? "anon" ]
-    class Item
-        free_ptr: NullableAT # nullable address
-        page_vec: Vec[ AT ]  # contiguous array of addresses
-    # StaticMap constructs a tree at compile time
-    map: StaticMap[ sizes, Item ] 
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># `sizes` can be defined using any kind of array</span>
+<span style="color: #00aaff">class</span> <span style="color: #000000">PoolBySize</span>[ <span style="color: #000000">sizes</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">ArrayLike</span>, <span style="color: #000000">mt</span><span style="color: #6d3642; font-weight: bold">?</span> <span style="color: #005782">true</span>, <span style="color: #000000">name</span><span style="color: #6d3642; font-weight: bold">?</span> <span style="color: #118811">&quot;anon&quot;</span> ]
+    <span style="color: #00aaff">class</span> <span style="color: #000000">Item</span>
+        <span style="color: #000000">free_ptr</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">NullableAT</span> <span style="color: #938d7f; font-style: italic"># nullable address</span>
+        <span style="color: #000000">page_vec</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">Vec</span>[ <span style="color: #000000">AT</span> ]  <span style="color: #938d7f; font-style: italic"># contiguous array of addresses</span>
+    <span style="color: #938d7f; font-style: italic"># StaticMap constructs a tree at compile time</span>
+    <span style="color: #000000">map</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">StaticMap</span>[ <span style="color: #000000">sizes</span>, <span style="color: #000000">Item</span> ] 
     ...
 
-# instantiation for a given set of sizes (handled at CT)
-pool := PoolBySize[ [ 16, 24, 32 ] ]()
-```
+<span style="color: #938d7f; font-style: italic"># instantiation for a given set of sizes (handled at CT)</span>
+<span style="color: #000000">pool</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">PoolBySize</span>[ [ <span style="color: #93488f">16</span>, <span style="color: #93488f">24</span>, <span style="color: #93488f">32</span> ] ]()
+</pre></div>
+
 
 ## Variadic arguments
 
 Parameters in callables (`def`, `class`, ...) can be defined as variadic (`...var_name`), with optional constraints. It construct a CT known `Varargs` object, containing argument references with the optional names.
 
-```python
-def foo a, ...b: SI32, c: StringLike
-    info a, b, c # -> 4, [5,arg_name:6], "bar"
-    info b[ 0 ]          # -> 5
-    info b[ "arg_name" ] # -> 6
-    info b.values        # -> [5, 6]
-    info b.names         # -> [arg_name]
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #00aaff">def</span> <span style="color: #000000">foo</span> <span style="color: #000000">a</span>, ...<span style="color: #000000">b</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">SI32</span>, <span style="color: #000000">c</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">StringLike</span>
+    <span style="color: #000000">info</span> <span style="color: #000000">a</span>, <span style="color: #000000">b</span>, <span style="color: #000000">c</span> <span style="color: #938d7f; font-style: italic"># -&gt; 4, [5,arg_name:6], &quot;bar&quot;</span>
+    <span style="color: #000000">info</span> <span style="color: #000000">b</span>[ <span style="color: #93488f">0</span> ]          <span style="color: #938d7f; font-style: italic"># -&gt; 5</span>
+    <span style="color: #000000">info</span> <span style="color: #000000">b</span>[ <span style="color: #118811">&quot;arg_name&quot;</span> ] <span style="color: #938d7f; font-style: italic"># -&gt; 6</span>
+    <span style="color: #000000">info</span> <span style="color: #000000">b</span>.<span style="color: #000000">values</span>        <span style="color: #938d7f; font-style: italic"># -&gt; [5, 6]</span>
+    <span style="color: #000000">info</span> <span style="color: #000000">b</span>.<span style="color: #000000">names</span>         <span style="color: #938d7f; font-style: italic"># -&gt; [arg_name]</span>
 
-foo 4, 5, arg_name: 6, "bar"
-```
+<span style="color: #000000">foo</span> <span style="color: #93488f">4</span>, <span style="color: #93488f">5</span>, <span style="color: #000000">arg_name</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #93488f">6</span>, <span style="color: #118811">&quot;bar&quot;</span>
+</pre></div>
+
 
 
 ## Spread operator
 
 The `...` operator can be used expand lists, notably for calls (as long as sizes can be determined at CT) and list definitions. It works with every kinds of lists with a spread method.
 
-```python
-# ex. 1: function call with a Varargs 
-def foo a, ...b
-    bar ...b, 654
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># ex. 1: function call with a Varargs </span>
+<span style="color: #00aaff">def</span> <span style="color: #000000">foo</span> <span style="color: #000000">a</span>, ...<span style="color: #000000">b</span>
+    <span style="color: #000000">bar</span> ...<span style="color: #000000">b</span>, <span style="color: #93488f">654</span>
 
-# ex. 2: spread works also with lists, maps, ...
-u := 2 .. 10 # (range operator)
-v := [ 1, ...u, 10 ]
-```
+<span style="color: #938d7f; font-style: italic"># ex. 2: spread works also with lists, maps, ...</span>
+<span style="color: #000000">u</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #93488f">2</span> .. <span style="color: #93488f">10</span> <span style="color: #938d7f; font-style: italic"># (range operator)</span>
+<span style="color: #000000">v</span> <span style="color: #6d3642; font-weight: bold">:=</span> [ <span style="color: #93488f">1</span>, ...<span style="color: #000000">u</span>, <span style="color: #93488f">10</span> ]
+</pre></div>
+
 
 
 # Objects
@@ -257,39 +257,39 @@ Pre-construction can be written within a `wpc` (*With Pre Construction*) block, 
 
 If there is no `wpc` instruction, the pre-construction is automatically determined using the last *visible* `init_of` call of the block.
 
-```python
-class MyClass
-    def construct
-        # explicit pre-construction block
-        wpc
-            init_of a, 564 
-            init_of b, 654, 12
-        # -> "normal" construction (*all* arg are pre-initialized)
-        print v
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #00aaff">class</span> <span style="color: #000000">MyClass</span>
+    <span style="color: #00aaff">def</span> <span style="color: #000000">construct</span>
+        <span style="color: #938d7f; font-style: italic"># explicit pre-construction block</span>
+        <span style="color: #005782">wpc</span>
+            <span style="color: #005782">init_of</span> <span style="color: #000000">a</span>, <span style="color: #93488f">564</span> 
+            <span style="color: #005782">init_of</span> <span style="color: #000000">b</span>, <span style="color: #93488f">654</span>, <span style="color: #93488f">12</span>
+        <span style="color: #938d7f; font-style: italic"># -&gt; &quot;normal&quot; construction (*all* arg are pre-initialized)</span>
+        <span style="color: #000000">print</span> <span style="color: #000000">v</span>
 
-    # equivalent ctor with automatic wpc block
-    def construct
-        # implicit pre-construction block
-        init_of a, 564 
-        init_of b, 654, 12
-        # -> "normal" construction (after the last init_of)
-        print v
+    <span style="color: #938d7f; font-style: italic"># equivalent ctor with automatic wpc block</span>
+    <span style="color: #00aaff">def</span> <span style="color: #000000">construct</span>
+        <span style="color: #938d7f; font-style: italic"># implicit pre-construction block</span>
+        <span style="color: #005782">init_of</span> <span style="color: #000000">a</span>, <span style="color: #93488f">564</span> 
+        <span style="color: #005782">init_of</span> <span style="color: #000000">b</span>, <span style="color: #93488f">654</span>, <span style="color: #93488f">12</span>
+        <span style="color: #938d7f; font-style: italic"># -&gt; &quot;normal&quot; construction (after the last init_of)</span>
+        <span style="color: #000000">print</span> <span style="color: #000000">v</span>
 
-    # wpc allows for the use of arbitrarily complex interleaved instructions
-    def construct
-        wpc
-            u := 7 + 5 
-            for n in "ab"
-                init_of $n, 654, u
-            my_c_init()
+    <span style="color: #938d7f; font-style: italic"># wpc allows for the use of arbitrarily complex interleaved instructions</span>
+    <span style="color: #00aaff">def</span> <span style="color: #000000">construct</span>
+        <span style="color: #005782">wpc</span>
+            <span style="color: #000000">u</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #93488f">7</span> <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #93488f">5</span> 
+            <span style="color: #005782">for</span> <span style="color: #000000">n</span> <span style="color: #005782">in</span> <span style="color: #118811">&quot;ab&quot;</span>
+                <span style="color: #005782">init_of</span> <span style="color: #000000">$n</span>, <span style="color: #93488f">654</span>, <span style="color: #000000">u</span>
+            <span style="color: #000000">my_c_init</span>()
 
-    def my_c_init
-        init_of c, 564 # (this instruction forces the inlining of my_c_init)
+    <span style="color: #00aaff">def</span> <span style="color: #000000">my_c_init</span>
+        <span style="color: #005782">init_of</span> <span style="color: #000000">c</span>, <span style="color: #93488f">564</span> <span style="color: #938d7f; font-style: italic"># (this instruction forces the inlining of my_c_init)</span>
 
-    a: Foo
-    b: Bar
-    c: Baz
-```
+    <span style="color: #000000">a</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">Foo</span>
+    <span style="color: #000000">b</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">Bar</span>
+    <span style="color: #000000">c</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">Baz</span>
+</pre></div>
+
 
 ## Getsetters
 
@@ -297,39 +297,39 @@ class MyClass
 
 > Getters and setters globally enable a wide reduction of parenthesis bloating. More importantly, it helps writing more polymorphic and generic code, easing evolution and encapsulation.
 
-```python
-# an example with getters and setters
-class Complex[ T? FP32 ]
-    def get_mag
-        sqrt real * real + imag * imag
-    def get_arg
-        atan2 imag, real
-    def set_mag new_mag
-        old_arg := arg
-        real = new_mag * cos old_arg
-        imag = new_mag * sin old_arg
-    real: T
-    imag: T
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># an example with getters and setters</span>
+<span style="color: #00aaff">class</span> <span style="color: #000000">Complex</span>[ <span style="color: #000000">T</span><span style="color: #6d3642; font-weight: bold">?</span> <span style="color: #000000">FP32</span> ]
+    <span style="color: #00aaff">def</span> <span style="color: #000000">get_mag</span>
+        <span style="color: #000000">sqrt</span> <span style="color: #000000">real</span> <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">real</span> <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #000000">imag</span> <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">imag</span>
+    <span style="color: #00aaff">def</span> <span style="color: #000000">get_arg</span>
+        <span style="color: #000000">atan2</span> <span style="color: #000000">imag</span>, <span style="color: #000000">real</span>
+    <span style="color: #00aaff">def</span> <span style="color: #000000">set_mag</span> <span style="color: #000000">new_mag</span>
+        <span style="color: #000000">old_arg</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">arg</span>
+        <span style="color: #000000">real</span> <span style="color: #6d3642; font-weight: bold">=</span> <span style="color: #000000">new_mag</span> <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">cos</span> <span style="color: #000000">old_arg</span>
+        <span style="color: #000000">imag</span> <span style="color: #6d3642; font-weight: bold">=</span> <span style="color: #000000">new_mag</span> <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">sin</span> <span style="color: #000000">old_arg</span>
+    <span style="color: #000000">real</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">T</span>
+    <span style="color: #000000">imag</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">T</span>
 
-c := Complex 1, 2
-info c.mag # => 2.24
-c.mag = 4  # => calls set_mod( 4 )
-```
+<span style="color: #000000">c</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">Complex</span> <span style="color: #93488f">1</span>, <span style="color: #93488f">2</span>
+<span style="color: #000000">info</span> <span style="color: #000000">c</span>.<span style="color: #000000">mag</span> <span style="color: #938d7f; font-style: italic"># =&gt; 2.24</span>
+<span style="color: #000000">c</span>.<span style="color: #000000">mag</span> <span style="color: #6d3642; font-weight: bold">=</span> <span style="color: #93488f">4</span>  <span style="color: #938d7f; font-style: italic"># =&gt; calls set_mod( 4 )</span>
+</pre></div>
+
 
 `typeof_...` enables to get type information without the need for a getter.
 
 `mod_...` can be seen as a generalized setter, and takes as parameter a function, instead of a value.
 
-```python
-# an example with getters and setters
-class NodeList
-    def mod_x func
-        for p in points
-            func p.x
-    points: Vec[ Point ]
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># an example with getters and setters</span>
+<span style="color: #00aaff">class</span> <span style="color: #000000">NodeList</span>
+    <span style="color: #00aaff">def</span> <span style="color: #000000">mod_x</span> <span style="color: #000000">func</span>
+        <span style="color: #005782">for</span> <span style="color: #000000">p</span> <span style="color: #005782">in</span> <span style="color: #000000">points</span>
+            <span style="color: #000000">func</span> <span style="color: #000000">p</span>.<span style="color: #000000">x</span>
+    <span style="color: #000000">points</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">Vec</span>[ <span style="color: #000000">Point</span> ]
 
-node_list.x += 10 # 'operator+=' is a register "mod function"
-```
+<span style="color: #000000">node_list</span>.<span style="color: #000000">x</span> <span style="color: #6d3642; font-weight: bold">+=</span> <span style="color: #93488f">10</span> <span style="color: #938d7f; font-style: italic"># &#39;operator+=&#39; is a register &quot;mod function&quot;</span>
+</pre></div>
+
 
 ## Strings, arrays and maps
 
@@ -338,64 +338,57 @@ Strings, arrays and maps follow the same construction principles:
 * they are designed for maximum flexibility + ease of use for the most common cases
 * while enabling zero-cost conversions (relevant types may be totally different, depending on the context)
 
-```python
-# generic case for a string (a mutable 'String')
-s := "les { 2 * 4 } scarole"
-s += "s" # "les 8 scaroles"
-# but the operations can be handled by the compiler,
-# totally removing intermediate memory allocation
-t := static_string s # -> in the .text or .data section
-```
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># generic case for a string (a mutable &#39;String&#39;)</span>
+<span style="color: #000000">s</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #118811">&quot;les { 2 * 4 } scarole&quot;</span>
+<span style="color: #000000">s</span> <span style="color: #6d3642; font-weight: bold">+=</span> <span style="color: #118811">&quot;s&quot;</span> <span style="color: #938d7f; font-style: italic"># &quot;les 8 scaroles&quot;</span>
+<span style="color: #938d7f; font-style: italic"># but the operations can be handled by the compiler,</span>
+<span style="color: #938d7f; font-style: italic"># totally removing intermediate memory allocation</span>
+<span style="color: #000000">t</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">static_string</span> <span style="color: #000000">s</span> <span style="color: #938d7f; font-style: italic"># -&gt; in the .text or .data section</span>
+</pre></div>
+
 
 Arrays and maps are fully generic
 
-```python
-# heterogeneous arrays (no forced conversion)
-for a in [ "f", 1 ]; print a + 1 # -> f1 2 
-# costlesss conversions (using a std lib function)
-for a in vec [ "f", 1 ]; print a + 1 # -> f1 11 
-# choice of the target type
-for a in Vec[ String ] [ "f", 1 ]; print a + 1 # -> f1 11
-```
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># heterogeneous arrays (no forced conversion)</span>
+<span style="color: #005782">for</span> <span style="color: #000000">a</span> <span style="color: #005782">in</span> [ <span style="color: #118811">&quot;f&quot;</span>, <span style="color: #93488f">1</span> ]; <span style="color: #000000">print</span> <span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #93488f">1</span> <span style="color: #938d7f; font-style: italic"># -&gt; f1 2 </span>
+<span style="color: #938d7f; font-style: italic"># costlesss conversions (using a std lib function)</span>
+<span style="color: #005782">for</span> <span style="color: #000000">a</span> <span style="color: #005782">in</span> <span style="color: #000000">vec</span> [ <span style="color: #118811">&quot;f&quot;</span>, <span style="color: #93488f">1</span> ]; <span style="color: #000000">print</span> <span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #93488f">1</span> <span style="color: #938d7f; font-style: italic"># -&gt; f1 11 </span>
+<span style="color: #938d7f; font-style: italic"># choice of the target type</span>
+<span style="color: #005782">for</span> <span style="color: #000000">a</span> <span style="color: #005782">in</span> <span style="color: #000000">Vec</span>[ <span style="color: #000000">String</span> ] [ <span style="color: #118811">&quot;f&quot;</span>, <span style="color: #93488f">1</span> ]; <span style="color: #000000">print</span> <span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #93488f">1</span> <span style="color: #938d7f; font-style: italic"># -&gt; f1 11</span>
+</pre></div>
 
-```python
-# works the same way for maps
-import HashTable
 
-v := 17
-a := { 1: 2, "f": "g", v } # <=> "v": v for the last item
-# can be converted with compile time support
-info HashTable[ String, String ] a # -> { "1": "2", "f": "g", "v": "17" }```
-```
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># works the same way for maps</span>
+<span style="color: #005782">import</span> <span style="color: #000000">HashTable</span>
 
-# Memory
+<span style="color: #000000">v</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #93488f">17</span>
+<span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">:=</span> { <span style="color: #93488f">1</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #93488f">2</span>, <span style="color: #118811">&quot;f&quot;</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #118811">&quot;g&quot;</span>, <span style="color: #000000">v</span> } <span style="color: #938d7f; font-style: italic"># &lt;=&gt; &quot;v&quot;: v for the last item</span>
+<span style="color: #938d7f; font-style: italic"># can be converted with compile time support</span>
+<span style="color: #000000">info</span> <span style="color: #000000">HashTable</span>[ <span style="color: #000000">String</span>, <span style="color: #000000">String</span> ] <span style="color: #000000">a</span> <span style="color: #938d7f; font-style: italic"># -&gt; { &quot;1&quot;: &quot;2&quot;, &quot;f&quot;: &quot;g&quot;, &quot;v&quot;: &quot;17&quot; }</span>
+</pre></div>
 
-## Rvalues
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #00aaff">def</span> <span style="color: #000000">foo</span> <span style="color: #000000">a</span>, <span style="color: #000000">b</span>
+    <span style="color: #000000">info</span> <span style="color: #000000">rvalue</span> <span style="color: #000000">a</span> <span style="color: #938d7f; font-style: italic"># -&gt; true (s + 2 has been created for the call and will be destroyed just after)</span>
+    <span style="color: #000000">info</span> <span style="color: #000000">rvalue</span> <span style="color: #000000">b</span> <span style="color: #938d7f; font-style: italic"># -&gt; false (b is a reference on a variable referenced elsewhere)</span>
 
-It is possible to know if a value is shared, or owned by a given scope (`rvalue`). It notably enable to know if the resources can be transfered to avoid unnecessary copies
+<span style="color: #000000">s</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #118811">&quot;...&quot;</span>
+<span style="color: #000000">foo</span> <span style="color: #000000">s</span> <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #93488f">2</span>, <span style="color: #000000">s</span>
+</pre></div>
 
-```python
-def foo a, b
-    info rvalue a # -> true (s + 2 has been created for the call and will be destroyed just after)
-    info rvalue b # -> false (b is a reference on a variable referenced elsewhere)
-
-s := "..."
-foo s + 2, s
-```
 
 The `move` function enables to force the transfer of the ressources. `forward x` is equivalent to `move x` if `x` is an rvalue. In the other case, it returns the reference on `x`.
 
 <!-- Besides, Sane automates the "last usage tracking" of mutable variables (using the Abstract Syntax Tree). Variables  -->
 
-```python
-def foo v
-    info rvalue v
-    w := Vec[ SI32 ] forward v # content of v will be transfered (not copied !) to w
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #00aaff">def</span> <span style="color: #000000">foo</span> <span style="color: #000000">v</span>
+    <span style="color: #000000">info</span> <span style="color: #000000">rvalue</span> <span style="color: #000000">v</span>
+    <span style="color: #000000">w</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">Vec</span>[ <span style="color: #000000">SI32</span> ] <span style="color: #000000">forward</span> <span style="color: #000000">v</span> <span style="color: #938d7f; font-style: italic"># content of v will be transfered (not copied !) to w</span>
 
-v := vec [ 1, 2, 3 ]
-foo v      # rvalue: false. Content of v will be copied (with a potential mem alloc)
-foo move v # rvalue: true.  No copy, no mem alloc
-```
+<span style="color: #000000">v</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">vec</span> [ <span style="color: #93488f">1</span>, <span style="color: #93488f">2</span>, <span style="color: #93488f">3</span> ]
+<span style="color: #000000">foo</span> <span style="color: #000000">v</span>      <span style="color: #938d7f; font-style: italic"># rvalue: false. Content of v will be copied (with a potential mem alloc)</span>
+<span style="color: #000000">foo</span> <span style="color: #000000">move</span> <span style="color: #000000">v</span> <span style="color: #938d7f; font-style: italic"># rvalue: true.  No copy, no mem alloc</span>
+</pre></div>
+
 
 ## Heap and stack
 
@@ -407,25 +400,25 @@ If not specified, variables are of course created on *a* stack. By default, vari
 <!-- Gif, saclay DR4, RER B -> -->
 <!-- 2 sortes de postes, Noémie, FSEP (arbitrage au niveau des instituts, plus tard) -->
 
-```python
-def foo
-    vec 0 .. 1e6
-a := foo() # the vector is directly is thus stack (not the stack of f)
-```
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #00aaff">def</span> <span style="color: #000000">foo</span>
+    <span style="color: #000000">vec</span> <span style="color: #93488f">0</span> .. <span style="color: #93488f">1</span><span style="color: #000000">e6</span>
+<span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">foo</span>() <span style="color: #938d7f; font-style: italic"># the vector is directly is thus stack (not the stack of f)</span>
+</pre></div>
+
 
 Besides, syntax for pointers and references are not exactly the same than in C++, for faster reading (and conformance with the base syntax).
 
-```python
-# new is a regular function (explaining the ',' after the type)
-p := new String, "123" # -> type = Ptr[ String ]
-# '@' allows for getting the references
-info @p
-# '->' works as usual
-info p->size
-# '\' allows for getting a pointer
-a := "456"
-q := \a # -> a Ptr[ String ] pointing in a
-```
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># new is a regular function (explaining the &#39;,&#39; after the type)</span>
+<span style="color: #000000">p</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">new</span> <span style="color: #000000">String</span>, <span style="color: #118811">&quot;123&quot;</span> <span style="color: #938d7f; font-style: italic"># -&gt; type = Ptr[ String ]</span>
+<span style="color: #938d7f; font-style: italic"># &#39;@&#39; allows for getting the references</span>
+<span style="color: #000000">info</span> @<span style="color: #000000">p</span>
+<span style="color: #938d7f; font-style: italic"># &#39;-&gt;&#39; works as usual</span>
+<span style="color: #000000">info</span> <span style="color: #000000">p</span><span style="color: #6d3642; font-weight: bold">-&gt;</span><span style="color: #000000">size</span>
+<span style="color: #938d7f; font-style: italic"># &#39;\&#39; allows for getting a pointer</span>
+<span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #118811">&quot;456&quot;</span>
+<span style="color: #000000">q</span> <span style="color: #6d3642; font-weight: bold">:=</span> \<span style="color: #000000">a</span> <span style="color: #938d7f; font-style: italic"># -&gt; a Ptr[ String ] pointing in a</span>
+</pre></div>
+
 
 # Generative pprogramming
 
@@ -441,28 +434,28 @@ The Sane compiler is able to execute any Sane code during the compilation. It wi
 
 Of course, CT execution will not occur on data intended to be handled at run-time (e.g. files, unless explicitly stated -- notably it content is known at compile time).
 
-```python
-# a good part of the CT simplifications are automatic 
-a := [ 1, 2, 3 ].size
-if a != 3
-    never_compiled() # because size is trivially known at CT
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># a good part of the CT simplifications are automatic </span>
+<span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">:=</span> [ <span style="color: #93488f">1</span>, <span style="color: #93488f">2</span>, <span style="color: #93488f">3</span> ].<span style="color: #000000">size</span>
+<span style="color: #005782">if</span> <span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">!=</span> <span style="color: #93488f">3</span>
+    <span style="color: #000000">never_compiled</span>() <span style="color: #938d7f; font-style: italic"># because size is trivially known at CT</span>
 
-# they can also be triggered explicitly (`kv` function)
-b := 0
-for i in 0 .. 10
-    b += i
-if kv b != 45 # kv( b ) is known to be 45 at CT
-    never_compiled() # 
+<span style="color: #938d7f; font-style: italic"># they can also be triggered explicitly (`kv` function)</span>
+<span style="color: #000000">b</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #93488f">0</span>
+<span style="color: #005782">for</span> <span style="color: #000000">i</span> <span style="color: #005782">in</span> <span style="color: #93488f">0</span> .. <span style="color: #93488f">10</span>
+    <span style="color: #000000">b</span> <span style="color: #6d3642; font-weight: bold">+=</span> <span style="color: #000000">i</span>
+<span style="color: #005782">if</span> <span style="color: #000000">kv</span> <span style="color: #000000">b</span> <span style="color: #6d3642; font-weight: bold">!=</span> <span style="color: #93488f">45</span> <span style="color: #938d7f; font-style: italic"># kv( b ) is known to be 45 at CT</span>
+    <span style="color: #000000">never_compiled</span>() <span style="color: #938d7f; font-style: italic"># </span>
 
-# it can work with files if explicitly stated
-c := load( "fs" ).read_file_sync "my_file", kv: true
-s := c.split().filter( x => x.size == 3 ).size
-info kv s # computed entirely at CT
+<span style="color: #938d7f; font-style: italic"># it can work with files if explicitly stated</span>
+<span style="color: #000000">c</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">load</span>( <span style="color: #118811">&quot;fs&quot;</span> ).<span style="color: #000000">read_file_sync</span> <span style="color: #118811">&quot;my_file&quot;</span>, <span style="color: #000000">kv</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #005782">true</span>
+<span style="color: #000000">s</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">c</span>.<span style="color: #000000">split</span>().<span style="color: #000000">filter</span>( <span style="color: #000000">x</span> <span style="color: #6d3642; font-weight: bold">=&gt;</span> <span style="color: #000000">x</span>.<span style="color: #000000">size</span> <span style="color: #6d3642; font-weight: bold">==</span> <span style="color: #93488f">3</span> ).<span style="color: #000000">size</span>
+<span style="color: #000000">info</span> <span style="color: #000000">kv</span> <span style="color: #000000">s</span> <span style="color: #938d7f; font-style: italic"># computed entirely at CT</span>
 
-# triggering can be implicitly 
-i := MyClass[ s ] # we store the symbolic repr
-j := MyClass[ 17 ] # but here, the equality operator forces the computation
-```
+<span style="color: #938d7f; font-style: italic"># triggering can be implicitly </span>
+<span style="color: #000000">i</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">MyClass</span>[ <span style="color: #000000">s</span> ] <span style="color: #938d7f; font-style: italic"># we store the symbolic repr</span>
+<span style="color: #000000">j</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">MyClass</span>[ <span style="color: #93488f">17</span> ] <span style="color: #938d7f; font-style: italic"># but here, the equality operator forces the computation</span>
+</pre></div>
+
 
 <!-- Generative Programming involves generally programs that generate programs. In lot of cases, the point is to ensure that some computations are done before runtime, notably for performance, syntax, factorizations, interoperability…
 
@@ -474,32 +467,32 @@ With the handling of compile time computations, Sane provides tools for embedded
 
 All variable names (whether it’s for look up or for creation) may be computed (using `$`s).
 
-```python
-# creation of a variable named 'i18n'
-i${ 2 * 9 }n := 43
-```
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># creation of a variable named &#39;i18n&#39;</span>
+<span style="color: #000000">i$</span>{ <span style="color: #93488f">2</span> <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #93488f">9</span> }<span style="color: #000000">n</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #93488f">43</span>
+</pre></div>
+
 
 Besides, a `\[+]` in a variable declaration enable to declare it in a parent scope (`\` for the first parent, `\\` for the second one, ...), even in a class block (notably to define methods and attributes, static or dynamic).
 
-```python
-# (extract of the class used for enums is the std libraries)
-class Enum[ id, item_names ]
-    # class blocks are executed only once (for a set of template parameters)
-    static __nb_items := 0
-    for name in item_names 
-        num := post_inc __nb_items
-        static # (works also with non-static defs and attrs)
-        def \get_$name
-            Enum[ id, name, item_names ] __value: num
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># (extract of the class used for enums is the std libraries)</span>
+<span style="color: #00aaff">class</span> <span style="color: #000000">Enum</span>[ <span style="color: #000000">id</span>, <span style="color: #000000">item_names</span> ]
+    <span style="color: #938d7f; font-style: italic"># class blocks are executed only once (for a set of template parameters)</span>
+    <span style="color: #005782">static</span> <span style="color: #000000">__nb_items</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #93488f">0</span>
+    <span style="color: #005782">for</span> <span style="color: #000000">name</span> <span style="color: #005782">in</span> <span style="color: #000000">item_names</span> 
+        <span style="color: #000000">num</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">post_inc</span> <span style="color: #000000">__nb_items</span>
+        <span style="color: #005782">static</span> <span style="color: #938d7f; font-style: italic"># (works also with non-static defs and attrs)</span>
+        <span style="color: #00aaff">def</span> \<span style="color: #000000">get_$name</span>
+            <span style="color: #000000">Enum</span>[ <span style="color: #000000">id</span>, <span style="color: #000000">name</span>, <span style="color: #000000">item_names</span> ] <span style="color: #000000">__value</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">num</span>
 
-    def write_to_stream os 
-        os << item_names[ __value ]
+    <span style="color: #00aaff">def</span> <span style="color: #000000">write_to_stream</span> <span style="color: #000000">os</span> 
+        <span style="color: #000000">os</span> <span style="color: #6d3642; font-weight: bold">&lt;&lt;</span> <span style="color: #000000">item_names</span>[ <span style="color: #000000">__value</span> ]
 
-    __value ~= SI32
+    <span style="color: #000000">__value</span> <span style="color: #6d3642; font-weight: bold">~=</span> <span style="color: #000000">SI32</span>
       
-T := Enum[ 0, [ "A", "B" ] ]
-info T::A # => A (thanks to the generated `static def get_A` in the class scope)
-```
+<span style="color: #000000">T</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">Enum</span>[ <span style="color: #93488f">0</span>, [ <span style="color: #118811">&quot;A&quot;</span>, <span style="color: #118811">&quot;B&quot;</span> ] ]
+<span style="color: #000000">info</span> <span style="color: #000000">T</span><span style="color: #6d3642; font-weight: bold">::</span><span style="color: #000000">A</span> <span style="color: #938d7f; font-style: italic"># =&gt; A (thanks to the generated `static def get_A` in the class scope)</span>
+</pre></div>
+
 
 ## CT Symbolic computations
 
@@ -507,29 +500,29 @@ Sane give access to SSA graphs either for reading, modification or creation.
 
 Thus we can for instance get a symbolic representation of what a function does, as we can generate code from the construction of a SSA graph.
 
-```python
-# extract of a function to differentiate at a graph level
-def diff node: CtGraph
-    switch node
-        Symbolic::mul => node.children[ 0 ] * diff node.children[ 1 ] +
-                         node.children[ 1 ] * diff node.children[ 0 ] 
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># extract of a function to differentiate at a graph level</span>
+<span style="color: #00aaff">def</span> <span style="color: #000000">diff</span> <span style="color: #000000">node</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">CtGraph</span>
+    <span style="color: #000000">switch</span> <span style="color: #000000">node</span>
+        <span style="color: #000000">Symbolic</span><span style="color: #6d3642; font-weight: bold">::</span><span style="color: #000000">mul</span> <span style="color: #6d3642; font-weight: bold">=&gt;</span> <span style="color: #000000">node</span>.<span style="color: #000000">children</span>[ <span style="color: #93488f">0</span> ] <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">diff</span> <span style="color: #000000">node</span>.<span style="color: #000000">children</span>[ <span style="color: #93488f">1</span> ] <span style="color: #6d3642; font-weight: bold">+</span>
+                         <span style="color: #000000">node</span>.<span style="color: #000000">children</span>[ <span style="color: #93488f">1</span> ] <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">diff</span> <span style="color: #000000">node</span>.<span style="color: #000000">children</span>[ <span style="color: #93488f">0</span> ] 
         ... 
 
-# a simple function
-def foo n, x
-    res := typeof( x ) 0
-    for i in 1 .. n
-        res += pow x, i
-    res
+<span style="color: #938d7f; font-style: italic"># a simple function</span>
+<span style="color: #00aaff">def</span> <span style="color: #000000">foo</span> <span style="color: #000000">n</span>, <span style="color: #000000">x</span>
+    <span style="color: #000000">res</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">typeof</span>( <span style="color: #000000">x</span> ) <span style="color: #93488f">0</span>
+    <span style="color: #005782">for</span> <span style="color: #000000">i</span> <span style="color: #005782">in</span> <span style="color: #93488f">1</span> .. <span style="color: #000000">n</span>
+        <span style="color: #000000">res</span> <span style="color: #6d3642; font-weight: bold">+=</span> <span style="color: #000000">pow</span> <span style="color: #000000">x</span>, <span style="color: #000000">i</span>
+    <span style="color: #000000">res</span>
 
-# graph representation + differentiation of foo
-x := ct_symbol FP64
-n := ct_symbol SI32
-sym_diff := diff ct_graph( foo( x, n ) ), x
+<span style="color: #938d7f; font-style: italic"># graph representation + differentiation of foo</span>
+<span style="color: #000000">x</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">ct_symbol</span> <span style="color: #000000">FP64</span>
+<span style="color: #000000">n</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">ct_symbol</span> <span style="color: #000000">SI32</span>
+<span style="color: #000000">sym_diff</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">diff</span> <span style="color: #000000">ct_graph</span>( <span style="color: #000000">foo</span>( <span style="color: #000000">x</span>, <span style="color: #000000">n</span> ) ), <span style="color: #000000">x</span>
 
-# compile time optimized differentiation of foo
-foo_diff := sym_diff.subs [ x, n ], [ xv, nv ]
-```
+<span style="color: #938d7f; font-style: italic"># compile time optimized differentiation of foo</span>
+<span style="color: #000000">foo_diff</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">sym_diff</span>.<span style="color: #000000">subs</span> [ <span style="color: #000000">x</span>, <span style="color: #000000">n</span> ], [ <span style="color: #000000">xv</span>, <span style="color: #000000">nv</span> ]
+</pre></div>
+
 
 These symbolic representations can be seen as the level above the AST representation (also accessible via std introspection as shown later). They enable what one can call "code instrospection and filtering".
 
@@ -539,11 +532,11 @@ It is for instance used in the module `vectorize` (providing ways to simplify th
 
 For the extreme cases, it is possible to pass an arbitrary string to the compiler (as long of course as it can be CT computed).
 
-```python
-a := 5
-ct_eval "def foo; ${ 1 + a }"
-info foo() # => 6
-```
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #93488f">5</span>
+<span style="color: #000000">ct_eval</span> <span style="color: #118811">&quot;def foo; </span>${ <span style="color: #93488f">1</span> <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #000000">a</span> }<span style="color: #118811">&quot;</span>
+<span style="color: #000000">info</span> <span style="color: #000000">foo</span>() <span style="color: #938d7f; font-style: italic"># =&gt; 6</span>
+</pre></div>
+
 
 > This construction is probably the closest to the one we can find in "code generation", with a reduction of problems coming from information scattering and tangled build configuration. Nevertheless, computed names with CT branching usually offer superior clarity and debugging support.
 
@@ -555,16 +548,16 @@ Almost every objects handled by the compiler is actually accessible and modifiab
 
 Compilation objects can thus be created *ab initio*, to be consecutively handled by the compiler.
 
-```python
-# creation
-T := Type()
-T.name = "MyType"
-T.attributes << Type::Attribute off:0, name: "a", type: SI32
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># creation</span>
+<span style="color: #000000">T</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">Type</span>()
+<span style="color: #000000">T</span>.<span style="color: #000000">name</span> <span style="color: #6d3642; font-weight: bold">=</span> <span style="color: #118811">&quot;MyType&quot;</span>
+<span style="color: #000000">T</span>.<span style="color: #000000">attributes</span> <span style="color: #6d3642; font-weight: bold">&lt;&lt;</span> <span style="color: #000000">Type</span><span style="color: #6d3642; font-weight: bold">::</span><span style="color: #000000">Attribute</span> <span style="color: #000000">off</span><span style="color: #6d3642; font-weight: bold">:</span><span style="color: #93488f">0</span>, <span style="color: #000000">name</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #118811">&quot;a&quot;</span>, <span style="color: #000000">type</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">SI32</span>
 
-# the created type is stored and handled exactly like the others
-i := T a: 100
-info i # => T( a: 100 )
-```
+<span style="color: #938d7f; font-style: italic"># the created type is stored and handled exactly like the others</span>
+<span style="color: #000000">i</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">T</span> <span style="color: #000000">a</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #93488f">100</span>
+<span style="color: #000000">info</span> <span style="color: #000000">i</span> <span style="color: #938d7f; font-style: italic"># =&gt; T( a: 100 )</span>
+</pre></div>
+
 
 
 # Active libraries
@@ -577,25 +570,25 @@ When functions (or methods) that are qualified switchable are called, Sane marks
 
 There possibilities are used in a lot of essential optimisations. For instance, the concatenation operator works only with two variables (because it is an operator). If we want to concatenate more than two variables using this operator, we may end up with a lot of intermediate allocations and copies. A posteriori selection enable to gather the concatenations to avoid the waste.
 
-```python
-# a standard matrix class (with a `switchable` procedure)
-class Matrix
-    switchable
-    def operator* that
-        # -> normal multiplication procedure
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># a standard matrix class (with a `switchable` procedure)</span>
+<span style="color: #00aaff">class</span> <span style="color: #000000">Matrix</span>
+    <span style="color: #005782">switchable</span>
+    <span style="color: #00aaff">def</span> <span style="color: #000000">operator</span><span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">that</span>
+        <span style="color: #938d7f; font-style: italic"># -&gt; normal multiplication procedure</span>
     ...
 
-# standard multiplications (left to right)
-a := p * q * r * v
+<span style="color: #938d7f; font-style: italic"># standard multiplications (left to right)</span>
+<span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">p</span> <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">q</span> <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">r</span> <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">v</span>
 
-# addition of a "swither" (a different implementation, providing the same result)
-# to call a procedure able to find the best ways to do the multiplications
-globals.switchers.add
-    oper: Matrix::operator*
-    func: inps, outs =>
-        # (simplified code)
-        return [ nary_multiplier ... ]
-```
+<span style="color: #938d7f; font-style: italic"># addition of a &quot;swither&quot; (a different implementation, providing the same result)</span>
+<span style="color: #938d7f; font-style: italic"># to call a procedure able to find the best ways to do the multiplications</span>
+<span style="color: #000000">globals</span>.<span style="color: #000000">switchers</span>.<span style="color: #000000">add</span>
+    <span style="color: #000000">oper</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">Matrix</span><span style="color: #6d3642; font-weight: bold">::</span><span style="color: #000000">operator</span><span style="color: #6d3642; font-weight: bold">*</span>
+    <span style="color: #000000">func</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">inps</span>, <span style="color: #000000">outs</span> <span style="color: #6d3642; font-weight: bold">=&gt;</span>
+        <span style="color: #938d7f; font-style: italic"># (simplified code)</span>
+        <span style="color: #005782">return</span> [ <span style="color: #000000">nary_multiplier</span> ... ]
+</pre></div>
+
 
 
 
@@ -606,15 +599,15 @@ globals.switchers.add
 
 Example
 
-```python
-def my_test
-    exec_time f 0 .. 10000 # representative parameter(s)
-def f( range )
-    simd_size := TuningParameter( my_test, [2,4,8] )
-    # -> simd_size.val is fixed and known at compile time
-    for v in simd_loop( range, simd_size.val )
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #00aaff">def</span> <span style="color: #000000">my_test</span>
+    <span style="color: #000000">exec_time</span> <span style="color: #000000">f</span> <span style="color: #93488f">0</span> .. <span style="color: #93488f">10000</span> <span style="color: #938d7f; font-style: italic"># representative parameter(s)</span>
+<span style="color: #00aaff">def</span> <span style="color: #000000">f</span>( <span style="color: #000000">range</span> )
+    <span style="color: #000000">simd_size</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">TuningParameter</span>( <span style="color: #000000">my_test</span>, [<span style="color: #93488f">2</span>,<span style="color: #93488f">4</span>,<span style="color: #93488f">8</span>] )
+    <span style="color: #938d7f; font-style: italic"># -&gt; simd_size.val is fixed and known at compile time</span>
+    <span style="color: #005782">for</span> <span style="color: #000000">v</span> <span style="color: #005782">in</span> <span style="color: #000000">simd_loop</span>( <span style="color: #000000">range</span>, <span style="color: #000000">simd_size</span>.<span style="color: #000000">val</span> )
         ...
-```
+</pre></div>
+
         
 ## String storage
 
@@ -626,31 +619,34 @@ Strings created using double quotes are by default of type String (which is a cl
 
 Incidentally, allocation is understood by the compiler. If the there’s no real need for this dynamic memory because it is finally copied elsewhere, the allocation and desallocation won’t take place at all.
 
-```python
-# there's a *symbolic* allocation, actually not executed at all
-# because only the content is used (to get a `static const char *`)
-p := StaticCStr "string with length > 23 chars..."
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># there&#39;s a *symbolic* allocation, actually not executed at all</span>
+<span style="color: #938d7f; font-style: italic"># because only the content is used (to get a `static const char *`)</span>
+<span style="color: #000000">p</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">StaticCStr</span> <span style="color: #118811">&quot;string with length &gt; 23 chars...&quot;</span>
 
-# and now, we have a pointer in .data, on a zero-ended string
-strlen p + 2 # returns length - 2
+<span style="color: #938d7f; font-style: italic"># and now, we have a pointer in .data, on a zero-ended string</span>
+<span style="color: #000000">strlen</span> <span style="color: #000000">p</span> <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #93488f">2</span> <span style="color: #938d7f; font-style: italic"># returns length - 2</span>
+</pre></div>
+
+
 INTERPOLATION
 
 String interpolations ("...${...}...") may also involve memory allocation which may be abad thing e.g. if not done with the right allocator… But it actually occurs only if really needed, depending on the target of the string.
 
 In Sane, "...${...}..." creates a symbolic graph
 
-# extract of the Enum class definition
-class Enum[ id, name, item_names ]
-    static __nb_items := 0
-    if __nb_items == 0
-        for item_name in item_names 
-            num := post_inc __nb_items
-            static
-            def \\get_$item_name
-                Enum[ id, name, item_names ] __value: num
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># extract of the Enum class definition</span>
+<span style="color: #00aaff">class</span> <span style="color: #000000">Enum</span>[ <span style="color: #000000">id</span>, <span style="color: #000000">name</span>, <span style="color: #000000">item_names</span> ]
+    <span style="color: #005782">static</span> <span style="color: #000000">__nb_items</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #93488f">0</span>
+    <span style="color: #005782">if</span> <span style="color: #000000">__nb_items</span> <span style="color: #6d3642; font-weight: bold">==</span> <span style="color: #93488f">0</span>
+        <span style="color: #005782">for</span> <span style="color: #000000">item_name</span> <span style="color: #005782">in</span> <span style="color: #000000">item_names</span> 
+            <span style="color: #000000">num</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">post_inc</span> <span style="color: #000000">__nb_items</span>
+            <span style="color: #005782">static</span>
+            <span style="color: #00aaff">def</span> \\<span style="color: #000000">get_$item_name</span>
+                <span style="color: #000000">Enum</span>[ <span style="color: #000000">id</span>, <span style="color: #000000">name</span>, <span style="color: #000000">item_names</span> ] <span style="color: #000000">__value</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">num</span>
 
-    __value ~= SI32
-```python
+    <span style="color: #000000">__value</span> <span style="color: #6d3642; font-weight: bold">~=</span> <span style="color: #000000">SI32</span>
+</pre></div>
+
       
 
 
