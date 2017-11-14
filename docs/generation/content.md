@@ -1,10 +1,10 @@
 # What is Sane ?
 
-Sane is a code generator, designed to significantly facilitate and accelerate the development of codes optimized for **speed and memory occupancy**.
+Sane is a code generator, designed to **accelerate the development** of codes optimized for **execution speed and memory occupancy**.
 
-In itself, the language does not provide any abstraction that would drive the programmers away from the hardware, or that would need perpetual workarounds due to a stubborn dogmatism. In place of that, Sane allows and promotes the use and development of **active libraries** (libraries that take part in the process of compilation). Teams and developers can therefore **choose the *right* level of abstraction**, depending on the context.
+In itself, the language does not provide any abstraction that would drive the programmers away from the hardware, nor any stubborn dogmatic rule that would perpetually force to spend time on workarounds. In place of that, Sane allows and promotes the use and development of **active libraries** (libraries that take part in the process of compilation). Teams and developers can therefore **choose the *right* level of abstraction**, depending on the context.
 
-Sane is basically very close to C++, except for the **streamlined syntax**, the **compilation processes**, and the dramatically improved **compile-time abilities**.
+Sane is basically very close to C++, except for the **streamlined syntax**, the **compilation processes**, and last but not least, the dramatically improved **compile-time abilities** which notably drives the tools for **generative programming** and **compiler *aided* decisions**.
 
 <!-- (notably for **generative programming** and **compiler aided decisions**) -->
 
@@ -14,7 +14,7 @@ Sane is the acronym of *Software engineers Are Not Evil*.
 
 ## Organization of this document
 
-This documentation starts with the base syntax. Some differences with the base C++ are then emphasized, to drive thereafter to generative programming. This base documentation is followed by examples of commonly used *optional* abstractions (asynchronous execution, security enforcements, ...).
+This documentation starts with the base syntax. The main differences with the base C++ are then emphasized, to drive thereafter to applications on generative programming. It is then followed by examples of commonly used *optional* abstractions (asynchronous execution, security enforcements, ...), illustrating the principle of *active library*.
 
 <!-- Zero-cost enforcements and abstractions are always present, but when it comes to compromises, new ideas or specific needs, we believe that the choice must come from teams  -->
 
@@ -159,22 +159,25 @@ def pow mat: Matrix, n: Number
 
 ## Multidimensionnal vtables
 
-Argument constraints may also act on run-time information.
+The `virtual` keyword can work on any kind of argument, indifferently on methods or functions.
 
 ```python
 # run-time selection using bidimensionnal vtables
 def intersection_area virtual a: Square, virtual b: Triangle
     ...
 
+# a (dynamic) polymorphic function
 def weight a: GeometricObject, b: GeometricObject, density? 7800
     density * intersection_area a, b
 ```
 
-> (Remark: there are different kinds of vtables in Sane. Adding a pointer at the beginning is the default solution -- very good on a general purpose -- but other choices exist)
+> (Remark: there are different kinds of vtables in Sane. Adding a pointer at the beginning (for the simple mono-inheritance case) is the default solution -- very good on a general purpose -- but other choices exist)
 
 ## Template classes
 
-**Classes parameters can be of any type**, as long as copy and equality can be CT (Compile-Time) handled -- in a symbolic way or not. This does not exclude the types that may imply memory allocation (symbolically handled) nor the types that imply input/output (if authorized).
+**Classes parameters can be of any type**, as long as copy and equality can be Compile-Time handled, in a symbolic way (comparison of graphs) or not (comparison of known values).
+
+This notably does not exclude the types that may imply memory allocation as `String`, `Vec[...]`, ... In this case, the comparison are symbolic and can be handled at Compile-Time.
 
 ```python
 # `sizes` can be defined using any kind of array
@@ -192,11 +195,11 @@ pool := PoolBySize[ [ 16, 24, 32 ] ]()
 
 ## Variadic arguments
 
-Parameters in callables (`def`, `class`, ...) can be defined as variadic (`...var_name`), with optional constraints. It construct a CT known `Varargs` object, containing argument references with the optional names.
+Callable parameters (for `def`, `class`, `=>`, ...) can be variadic, with optional constraints. It construct a compile-time known `Varargs` object, containing the optional names and the argument references.
 
 ```python
 def foo a, ...b: SI32, c: StringLike
-    info a, b, c # -> 4, [5,arg_name:6], "bar"
+    info a, b, c         # -> 4, [5,arg_name:6], "bar"
     info b[ 0 ]          # -> 5
     info b[ "arg_name" ] # -> 6
     info b.values        # -> [5, 6]
@@ -208,15 +211,17 @@ foo 4, 5, arg_name: 6, "bar"
 
 ## Spread operator
 
-The `...` operator can be used expand lists, notably for calls (as long as sizes can be determined at CT) and list definitions. It works with every kinds of lists with a spread method.
+The `...` operator can also be used expand stuff, notably for calls and list definitions.
+
+`...` works with every kinds of lists containing a compile-time runnable `spread` method.
 
 ```python
-# ex. 1: function call with a Varargs 
+# ex. 1: call with an expanded Varargs 
 def foo a, ...b
     bar ...b, 654
 
-# ex. 2: spread works also with lists, maps, ...
-u := 2 .. 10 # (range operator)
+# ex. 2: expansion in a list
+u := 2 .. 10 # range( 2, 10 )
 v := [ 1, ...u, 10 ]
 ```
 
@@ -225,32 +230,31 @@ v := [ 1, ...u, 10 ]
 
 ## Constructors
 
-As with C++, class attributes can be directly initialized only once during the construction arguments.
+As with C++, constructors allow a *pre-construction* phase, to initialize attributes only once and directly with the right arguments.
 
-Pre-construction can be written within a `wpc` (*With Pre Construction*) block, with calls to init_of:
+Unlike with C++, pre-construction may occur in a block, **with arbitrary interleaved instructions**.
 
-* `init_of attr_name, [ ctor_args ]` enables to initialize an argument
-* `init_of self, [ ctor_args ]` enables to call another constructor of the same class.
-
-If there is no `wpc` instruction, the pre-construction is automatically determined using the last *visible* `init_of` call of the block.
+This block can be delimited explicitly (`wpc`) or implicitly (the last *visible* `init_of` call). `init_of attr_name, [ ctor_args ]` allows to initialize an argument. `init_of self, [ ctor_args ]` enables to call another constructor of the same class.
 
 ```python
 class MyClass
     def construct
-        # explicit pre-construction block
+        # explicit pre-construction block (with interleaved instructions)
         wpc
             init_of a, 564 
-            init_of b, 654, 12
-        # -> "normal" construction (*all* arg are pre-initialized)
-        print v
+            z := 12
+            init_of b, 654, z
+        # -> "normal" construction (*all* arg are now pre-initialized)
+        print a + b
 
     # equivalent ctor with automatic wpc block
     def construct
         # implicit pre-construction block
         init_of a, 564 
-        init_of b, 654, 12
-        # -> "normal" construction (after the last init_of)
-        print v
+        z := 12
+        init_of b, 654, z
+        # -> "normal" construction (*all* arg are now pre-initialized)
+        print a + b
 
     # wpc allows for the use of arbitrarily complex interleaved instructions
     def construct
@@ -272,19 +276,22 @@ class MyClass
 
 *Symbolic attributes* can be added using `get_...`, `set_...`, `mod_...` and `typeof_...` method names.
 
-> Getters and setters globally enable a wide reduction of parenthesis bloating. More importantly, it helps writing more polymorphic and generic code, easing evolution and encapsulation.
+<!-- Getters and setters globally enable a wide reduction of parenthesis bloating. More importantly, it helps to write more polymorphic, encapsulated and generic code. -->
 
 ```python
 # an example with getters and setters
 class Complex[ T? FP32 ]
     def get_mag
         sqrt real * real + imag * imag
+
     def get_arg
         atan2 imag, real
+
     def set_mag new_mag
         old_arg := arg
         real = new_mag * cos old_arg
         imag = new_mag * sin old_arg
+        
     real: T
     imag: T
 
@@ -293,9 +300,24 @@ info c.mag # => 2.24
 c.mag = 4  # => calls set_mod( 4 )
 ```
 
-`typeof_...` enables to get type information without the need for a getter.
+`typeof_...` allows to get type information without the need for a getter (can be useful for pure `set`ters or `mod`ers).
 
-`mod_...` can be seen as a generalized setter, and takes as parameter a function, instead of a value.
+```python
+class Smurf
+    def typeof_break_dance
+        SI32
+
+    def set_break_dance value
+        info value
+
+def foo v: SI32
+    v = 654
+
+s := Smurf()
+foo s.break_dance # will work (typeof is known without a getter)
+```
+
+`mod_...` can be seen as a generalized `set`ter. It is called with a modifying function as parameter (instead of a value).
 
 ```python
 # an example with getters and setters
@@ -308,23 +330,28 @@ class NodeList
 node_list.x += 10 # 'operator+=' is a register "mod function"
 ```
 
-## Strings, arrays and maps
+# Types for literals
 
-Strings, arrays and maps follow the same construction principles:
+Literals (`12`, `"smurf"`, `[1,2]`, ...) must be of given types, but it's impossible to find types that would directly fit all the needs (one day you need fast coding, on another day you will have to focus on execution speed, security, etc...).
 
-* they are designed for maximum flexibility + ease of use for the most common cases
-* while enabling zero-cost conversions (relevant types may be totally different, depending on the context)
+Sane tries then to provide types to fit the most common needs, with maximum flexibility and able to execute the most common operations at good *mean* speeds and memory occupancy, while **fully ensuring that the conversion costs will be zero**.
 
 ```python
-# generic case for a string (a mutable 'String')
+# generates a mutable 'String'
 s := "les { 2 * 4 } scarole"
-s += "s" # "les 8 scaroles"
-# but the operations can be handled by the compiler,
-# totally removing intermediate memory allocation
-t := static_string s # -> in the .text or .data section
+
+# supporting common operations
+# (with potential memory allocation)
+s += "s"
+
+# operations can nevertheless be handled by the compiler,
+# enabling to remove intermediate memory allocation
+# -> t will be stored in the .text or .data section
+# (with removed )
+t := static_string s
 ```
 
-Arrays and maps are fully generic
+For maximum flexibility, arrays and maps are fully generic
 
 ```python
 # heterogeneous arrays (no forced conversion)
@@ -349,7 +376,7 @@ info HashTable[ String, String ] a # -> { "1": "2", "f": "g", "v": "17" }```
 
 ## Rvalues
 
-It is possible to know if a value is shared, or owned by a given scope (`rvalue`). It notably enable to know if the resources can be transfered to avoid unnecessary copies
+`rvalue` allows to know if a value is *owned* on a given scope.
 
 ```python
 def foo a, b

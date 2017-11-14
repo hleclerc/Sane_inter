@@ -36,7 +36,17 @@
         font-size: 160%;
         color:rgb(110, 45, 19);
       }
-    </style>
+      
+      .sidebar {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        display: block;
+        overflow-x: hidden;
+        overflow-y: auto
+      } 
+   </style>
   </head>
 
   <body>
@@ -60,11 +70,14 @@
     <div class="container-fluid">
       <div class="row">
 <nav class="col-sm-3 col-md-2 d-none d-sm-block bg-light sidebar">
+<ul>
+</ul/>
 <ul class="nav nav-pills flex-column">
 <li class="nav-item"> <a class="nav-link" href="#WhatisSane">What is Sane ?</a> </li>
 <li class="nav-item"> <a class="nav-link" href="#Basesyntax">Base syntax</a> </li>
 <li class="nav-item"> <a class="nav-link" href="#Templates">Templates</a> </li>
 <li class="nav-item"> <a class="nav-link" href="#Objects">Objects</a> </li>
+<li class="nav-item"> <a class="nav-link" href="#Typesforliterals">Types for literals</a> </li>
 <li class="nav-item"> <a class="nav-link" href="#Memory">Memory</a> </li>
 <li class="nav-item"> <a class="nav-link" href="#Generativeprogramming">Generative programming</a> </li>
 <li class="nav-item"> <a class="nav-link" href="#Activelibraries">Active libraries</a> </li>
@@ -75,11 +88,11 @@
 <main role="main" class="col-sm-9 ml-sm-auto col-md-10 pt-3">
 <section id="WhatisSane">
 <h1>What is Sane ?</h1>
-<p>Sane is a code generator, designed to significantly facilitate and accelerate the development of codes optimized for <strong>speed and memory occupancy</strong>.</p>
+<p>Sane is a code generator, designed to <strong>accelerate the development</strong> of codes optimized for <strong>execution speed and memory occupancy</strong>.</p>
 
-<p>In itself, the language does not provide any abstraction that would drive the programmers away from the hardware, or that would need perpetual workarounds due to a stubborn dogmatism. In place of that, Sane allows and promotes the use and development of <strong>active libraries</strong> (libraries that take part in the process of compilation). Teams and developers can therefore <strong>choose the <em>right</em> level of abstraction</strong>, depending on the context.</p>
+<p>In itself, the language does not provide any abstraction that would drive the programmers away from the hardware, nor any stubborn dogmatic rule that would perpetually force to spend time on workarounds. In place of that, Sane allows and promotes the use and development of <strong>active libraries</strong> (libraries that take part in the process of compilation). Teams and developers can therefore <strong>choose the <em>right</em> level of abstraction</strong>, depending on the context.</p>
 
-<p>Sane is basically very close to C++, except for the <strong>streamlined syntax</strong>, the <strong>compilation processes</strong>, and the dramatically improved <strong>compile-time abilities</strong>.</p>
+<p>Sane is basically very close to C++, except for the <strong>streamlined syntax</strong>, the <strong>compilation processes</strong>, and last but not least, the dramatically improved <strong>compile-time abilities</strong> which notably drives the tools for <strong>generative programming</strong> and <strong>compiler <em>aided</em> decisions</strong>.</p>
 
 <!-- (notably for **generative programming** and **compiler aided decisions**) -->
 
@@ -89,7 +102,7 @@
 
 <h2>Organization of this document</h2>
 
-<p>This documentation starts with the base syntax. Some differences with the base C++ are then emphasized, to drive thereafter to generative programming. This base documentation is followed by examples of commonly used <em>optional</em> abstractions (asynchronous execution, security enforcements, ...).</p>
+<p>This documentation starts with the base syntax. The main differences with the base C++ are then emphasized, to drive thereafter to applications on generative programming. It is then followed by examples of commonly used <em>optional</em> abstractions (asynchronous execution, security enforcements, ...), illustrating the principle of <em>active library</em>.</p>
 
 <!-- Zero-cost enforcements and abstractions are always present, but when it comes to compromises, new ideas or specific needs, we believe that the choice must come from teams  -->
 
@@ -213,21 +226,24 @@ We believe that we are able to decide what kind of enforcements and abstractions
 </pre></div>
 <h2>Multidimensionnal vtables</h2>
 
-<p>Argument constraints may also act on run-time information.</p>
+<p>The <code>virtual</code> keyword can work on any kind of argument, indifferently on methods or functions.</p>
 <div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># run-time selection using bidimensionnal vtables</span>
 <span style="color: #00aaff">def</span> <span style="color: #000000">intersection_area</span> <span style="color: #005782">virtual</span> <span style="color: #000000">a</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">Square</span>, <span style="color: #005782">virtual</span> <span style="color: #000000">b</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">Triangle</span>
     ...
 
+<span style="color: #938d7f; font-style: italic"># a (dynamic) polymorphic function</span>
 <span style="color: #00aaff">def</span> <span style="color: #000000">weight</span> <span style="color: #000000">a</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">GeometricObject</span>, <span style="color: #000000">b</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">GeometricObject</span>, <span style="color: #000000">density</span><span style="color: #6d3642; font-weight: bold">?</span> <span style="color: #93488f">7800</span>
     <span style="color: #000000">density</span> <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">intersection_area</span> <span style="color: #000000">a</span>, <span style="color: #000000">b</span>
 </pre></div>
 <blockquote>
-  <p>(Remark: there are different kinds of vtables in Sane. Adding a pointer at the beginning is the default solution -- very good on a general purpose -- but other choices exist)</p>
+  <p>(Remark: there are different kinds of vtables in Sane. Adding a pointer at the beginning (for the simple mono-inheritance case) is the default solution -- very good on a general purpose -- but other choices exist)</p>
 </blockquote>
 
 <h2>Template classes</h2>
 
-<p><strong>Classes parameters can be of any type</strong>, as long as copy and equality can be CT (Compile-Time) handled -- in a symbolic way or not. This does not exclude the types that may imply memory allocation (symbolically handled) nor the types that imply input/output (if authorized).</p>
+<p><strong>Classes parameters can be of any type</strong>, as long as copy and equality can be Compile-Time handled, in a symbolic way (comparison of graphs) or not (comparison of known values).</p>
+
+<p>This notably does not exclude the types that may imply memory allocation as <code>String</code>, <code>Vec[...]</code>, ... In this case, the comparison are symbolic and can be handled at Compile-Time.</p>
 <div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># `sizes` can be defined using any kind of array</span>
 <span style="color: #00aaff">class</span> <span style="color: #000000">PoolBySize</span>[ <span style="color: #000000">sizes</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">ArrayLike</span>, <span style="color: #000000">mt</span><span style="color: #6d3642; font-weight: bold">?</span> <span style="color: #005782">true</span>, <span style="color: #000000">name</span><span style="color: #6d3642; font-weight: bold">?</span> <span style="color: #118811">&quot;anon&quot;</span> ]
     <span style="color: #00aaff">class</span> <span style="color: #000000">Item</span>
@@ -242,9 +258,9 @@ We believe that we are able to decide what kind of enforcements and abstractions
 </pre></div>
 <h2>Variadic arguments</h2>
 
-<p>Parameters in callables (<code>def</code>, <code>class</code>, ...) can be defined as variadic (<code>...var_name</code>), with optional constraints. It construct a CT known <code>Varargs</code> object, containing argument references with the optional names.</p>
+<p>Callable parameters (for <code>def</code>, <code>class</code>, <code>=&gt;</code>, ...) can be variadic, with optional constraints. It construct a compile-time known <code>Varargs</code> object, containing the optional names and the argument references.</p>
 <div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #00aaff">def</span> <span style="color: #000000">foo</span> <span style="color: #000000">a</span>, ...<span style="color: #000000">b</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">SI32</span>, <span style="color: #000000">c</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">StringLike</span>
-    <span style="color: #000000">info</span> <span style="color: #000000">a</span>, <span style="color: #000000">b</span>, <span style="color: #000000">c</span> <span style="color: #938d7f; font-style: italic"># -&gt; 4, [5,arg_name:6], &quot;bar&quot;</span>
+    <span style="color: #000000">info</span> <span style="color: #000000">a</span>, <span style="color: #000000">b</span>, <span style="color: #000000">c</span>         <span style="color: #938d7f; font-style: italic"># -&gt; 4, [5,arg_name:6], &quot;bar&quot;</span>
     <span style="color: #000000">info</span> <span style="color: #000000">b</span>[ <span style="color: #93488f">0</span> ]          <span style="color: #938d7f; font-style: italic"># -&gt; 5</span>
     <span style="color: #000000">info</span> <span style="color: #000000">b</span>[ <span style="color: #118811">&quot;arg_name&quot;</span> ] <span style="color: #938d7f; font-style: italic"># -&gt; 6</span>
     <span style="color: #000000">info</span> <span style="color: #000000">b</span>.<span style="color: #000000">values</span>        <span style="color: #938d7f; font-style: italic"># -&gt; [5, 6]</span>
@@ -254,13 +270,15 @@ We believe that we are able to decide what kind of enforcements and abstractions
 </pre></div>
 <h2>Spread operator</h2>
 
-<p>The <code>...</code> operator can be used expand lists, notably for calls (as long as sizes can be determined at CT) and list definitions. It works with every kinds of lists with a spread method.</p>
-<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># ex. 1: function call with a Varargs </span>
+<p>The <code>...</code> operator can also be used expand stuff, notably for calls and list definitions.</p>
+
+<p><code>...</code> works with every kinds of lists containing a compile-time runnable <code>spread</code> method.</p>
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># ex. 1: call with an expanded Varargs </span>
 <span style="color: #00aaff">def</span> <span style="color: #000000">foo</span> <span style="color: #000000">a</span>, ...<span style="color: #000000">b</span>
     <span style="color: #000000">bar</span> ...<span style="color: #000000">b</span>, <span style="color: #93488f">654</span>
 
-<span style="color: #938d7f; font-style: italic"># ex. 2: spread works also with lists, maps, ...</span>
-<span style="color: #000000">u</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #93488f">2</span> .. <span style="color: #93488f">10</span> <span style="color: #938d7f; font-style: italic"># (range operator)</span>
+<span style="color: #938d7f; font-style: italic"># ex. 2: expansion in a list</span>
+<span style="color: #000000">u</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #93488f">2</span> .. <span style="color: #93488f">10</span> <span style="color: #938d7f; font-style: italic"># range( 2, 10 )</span>
 <span style="color: #000000">v</span> <span style="color: #6d3642; font-weight: bold">:=</span> [ <span style="color: #93488f">1</span>, ...<span style="color: #000000">u</span>, <span style="color: #93488f">10</span> ]
 </pre></div>
 <p></p>
@@ -269,32 +287,29 @@ We believe that we are able to decide what kind of enforcements and abstractions
 <h1>Objects</h1>
 <h2>Constructors</h2>
 
-<p>As with C++, class attributes can be directly initialized only once during the construction arguments.</p>
+<p>As with C++, constructors allow a <em>pre-construction</em> phase, to initialize attributes only once and directly with the right arguments.</p>
 
-<p>Pre-construction can be written within a <code>wpc</code> (<em>With Pre Construction</em>) block, with calls to init_of:</p>
+<p>Unlike with C++, pre-construction may occur in a block, <strong>with arbitrary interleaved instructions</strong>.</p>
 
-<ul>
-<li><code>init_of attr_name, [ ctor_args ]</code> enables to initialize an argument</li>
-<li><code>init_of self, [ ctor_args ]</code> enables to call another constructor of the same class.</li>
-</ul>
-
-<p>If there is no <code>wpc</code> instruction, the pre-construction is automatically determined using the last <em>visible</em> <code>init_of</code> call of the block.</p>
+<p>This block can be delimited explicitly (<code>wpc</code>) or implicitly (the last <em>visible</em> <code>init_of</code> call). <code>init_of attr_name, [ ctor_args ]</code> allows to initialize an argument. <code>init_of self, [ ctor_args ]</code> enables to call another constructor of the same class.</p>
 <div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #00aaff">class</span> <span style="color: #000000">MyClass</span>
     <span style="color: #00aaff">def</span> <span style="color: #000000">construct</span>
-        <span style="color: #938d7f; font-style: italic"># explicit pre-construction block</span>
+        <span style="color: #938d7f; font-style: italic"># explicit pre-construction block (with interleaved instructions)</span>
         <span style="color: #005782">wpc</span>
             <span style="color: #005782">init_of</span> <span style="color: #000000">a</span>, <span style="color: #93488f">564</span> 
-            <span style="color: #005782">init_of</span> <span style="color: #000000">b</span>, <span style="color: #93488f">654</span>, <span style="color: #93488f">12</span>
-        <span style="color: #938d7f; font-style: italic"># -&gt; &quot;normal&quot; construction (*all* arg are pre-initialized)</span>
-        <span style="color: #000000">print</span> <span style="color: #000000">v</span>
+            <span style="color: #000000">z</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #93488f">12</span>
+            <span style="color: #005782">init_of</span> <span style="color: #000000">b</span>, <span style="color: #93488f">654</span>, <span style="color: #000000">z</span>
+        <span style="color: #938d7f; font-style: italic"># -&gt; &quot;normal&quot; construction (*all* arg are now pre-initialized)</span>
+        <span style="color: #000000">print</span> <span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #000000">b</span>
 
     <span style="color: #938d7f; font-style: italic"># equivalent ctor with automatic wpc block</span>
     <span style="color: #00aaff">def</span> <span style="color: #000000">construct</span>
         <span style="color: #938d7f; font-style: italic"># implicit pre-construction block</span>
         <span style="color: #005782">init_of</span> <span style="color: #000000">a</span>, <span style="color: #93488f">564</span> 
-        <span style="color: #005782">init_of</span> <span style="color: #000000">b</span>, <span style="color: #93488f">654</span>, <span style="color: #93488f">12</span>
-        <span style="color: #938d7f; font-style: italic"># -&gt; &quot;normal&quot; construction (after the last init_of)</span>
-        <span style="color: #000000">print</span> <span style="color: #000000">v</span>
+        <span style="color: #000000">z</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #93488f">12</span>
+        <span style="color: #005782">init_of</span> <span style="color: #000000">b</span>, <span style="color: #93488f">654</span>, <span style="color: #000000">z</span>
+        <span style="color: #938d7f; font-style: italic"># -&gt; &quot;normal&quot; construction (*all* arg are now pre-initialized)</span>
+        <span style="color: #000000">print</span> <span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #000000">b</span>
 
     <span style="color: #938d7f; font-style: italic"># wpc allows for the use of arbitrarily complex interleaved instructions</span>
     <span style="color: #00aaff">def</span> <span style="color: #000000">construct</span>
@@ -315,19 +330,20 @@ We believe that we are able to decide what kind of enforcements and abstractions
 
 <p><em>Symbolic attributes</em> can be added using <code>get_...</code>, <code>set_...</code>, <code>mod_...</code> and <code>typeof_...</code> method names.</p>
 
-<blockquote>
-  <p>Getters and setters globally enable a wide reduction of parenthesis bloating. More importantly, it helps writing more polymorphic and generic code, easing evolution and encapsulation.</p>
-</blockquote>
+<!-- Getters and setters globally enable a wide reduction of parenthesis bloating. More importantly, it helps to write more polymorphic, encapsulated and generic code. -->
 <div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># an example with getters and setters</span>
 <span style="color: #00aaff">class</span> <span style="color: #000000">Complex</span>[ <span style="color: #000000">T</span><span style="color: #6d3642; font-weight: bold">?</span> <span style="color: #000000">FP32</span> ]
     <span style="color: #00aaff">def</span> <span style="color: #000000">get_mag</span>
         <span style="color: #000000">sqrt</span> <span style="color: #000000">real</span> <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">real</span> <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #000000">imag</span> <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">imag</span>
+
     <span style="color: #00aaff">def</span> <span style="color: #000000">get_arg</span>
         <span style="color: #000000">atan2</span> <span style="color: #000000">imag</span>, <span style="color: #000000">real</span>
+
     <span style="color: #00aaff">def</span> <span style="color: #000000">set_mag</span> <span style="color: #000000">new_mag</span>
         <span style="color: #000000">old_arg</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">arg</span>
         <span style="color: #000000">real</span> <span style="color: #6d3642; font-weight: bold">=</span> <span style="color: #000000">new_mag</span> <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">cos</span> <span style="color: #000000">old_arg</span>
         <span style="color: #000000">imag</span> <span style="color: #6d3642; font-weight: bold">=</span> <span style="color: #000000">new_mag</span> <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">sin</span> <span style="color: #000000">old_arg</span>
+        
     <span style="color: #000000">real</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">T</span>
     <span style="color: #000000">imag</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">T</span>
 
@@ -335,9 +351,21 @@ We believe that we are able to decide what kind of enforcements and abstractions
 <span style="color: #000000">info</span> <span style="color: #000000">c</span>.<span style="color: #000000">mag</span> <span style="color: #938d7f; font-style: italic"># =&gt; 2.24</span>
 <span style="color: #000000">c</span>.<span style="color: #000000">mag</span> <span style="color: #6d3642; font-weight: bold">=</span> <span style="color: #93488f">4</span>  <span style="color: #938d7f; font-style: italic"># =&gt; calls set_mod( 4 )</span>
 </pre></div>
-<p><code>typeof_...</code> enables to get type information without the need for a getter.</p>
+<p><code>typeof_...</code> allows to get type information without the need for a getter (can be useful for pure <code>set</code>ters or <code>mod</code>ers).</p>
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #00aaff">class</span> <span style="color: #000000">Smurf</span>
+    <span style="color: #00aaff">def</span> <span style="color: #000000">typeof_break_dance</span>
+        <span style="color: #000000">SI32</span>
 
-<p><code>mod_...</code> can be seen as a generalized setter, and takes as parameter a function, instead of a value.</p>
+    <span style="color: #00aaff">def</span> <span style="color: #000000">set_break_dance</span> <span style="color: #000000">value</span>
+        <span style="color: #000000">info</span> <span style="color: #000000">value</span>
+
+<span style="color: #00aaff">def</span> <span style="color: #000000">foo</span> <span style="color: #000000">v</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">SI32</span>
+    <span style="color: #000000">v</span> <span style="color: #6d3642; font-weight: bold">=</span> <span style="color: #93488f">654</span>
+
+<span style="color: #000000">s</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">Smurf</span>()
+<span style="color: #000000">foo</span> <span style="color: #000000">s</span>.<span style="color: #000000">break_dance</span> <span style="color: #938d7f; font-style: italic"># will work (typeof is known without a getter)</span>
+</pre></div>
+<p><code>mod_...</code> can be seen as a generalized <code>set</code>ter. It is called with a modifying function as parameter (instead of a value).</p>
 <div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># an example with getters and setters</span>
 <span style="color: #00aaff">class</span> <span style="color: #000000">NodeList</span>
     <span style="color: #00aaff">def</span> <span style="color: #000000">mod_x</span> <span style="color: #000000">func</span>
@@ -347,22 +375,27 @@ We believe that we are able to decide what kind of enforcements and abstractions
 
 <span style="color: #000000">node_list</span>.<span style="color: #000000">x</span> <span style="color: #6d3642; font-weight: bold">+=</span> <span style="color: #93488f">10</span> <span style="color: #938d7f; font-style: italic"># &#39;operator+=&#39; is a register &quot;mod function&quot;</span>
 </pre></div>
-<h2>Strings, arrays and maps</h2>
+<p></p>
+</section>
+<section id="Typesforliterals">
+<h1>Types for literals</h1>
+<p>Literals (<code>12</code>, <code>"smurf"</code>, <code>[1,2]</code>, ...) must be of given types, but it's impossible to find types that would directly fit all the needs (one day you need fast coding, on another day you will have to focus on execution speed, security, etc...).</p>
 
-<p>Strings, arrays and maps follow the same construction principles:</p>
-
-<ul>
-<li>they are designed for maximum flexibility + ease of use for the most common cases</li>
-<li>while enabling zero-cost conversions (relevant types may be totally different, depending on the context)</li>
-</ul>
-<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># generic case for a string (a mutable &#39;String&#39;)</span>
+<p>Sane tries then to provide types to fit the most common needs, with maximum flexibility and able to execute the most common operations at good <em>mean</em> speeds and memory occupancy, while <strong>fully ensuring that the conversion costs will be zero</strong>.</p>
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># generates a mutable &#39;String&#39;</span>
 <span style="color: #000000">s</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #118811">&quot;les { 2 * 4 } scarole&quot;</span>
-<span style="color: #000000">s</span> <span style="color: #6d3642; font-weight: bold">+=</span> <span style="color: #118811">&quot;s&quot;</span> <span style="color: #938d7f; font-style: italic"># &quot;les 8 scaroles&quot;</span>
-<span style="color: #938d7f; font-style: italic"># but the operations can be handled by the compiler,</span>
-<span style="color: #938d7f; font-style: italic"># totally removing intermediate memory allocation</span>
-<span style="color: #000000">t</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">static_string</span> <span style="color: #000000">s</span> <span style="color: #938d7f; font-style: italic"># -&gt; in the .text or .data section</span>
+
+<span style="color: #938d7f; font-style: italic"># supporting common operations</span>
+<span style="color: #938d7f; font-style: italic"># (with potential memory allocation)</span>
+<span style="color: #000000">s</span> <span style="color: #6d3642; font-weight: bold">+=</span> <span style="color: #118811">&quot;s&quot;</span>
+
+<span style="color: #938d7f; font-style: italic"># operations can nevertheless be handled by the compiler,</span>
+<span style="color: #938d7f; font-style: italic"># enabling to remove intermediate memory allocation</span>
+<span style="color: #938d7f; font-style: italic"># -&gt; t will be stored in the .text or .data section</span>
+<span style="color: #938d7f; font-style: italic"># (with removed )</span>
+<span style="color: #000000">t</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">static_string</span> <span style="color: #000000">s</span>
 </pre></div>
-<p>Arrays and maps are fully generic</p>
+<p>For maximum flexibility, arrays and maps are fully generic</p>
 <div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># heterogeneous arrays (no forced conversion)</span>
 <span style="color: #005782">for</span> <span style="color: #000000">a</span> <span style="color: #005782">in</span> [ <span style="color: #118811">&quot;f&quot;</span>, <span style="color: #93488f">1</span> ]; <span style="color: #000000">print</span> <span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #93488f">1</span> <span style="color: #938d7f; font-style: italic"># -&gt; f1 2 </span>
 <span style="color: #938d7f; font-style: italic"># costlesss conversions (using a std lib function)</span>
@@ -385,7 +418,7 @@ We believe that we are able to decide what kind of enforcements and abstractions
 <h1>Memory</h1>
 <h2>Rvalues</h2>
 
-<p>It is possible to know if a value is shared, or owned by a given scope (<code>rvalue</code>). It notably enable to know if the resources can be transfered to avoid unnecessary copies</p>
+<p><code>rvalue</code> allows to know if a value is <em>owned</em> on a given scope.</p>
 <div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #00aaff">def</span> <span style="color: #000000">foo</span> <span style="color: #000000">a</span>, <span style="color: #000000">b</span>
     <span style="color: #000000">info</span> <span style="color: #000000">rvalue</span> <span style="color: #000000">a</span> <span style="color: #938d7f; font-style: italic"># -&gt; true (s + 2 has been created for the call and will be destroyed just after)</span>
     <span style="color: #000000">info</span> <span style="color: #000000">rvalue</span> <span style="color: #000000">b</span> <span style="color: #938d7f; font-style: italic"># -&gt; false (b is a reference on a variable referenced elsewhere)</span>

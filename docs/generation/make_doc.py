@@ -88,7 +88,7 @@ def id_filt( s ):
     return filter( lambda x: x.isalpha(), s )
 
 # parse
-c = file( "_README.md" ).read()
+c = file( "generation/content.md" ).read()
 sections = []
 
 skip = False
@@ -105,10 +105,12 @@ for l in c.split( "\n" ):
 
 # header
 o = open( "index.html","w" ) 
-o.write( file( "doc/header.html" ).read() )
+o.write( file( "generation/header.html" ).read() )
 
 # TOC
 o.write( '<nav class="col-sm-3 col-md-2 d-none d-sm-block bg-light sidebar">\n' )
+o.write( '<ul>\n' )
+o.write( '</ul/>\n' )
 o.write( '<ul class="nav nav-pills flex-column">\n' )
 for s in sections:
     o.write( '<li class="nav-item"> <a class="nav-link" href="#' + id_filt( s[ 0 ] ) + '">' + s[ 0 ] + '</a> </li>\n' ) # <span class="sr-only">(current)</span>
@@ -136,4 +138,4 @@ for s in sections:
 o.write( '</main>\n' )
 
 # footer
-o.write( file( "doc/footer.html" ).read() )
+o.write( file( "generation/footer.html" ).read() )
