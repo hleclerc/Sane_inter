@@ -1,8 +1,8 @@
 # What is Sane ?
 
-Sane is a code generator, designed to **accelerate the development** of codes optimized for **execution speed and memory occupancy**.
+Sane is a code generator, designed to **speed up the development** of programs optimized for **execution speed and memory usage**.
 
-In itself, the language does not provide any abstraction that would drive the programmers away from the hardware, nor any stubborn dogmatic rule that would perpetually force to spend time on workarounds. In place of that, Sane allows and promotes the use and development of **active libraries** (libraries that take part in the process of compilation). Teams and developers can therefore **choose the *right* level of abstraction**, depending on the context.
+In itself, the language is not going to provide any abstraction that would drive the programmers away from the hardware, nor any stubborn dogmatic rule that would perpetually force to spend time on workarounds. In place of that, Sane allows and promotes the use and development of **active libraries** (libraries that take part in the process of compilation). Teams and developers can therefore **choose the *right* level of abstraction**, depending on the context, to meet the needs in terms of programmation speed, security and execution performance.
 
 Sane is basically very close to C++, except for the **streamlined syntax**, the **compilation processes**, and last but not least, the dramatically improved **compile-time abilities** which notably drives the tools for **generative programming** and **compiler *aided* decisions**.
 
@@ -345,10 +345,13 @@ s := "les { 2 * 4 } scarole"
 s += "s"
 
 # operations can nevertheless be handled by the compiler,
-# enabling to remove intermediate memory allocation
-# -> t will be stored in the .text or .data section
-# (with removed )
-t := static_string s
+# enabling to remove intermediate memory allocation. t
+# will be stored in the .text or .data section with a
+# zero-cost execution
+t := StaticCString s
+
+# and now, we have a pointer on a zero-ended string
+strlen t + 2 # returns s.length - 2
 ```
 
 For maximum flexibility, arrays and maps are fully generic
@@ -387,33 +390,39 @@ s := "..."
 foo s + 2, s
 ```
 
-The `move` function enables to force the transfer of the ressources. `forward x` is equivalent to `move x` if `x` is an rvalue. In the other case, it returns the reference on `x`.
+`move x` create a new object, with the ressources of `x` (`y := move x` moves the ressources of `x` to a new object `y` of the same type).
+
+Besides, `forward x` is equivalent to `move x` if `x` is an rvalue. In the other case, it returns the reference on `x`.
 
 <!-- Besides, Sane automates the "last usage tracking" of mutable variables (using the Abstract Syntax Tree). Variables  -->
 
 ```python
 def foo v
     info rvalue v
-    w := Vec[ SI32 ] forward v # content of v will be transfered (not copied !) to w
+    w := Vec[ SI32 ] forward v # content of v will be transfered (not copied) to w if v is a rvalue
 
 v := vec [ 1, 2, 3 ]
 foo v      # rvalue: false. Content of v will be copied (with a potential mem alloc)
 foo move v # rvalue: true.  No copy, no mem alloc
 ```
 
-## Heap and stack
+## Heap
 
-Variables can be created on the heap, with the (heap or mixed) allocator of your choice. `new` and `delete` are regular standard functions (not operators) that use the standard allocator (which is by default a kind of slub allocator, with pros and cons... but... you have the choice :) ).
+Variables can of course be created on the heap, with the (heap or mixed) allocator of your choice. `new` and `delete` are regular standard functions (not operators) that use a slub allocator (modifiable globally if wanted).
 
-If not specified, variables are of course created on *a* stack. By default, variables are created on the current stack. Nevertheless, as an optimization, if they are intended to be returned, they can be created directly on a caller stack. Beside, they can be created on intermediate or partial in presence of a variant of coroutine.
+## Stack(s)
+
+If not specified, variables are of course created on *a* stack. By default, variables are created on the *current* stack. Nevertheless, as an optimization, if they are intended to be returned or used elsewhere, they can be created directly on a parent stack, with compile-time handling of a ref counter.
 
 ```python
 def foo
     vec 0 .. 1e6
-a := foo() # the vector is directly is thus stack (not the stack of f)
+a := foo() # the vector 'vec 0 .. 1e6' is directly created in this stack (not in the stack of f)
 ```
 
-Besides, syntax for pointers and references are not exactly the same than in C++, for faster reading (and conformance with the base syntax).
+## Notations for references and pointers
+
+For faster reading (and conformance with the base syntax), pointers and references use specific operators.
 
 ```python
 # new is a regular function (explaining the ',' after the type)
@@ -424,12 +433,12 @@ info @p
 info p->size
 # '\' allows for getting a pointer
 a := "456"
-q := \a # -> a Ptr[ String ] pointing in a
+q := \a # -> a Ptr[ String ] pointing to a
 ```
 
 # Generative programming
 
-Metaprogramming is at the heart of the facilities offered to ease and speed up the development processes, while ensuring the best performances.
+Metaprogramming is at the heart of the facilities offered to ease and speed up the development processes in Sane, while ensuring the best performances.
 
 ## Compile-time execution
 
@@ -442,7 +451,7 @@ The Sane compiler is able to execute any Sane code during the compilation. It wi
 Of course, CT execution will not occur on data intended to be handled at run-time (e.g. files, unless explicitly stated -- notably it content is known at compile time).
 
 ```python
-# a good part of the CT simplifications are automatic 
+# a good portion of the CT simplifications are automatic 
 a := [ 1, 2, 3 ].size
 if a != 3
     never_compiled() # because size is trivially known at CT
@@ -479,7 +488,9 @@ All variable names (whether it's for look up or for creation) may be computed (u
 i${ 2 * 9 }n := 43
 ```
 
-Besides, a `\[+]` in a variable declaration enable to declare it in a parent scope (`\` for the first parent, `\\` for the second one, ...), even in a class block (notably to define methods and attributes, static or dynamic).
+## Creation in parent scopes
+
+Besides, a `\` in a variable declaration enable to declare it in a parent scope (`\` for the first parent, `\\` for the second one, ...), even in a class block (notably to define methods and attributes, static or dynamic).
 
 ```python
 # (extract of the class used for enums is the std libraries)
@@ -501,7 +512,7 @@ T := Enum[ 0, [ "A", "B" ] ]
 info T::A # => A (thanks to the generated `static def get_A` in the class scope)
 ```
 
-## CT Symbolic computations
+## Compile-time Symbolic computations
 
 Sane give access to SSA graphs either for reading, modification or creation.
 
@@ -535,7 +546,7 @@ These symbolic representations can be seen as the level above the AST representa
 
 It is for instance used in the module `vectorize` (providing ways to simplify the writing of loops with SIMD instructions). In all the cases, transformations are triggered by standard calls and are a library concern (meaning that you have the choice to select them, to modify or create new ones for full control and extensibility).
 
-## Ct_eval
+## Compile-time evaluation
 
 For the extreme cases, it is possible to pass an arbitrary string to the compiler (as long of course as it can be CT computed).
 
@@ -604,17 +615,21 @@ globals.switchers.add
 
 ## Auto-tuning
 
-Example
+`AutoTune` is a module that 
 
 ```python
 def my_test
     exec_time f 0 .. 10000 # representative parameter(s)
-def f( range )
-    simd_size := TuningParameter( my_test, [2,4,8] )
-    # -> simd_size.val is fixed and known at compile time
-    for v in simd_loop( range, simd_size.val )
-        ...
+
+simd_size := AutoTune.TuningParameter my_test, [2,4,8]
+# -> simd_size.val is fixed and known at compile time
+for v in simd_loop range, simd_size.val
+    ...
 ```
+        
+
+
+
         
 ## String storage
 
