@@ -742,9 +742,9 @@ With the handling of compile time computations, Sane provides tools for embedded
 </section>
 <section id="Asynchronouscode">
 <h1>Asynchronous code</h1>
-<p>Sane allows functions to pause when they do not have the data needed to progress. It can be seen as a kind of <strong>data-driven coroutine</strong> ability. It can also be seen as a <a href="http://reactivex.io">Reactive Extension</a> with a deep language support (notably to be able to transparently work with <code>for</code>s, <code>if</code>s, ...).</p>
+<p>Sane allows functions to pause when they do not have the data needed to progress. It can be seen as a kind of <strong>data-driven coroutine</strong> ability. It can also be seen as a <a href="http://reactivex.io">Reactive Extension</a> with a deep support from the language. It allows to transparently work with <code>for</code>s, <code>if</code>s, ... and to generate highly optimized code (with less copies, indirections, ...).</p>
 
-<p>Nevertheless, it is purely optional (activated only if RX function are used). Remark: the current event loop is simple and does not allow a real control (scheduling, message passing, thread pinning)... There's work to do on this topic.</p>
+<p>Nevertheless, it is purely optional (activated only if RX function are used). Remark: the current event loop is simple and does not give the full control to the developers (for the scheduling, message passing, thread pinning, etc...). There's work to do on this topic.</p>
 
 <!-- Besides, a runtime can't be defined by a language, it has to be a library: needs are the same if you're on the embedded world, if you're developing a game, and so on... -->
 
@@ -752,27 +752,45 @@ With the handling of compile time computations, Sane provides tools for embedded
 <div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #005782">import</span> <span style="color: #000000">fs</span>
 
 <span style="color: #938d7f; font-style: italic"># reads are launched in parallel</span>
-<span style="color: #000000">t</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">read</span>( <span style="color: #118811">&quot;a.txt&quot;</span> ) <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #000000">read</span>( <span style="color: #118811">&quot;b.txt&quot;</span> )
-<span style="color: #938d7f; font-style: italic"># this sum is computed immediatly without waited for the result of the reads</span>
-<span style="color: #938d7f; font-style: italic"># (data of t is not needed to compute this sum)</span>
-<span style="color: #000000">info</span> <span style="color: #000000">sum</span> <span style="color: #000000">vec</span> <span style="color: #93488f">0</span> .. <span style="color: #93488f">1000</span>
-<span style="color: #000000">info</span> <span style="color: #000000">t</span> <span style="color: #938d7f; font-style: italic"># here we say that stdout depends on the sum of the two reads</span>
+<span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">read</span>( <span style="color: #118811">&quot;a.txt&quot;</span> )
+<span style="color: #000000">b</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">read</span>( <span style="color: #118811">&quot;b.txt&quot;</span> )
+<span style="color: #000000">t</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">a</span>.<span style="color: #000000">find</span> <span style="color: #000000">b</span>
+
+<span style="color: #938d7f; font-style: italic"># this sum is computed immediatly even if the read</span>
+<span style="color: #938d7f; font-style: italic"># have not finished (the content of t is not needed)</span>
+<span style="color: #000000">info</span> <span style="color: #000000">sum</span> <span style="color: #000000">vec</span> 
+
+<span style="color: #938d7f; font-style: italic"># here we say that &#39;stdout&#39; depends on the sum of the</span>
+<span style="color: #938d7f; font-style: italic"># two reads, but we don&#39;t make any operation (we&#39;re </span>
+<span style="color: #938d7f; font-style: italic"># just filling a graph handled at compile-time)</span>
+<span style="color: #000000">info</span> <span style="color: #000000">t</span>
+
+<span style="color: #938d7f; font-style: italic"># ...but at the end of the program, we have to make the output</span>
+<span style="color: #938d7f; font-style: italic"># =&gt; execution of the graph</span>
 </pre></div>
-<p>It generate something like</p>
-<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #005782">void</span> <span style="color: #00ff00">f0</span>( <span style="color: #005782">bool</span> <span style="color: #6d3642; font-weight: bold">*</span><span style="color: #000000">R0</span> ) {
-    <span style="color: #005782">if</span> ( <span style="color: #6d3642; font-weight: bold">*</span><span style="color: #000000">R0</span> <span style="color: #6d3642; font-weight: bold">==</span> <span style="color: #000000">false</span> ) {
-        <span style="color: #6d3642; font-weight: bold">*</span><span style="color: #000000">R0</span> <span style="color: #6d3642; font-weight: bold">=</span> <span style="color: #000000">true</span>;
-        <span style="color: #005782">return</span>;
-    }
+<p>It generate something like (simplified)</p>
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #005782">struct</span> <span style="color: #000000">T0</span> {
+     <span style="color: #000000">String</span> <span style="color: #000000">a0</span>;
+     <span style="color: #000000">String</span> <span style="color: #000000">a1</span>;
+     <span style="color: #005782">int</span>    <span style="color: #000000">a2</span>;
+};
+<span style="color: #005782">void</span> <span style="color: #00ff00">f1</span>( <span style="color: #000000">T0</span> <span style="color: #6d3642; font-weight: bold">*</span><span style="color: #000000">R0</span> ) {
+    <span style="color: #000000">write</span>( <span style="color: #000000">find</span>( <span style="color: #000000">R0</span><span style="color: #6d3642; font-weight: bold">-&gt;</span><span style="color: #000000">a0</span>, <span style="color: #000000">R0</span><span style="color: #6d3642; font-weight: bold">-&gt;</span><span style="color: #000000">a1</span> ) );
+}
+<span style="color: #005782">void</span> <span style="color: #00ff00">f0</span>( <span style="color: #000000">T0</span> <span style="color: #6d3642; font-weight: bold">*</span><span style="color: #000000">R0</span> ) {
+    <span style="color: #005782">if</span> ( <span style="color: #6d3642; font-weight: bold">++</span><span style="color: #000000">R0</span><span style="color: #6d3642; font-weight: bold">-&gt;</span><span style="color: #000000">a2</span> <span style="color: #6d3642; font-weight: bold">==</span> <span style="color: #93488f">3</span> )
+        <span style="color: #000000">f1</span>( <span style="color: #000000">R0</span> );
 }
 <span style="color: #005782">int</span> <span style="color: #00ff00">main</span>() {
-    <span style="color: #005782">bool</span> <span style="color: #6d3642; font-weight: bold">*</span><span style="color: #000000">R0</span> <span style="color: #6d3642; font-weight: bold">=</span> <span style="color: #000000">Allocator</span><span style="color: #6d3642; font-weight: bold">::</span><span style="color: #000000">New</span>( <span style="color: #000000">Bool</span>, <span style="color: #93488f">0</span> );
-    <span style="color: #000000">EventLoop</span><span style="color: #6d3642; font-weight: bold">::</span><span style="color: #000000">reg_read</span>( &quot;a.txt&quot;, <span style="color: #000000">f0</span>, <span style="color: #000000">R0</span> );
-    <span style="color: #000000">EventLoop</span><span style="color: #6d3642; font-weight: bold">::</span><span style="color: #000000">reg_read</span>( &quot;b.txt&quot;, <span style="color: #000000">f0</span>, <span style="color: #000000">R0</span> );
-    ...
+    <span style="color: #000000">T0</span> <span style="color: #6d3642; font-weight: bold">*</span><span style="color: #000000">R0</span> <span style="color: #6d3642; font-weight: bold">=</span> <span style="color: #000000">Allocator</span><span style="color: #6d3642; font-weight: bold">::</span><span style="color: #000000">New</span>( <span style="color: #000000">T0</span> );
+    <span style="color: #000000">R0</span><span style="color: #6d3642; font-weight: bold">-&gt;</span><span style="color: #000000">a2</span> <span style="color: #6d3642; font-weight: bold">=</span> <span style="color: #93488f">0</span>;
+    <span style="color: #000000">EventLoop</span><span style="color: #6d3642; font-weight: bold">::</span><span style="color: #000000">reg_read</span>( &quot;a.txt&quot;, <span style="color: #000000">f0</span>, <span style="color: #6d3642; font-weight: bold">&amp;</span><span style="color: #000000">R0</span><span style="color: #6d3642; font-weight: bold">-&gt;</span><span style="color: #000000">a0</span>, <span style="color: #000000">R0</span> );
+    <span style="color: #000000">EventLoop</span><span style="color: #6d3642; font-weight: bold">::</span><span style="color: #000000">reg_read</span>( &quot;b.txt&quot;, <span style="color: #000000">f1</span>, <span style="color: #6d3642; font-weight: bold">&amp;</span><span style="color: #000000">R0</span><span style="color: #6d3642; font-weight: bold">-&gt;</span><span style="color: #000000">a1</span>, <span style="color: #000000">R0</span> );
+    ... <span style="color: #938d7f; font-style: italic">// computation of the sum</span>
+    <span style="color: #000000">f0</span>( <span style="color: #000000">R0</span> );
 }
 </pre></div>
-<p>Language support enable to generate code to make examples like that really efficient (more efficient than futures or observable which basically add layers of indirection)</p>
+<!-- Language support enable to generate code to make examples like that really efficient (more efficient than futures or observable which basically add layers of indirection) -->
 </section>
 <section id="Codegeneration">
 <h1>Code generation</h1>

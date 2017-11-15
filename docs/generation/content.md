@@ -734,9 +734,9 @@ info i->b
 
 # Asynchronous code
 
-Sane allows functions to pause when they do not have the data needed to progress. It can be seen as a kind of **data-driven coroutine** ability. It can also be seen as a [Reactive Extension](http://reactivex.io) with a deep language support (notably to be able to transparently work with `for`s, `if`s, ...).
+Sane allows functions to pause when they do not have the data needed to progress. It can be seen as a kind of **data-driven coroutine** ability. It can also be seen as a [Reactive Extension](http://reactivex.io) with a deep support from the language. It allows to transparently work with `for`s, `if`s, ... and to generate highly optimized code (with less copies, indirections, ...).
 
-Nevertheless, it is purely optional (activated only if RX function are used). Remark: the current event loop is simple and does not allow a real control (scheduling, message passing, thread pinning)... There's work to do on this topic.
+Nevertheless, it is purely optional (activated only if RX function are used). Remark: the current event loop is simple and does not give the full control to the developers (for the scheduling, message passing, thread pinning, etc...). There's work to do on this topic.
 
 <!-- Besides, a runtime can't be defined by a language, it has to be a library: needs are the same if you're on the embedded world, if you're developing a game, and so on... -->
 
@@ -746,31 +746,49 @@ A simple example:
 import fs
 
 # reads are launched in parallel
-t := read( "a.txt" ) + read( "b.txt" )
-# this sum is computed immediatly without waited for the result of the reads
-# (data of t is not needed to compute this sum)
-info sum vec 0 .. 1000
-info t # here we say that stdout depends on the sum of the two reads
+a := read( "a.txt" )
+b := read( "b.txt" )
+t := a.find b
+
+# this sum is computed immediatly even if the read
+# have not finished (the content of t is not needed)
+info sum vec 
+
+# here we say that 'stdout' depends on the sum of the
+# two reads, but we don't make any operation (we're 
+# just filling a graph handled at compile-time)
+info t
+
+# ...but at the end of the program, we have to make the output
+# => execution of the graph
 ```
 
-It generate something like
+It generate something like (simplified)
 
 ```C++
-void f0( bool *R0 ) {
-    if ( *R0 == false ) {
-        *R0 = true;
-        return;
-    }
+struct T0 {
+     String a0;
+     String a1;
+     int    a2;
+};
+void f1( T0 *R0 ) {
+    write( find( R0->a0, R0->a1 ) );
+}
+void f0( T0 *R0 ) {
+    if ( ++R0->a2 == 3 )
+        f1( R0 );
 }
 int main() {
-    bool *R0 = Allocator::New( Bool, 0 );
-    EventLoop::reg_read( "a.txt", f0, R0 );
-    EventLoop::reg_read( "b.txt", f0, R0 );
-    ...
+    T0 *R0 = Allocator::New( T0 );
+    R0->a2 = 0;
+    EventLoop::reg_read( "a.txt", f0, &R0->a0, R0 );
+    EventLoop::reg_read( "b.txt", f1, &R0->a1, R0 );
+    ... // computation of the sum
+    f0( R0 );
 }
 ```
 
-Language support enable to generate code to make examples like that really efficient (more efficient than futures or observable which basically add layers of indirection)
+<!-- Language support enable to generate code to make examples like that really efficient (more efficient than futures or observable which basically add layers of indirection) -->
 
 
 # Code generation
