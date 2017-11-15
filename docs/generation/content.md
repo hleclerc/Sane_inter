@@ -354,7 +354,7 @@ t := StaticCString s
 strlen t + 2 # returns s.length - 2
 ```
 
-For maximum flexibility, arrays and maps are fully generic
+For maximum flexibility, arrays are fully generic
 
 ```python
 # heterogeneous arrays (no forced conversion)
@@ -365,6 +365,8 @@ for a in vec [ "f", 1 ]; print a + 1 # -> f1 11
 for a in Vec[ String ] [ "f", 1 ]; print a + 1 # -> f1 11
 ```
 
+Maps have followed the same path.
+
 ```python
 # works the same way for maps
 import HashTable
@@ -372,8 +374,10 @@ import HashTable
 v := 17
 a := { 1: 2, "f": "g", v } # <=> "v": v for the last item
 # can be converted with compile time support
-info HashTable[ String, String ] a # -> { "1": "2", "f": "g", "v": "17" }```
+info HashTable[ String, String ] a # -> { "1": "2", "f": "g", "v": "17" }
 ```
+
+(Remark: `{}` may allow to define JS-like objects, using the function `obj`. In Sane, keys are computed value, whence the need for double quotes as in JSON.)
 
 # Memory
 
@@ -534,8 +538,8 @@ Here is a (simplified) example of automatic optimized differentiation.
 # extract of a function to differentiate at a graph level
 def ssa_diff node: SsaGraph
     switch node
-        Symbolic::mul => node.children[ 0 ] * ssa_diff node.children[ 1 ] +
-                         node.children[ 1 ] * ssa_diff node.children[ 0 ] 
+        Symbolic::mul ==> node.children[ 0 ] * ssa_diff node.children[ 1 ] +
+                          node.children[ 1 ] * ssa_diff node.children[ 0 ] 
         ... 
 
 # a simple function
@@ -651,7 +655,7 @@ t_dot := AutoTune.tuned dot, [ {
     "pond": 1, "args": va vec( 1 .. 1000 ), vec( 1 .. 1000 )
 } ]
 
-# t_dot is now 
+# 't_dot' is the same thing as 'dot' with an optimized set of parameters
 info t_dot vec( 1 .. 1000 ), vec( 1 .. 1000 )
 ```
         
@@ -730,17 +734,89 @@ info i->b
 
 # Asynchronous code
 
-async/await are cool but intrusive and procedural, whereas data driven would be more relevant.
+Sane allows functions to pause when they do not have the data needed to progress. It can be seen as a kind of **data-driven coroutine** ability. It can also be seen as a [Reactive Extension](http://reactivex.io) with a deep language support (notably to be able to transparently work with `for`s, `if`s, ...).
 
-Besides, a runtime can't be defined by a language, it has to be a library: needs are the same if you're on the embeded world, if you're developping a game, and so on...
+Nevertheless, it is purely optional (activated only if RX function are used). Remark: the current event loop is simple and does not allow a real control (scheduling, message passing, thread pinning)... There's work to do on this topic.
+
+<!-- Besides, a runtime can't be defined by a language, it has to be a library: needs are the same if you're on the embedded world, if you're developing a game, and so on... -->
+
+A simple example:
+
+```python
+import fs
+
+# reads are launched in parallel
+t := read( "a.txt" ) + read( "b.txt" )
+# this sum is computed immediatly without waited for the result of the reads
+# (data of t is not needed to compute this sum)
+info sum vec 0 .. 1000
+info t # here we say that stdout depends on the sum of the two reads
+```
+
+It generate something like
+
+```C++
+void f0( bool *R0 ) {
+    if ( *R0 == false ) {
+        *R0 = true;
+        return;
+    }
+}
+int main() {
+    bool *R0 = Allocator::New( Bool, 0 );
+    EventLoop::reg_read( "a.txt", f0, R0 );
+    EventLoop::reg_read( "b.txt", f0, R0 );
+    ...
+}
+```
+
+Language support enable to generate code to make examples like that really efficient (more efficient than futures or observable which basically add layers of indirection)
 
 
 # Code generation
 
-Sane currently target essentially C++ and Javascript (using WebAsm), but other targets are welcome.
+Sane currently mainly targets C++ and Javascript (WebAsm), but other languages are welcome :)
 
-In all the cases, Sane provide the tool to generate whole programs, but also functions, classes or modules.
+In all the cases, Sane provides the tool to generate whole programs (binaries and so on), but also code for functions, classes, modules... thanks notably to the deep introspection and (again) the compile-time execution abilities.
 
+For instance, one can output the contents of a class made by generative programming:
 
-For instance, a class made by generative programming can be outputed to C++
+```python
+class Foo
+    def bar
+        a + kv sum 0 .. 10
 
+    def baz a: SI32, c
+        a + c
+
+    for name in "ab"
+        \$name: SI32
+
+# by default, Codegen generate code for methods returning something
+# if not specified, arg_types are found using the type constraints
+print Codegen.generate_code_for Foo, target: "C++", arg_types: { "baz": [ { "b": SI32 } ] }
+```
+
+It generates something like 
+
+```C++
+class Foo {
+public:
+    SI32 bar();
+    SI32 baz( SI32 a, SI32 b );
+
+    SI32 a;
+    SI32 b;
+}
+
+SI32 Foo::bar() {
+    return a + 45;
+}
+SI32 Foo::baz( SI32 a, SI32 b ) {
+    return a + b;
+}
+```
+
+# Current status
+
+All the features in the documents have been tested in intermediate prototypes. Since there's stable interpreter, the compiler is currently rewritten in Sane... so it's totally a good time for comments and potentially deep modifications !

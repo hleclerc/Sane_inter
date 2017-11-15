@@ -83,6 +83,8 @@
 <li class="nav-item"> <a class="nav-link" href="#Activelibraries">Active libraries</a> </li>
 <li class="nav-item"> <a class="nav-link" href="#Examplesofactivelibraries">Examples of active libraries</a> </li>
 <li class="nav-item"> <a class="nav-link" href="#Asynchronouscode">Asynchronous code</a> </li>
+<li class="nav-item"> <a class="nav-link" href="#Codegeneration">Code generation</a> </li>
+<li class="nav-item"> <a class="nav-link" href="#Currentstatus">Current status</a> </li>
 </ul>
 </nav>
 <main role="main" class="col-sm-9 ml-sm-auto col-md-10 pt-3">
@@ -398,7 +400,7 @@ We believe that we are able to decide what kind of enforcements and abstractions
 <span style="color: #938d7f; font-style: italic"># and now, we have a pointer on a zero-ended string</span>
 <span style="color: #000000">strlen</span> <span style="color: #000000">t</span> <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #93488f">2</span> <span style="color: #938d7f; font-style: italic"># returns s.length - 2</span>
 </pre></div>
-<p>For maximum flexibility, arrays and maps are fully generic</p>
+<p>For maximum flexibility, arrays are fully generic</p>
 <div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># heterogeneous arrays (no forced conversion)</span>
 <span style="color: #005782">for</span> <span style="color: #000000">a</span> <span style="color: #005782">in</span> [ <span style="color: #118811">&quot;f&quot;</span>, <span style="color: #93488f">1</span> ]; <span style="color: #000000">print</span> <span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #93488f">1</span> <span style="color: #938d7f; font-style: italic"># -&gt; f1 2 </span>
 <span style="color: #938d7f; font-style: italic"># costlesss conversions (using a std lib function)</span>
@@ -406,7 +408,7 @@ We believe that we are able to decide what kind of enforcements and abstractions
 <span style="color: #938d7f; font-style: italic"># choice of the target type</span>
 <span style="color: #005782">for</span> <span style="color: #000000">a</span> <span style="color: #005782">in</span> <span style="color: #000000">Vec</span>[ <span style="color: #000000">String</span> ] [ <span style="color: #118811">&quot;f&quot;</span>, <span style="color: #93488f">1</span> ]; <span style="color: #000000">print</span> <span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #93488f">1</span> <span style="color: #938d7f; font-style: italic"># -&gt; f1 11</span>
 </pre></div>
-<p></p>
+<p>Maps have followed the same path.</p>
 <div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># works the same way for maps</span>
 <span style="color: #005782">import</span> <span style="color: #000000">HashTable</span>
 
@@ -415,7 +417,7 @@ We believe that we are able to decide what kind of enforcements and abstractions
 <span style="color: #938d7f; font-style: italic"># can be converted with compile time support</span>
 <span style="color: #000000">info</span> <span style="color: #000000">HashTable</span>[ <span style="color: #000000">String</span>, <span style="color: #000000">String</span> ] <span style="color: #000000">a</span> <span style="color: #938d7f; font-style: italic"># -&gt; { &quot;1&quot;: &quot;2&quot;, &quot;f&quot;: &quot;g&quot;, &quot;v&quot;: &quot;17&quot; }</span>
 </pre></div>
-<p></p>
+<p>(Remark: <code>{}</code> may allow to define JS-like objects, using the function <code>obj</code>. In Sane, keys are computed value, whence the need for double quotes as in JSON.)</p>
 </section>
 <section id="Memory">
 <h1>Memory</h1>
@@ -549,16 +551,16 @@ With the handling of compile time computations, Sane provides tools for embedded
 </pre></div>
 <h2>Compile-time Symbolic computations</h2>
 
-<p>Sane enables at compile-time to get SSA (Single Static Assignment) graphs representations of functions. Theses graphs can then be used to create another graph............</p>
+<p>Sane enables to handle SSA (Single Static Assignment) trees at compile-time.</p>
 
-<p>Sane gives access to SSA graphs formed during the compilation.</p>
+<p>It is for instance possible to get a representation of what a function or a block does. Trees can be filtered (transformations) or created <em>ab anitio</em>. They can then be passed back to the compiler which will be able to generate tuned and optimized code from this representation.</p>
 
-<p>One can for instance get a symbolic representation of what a function does, generate at CT some code from the construction of a SSA graph...</p>
+<p>Here is a (simplified) example of automatic optimized differentiation.</p>
 <div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># extract of a function to differentiate at a graph level</span>
-<span style="color: #00aaff">def</span> <span style="color: #000000">diff</span> <span style="color: #000000">node</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">CtGraph</span>
+<span style="color: #00aaff">def</span> <span style="color: #000000">ssa_diff</span> <span style="color: #000000">node</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">SsaGraph</span>
     <span style="color: #000000">switch</span> <span style="color: #000000">node</span>
-        <span style="color: #000000">Symbolic</span><span style="color: #6d3642; font-weight: bold">::</span><span style="color: #000000">mul</span> <span style="color: #6d3642; font-weight: bold">=&gt;</span> <span style="color: #000000">node</span>.<span style="color: #000000">children</span>[ <span style="color: #93488f">0</span> ] <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">diff</span> <span style="color: #000000">node</span>.<span style="color: #000000">children</span>[ <span style="color: #93488f">1</span> ] <span style="color: #6d3642; font-weight: bold">+</span>
-                         <span style="color: #000000">node</span>.<span style="color: #000000">children</span>[ <span style="color: #93488f">1</span> ] <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">diff</span> <span style="color: #000000">node</span>.<span style="color: #000000">children</span>[ <span style="color: #93488f">0</span> ] 
+        <span style="color: #000000">Symbolic</span><span style="color: #6d3642; font-weight: bold">::</span><span style="color: #000000">mul</span> <span style="color: #6d3642; font-weight: bold">==&gt;</span> <span style="color: #000000">node</span>.<span style="color: #000000">children</span>[ <span style="color: #93488f">0</span> ] <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">ssa_diff</span> <span style="color: #000000">node</span>.<span style="color: #000000">children</span>[ <span style="color: #93488f">1</span> ] <span style="color: #6d3642; font-weight: bold">+</span>
+                          <span style="color: #000000">node</span>.<span style="color: #000000">children</span>[ <span style="color: #93488f">1</span> ] <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">ssa_diff</span> <span style="color: #000000">node</span>.<span style="color: #000000">children</span>[ <span style="color: #93488f">0</span> ] 
         ... 
 
 <span style="color: #938d7f; font-style: italic"># a simple function</span>
@@ -571,7 +573,7 @@ With the handling of compile time computations, Sane provides tools for embedded
 <span style="color: #938d7f; font-style: italic"># graph representation + differentiation of foo</span>
 <span style="color: #000000">x</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">ct_symbol</span> <span style="color: #000000">FP64</span>
 <span style="color: #000000">n</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">ct_symbol</span> <span style="color: #000000">SI32</span>
-<span style="color: #000000">sym_diff</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">diff</span> <span style="color: #000000">ct_graph</span>( <span style="color: #000000">foo</span>( <span style="color: #000000">x</span>, <span style="color: #000000">n</span> ) ), <span style="color: #000000">x</span>
+<span style="color: #000000">sym_diff</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">ssa_diff</span> <span style="color: #000000">ct_graph</span>( <span style="color: #000000">foo</span>( <span style="color: #000000">x</span>, <span style="color: #000000">n</span> ) ), <span style="color: #000000">x</span>
 
 <span style="color: #938d7f; font-style: italic"># compile time optimized differentiation of foo</span>
 <span style="color: #000000">foo_diff</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">sym_diff</span>.<span style="color: #000000">subs</span> [ <span style="color: #000000">x</span>, <span style="color: #000000">n</span> ], [ <span style="color: #000000">xv</span>, <span style="color: #000000">nv</span> ]
@@ -597,7 +599,7 @@ With the handling of compile time computations, Sane provides tools for embedded
 
 <p>Almost every objects handled by the compiler is actually accessible and modifiable within the language. It's valid for types, scopes, definition of methods, classes, and so on.</p>
 
-<p>Compilation objects can thus be created <em>ab initio</em>, to be consecutively handled by the compiler.</p>
+<p>Compilation objects can for instance be created <em>ab initio</em>, to be consecutively handled by the compiler.</p>
 <div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># creation</span>
 <span style="color: #000000">T</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">Type</span>()
 <span style="color: #000000">T</span>.<span style="color: #000000">name</span> <span style="color: #6d3642; font-weight: bold">=</span> <span style="color: #118811">&quot;MyType&quot;</span>
@@ -613,11 +615,9 @@ With the handling of compile time computations, Sane provides tools for embedded
 <h1>Active libraries</h1>
 <h2>Selection</h2>
 
-<p>In Sane, functions implementations can be selected according to their a posteriori usage.</p>
+<p>In Sane, functions implementations can be selected according to their <em>a posteriori</em> usage, notably to allow <em>global optimizations</em>.</p>
 
-<p>When functions (or methods) that are qualified switchable are called, Sane marks theirs outputs in the graph (including captured variables). Before code emission, these marks are sent to the registered "switch procedures", allowing to change the actual implementations.</p>
-
-<p>There possibilities are used in a lot of essential optimisations. For instance, the concatenation operator works only with two variables (because it is an operator). If we want to concatenate more than two variables using this operator, we may end up with a lot of intermediate allocations and copies. A posteriori selection enable to gather the concatenations to avoid the waste.</p>
+<p>When functions (or methods) that are qualified <code>switchable</code> are called, Sane marks them in the generated graph (which includes the captured variables). Before code emission, these marks are sent to the registered "switch procedures", allowing to <strong>choose the best implementations</strong> depdending on the global context.</p>
 <div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># a standard matrix class (with a `switchable` procedure)</span>
 <span style="color: #00aaff">class</span> <span style="color: #000000">Matrix</span>
     <span style="color: #005782">switchable</span>
@@ -628,69 +628,195 @@ With the handling of compile time computations, Sane provides tools for embedded
 <span style="color: #938d7f; font-style: italic"># standard multiplications (left to right)</span>
 <span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">p</span> <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">q</span> <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">r</span> <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">v</span>
 
-<span style="color: #938d7f; font-style: italic"># addition of a &quot;swither&quot; (a different implementation, providing the same result)</span>
+<span style="color: #938d7f; font-style: italic"># addition of a &quot;switcher&quot; (a different implementation, providing the same result)</span>
 <span style="color: #938d7f; font-style: italic"># to call a procedure able to find the best ways to do the multiplications</span>
 <span style="color: #000000">globals</span>.<span style="color: #000000">switchers</span>.<span style="color: #000000">add</span>
     <span style="color: #000000">oper</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">Matrix</span><span style="color: #6d3642; font-weight: bold">::</span><span style="color: #000000">operator</span><span style="color: #6d3642; font-weight: bold">*</span>
     <span style="color: #000000">func</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">inps</span>, <span style="color: #000000">outs</span> <span style="color: #6d3642; font-weight: bold">=&gt;</span>
         <span style="color: #938d7f; font-style: italic"># (simplified code)</span>
-        <span style="color: #005782">return</span> [ <span style="color: #000000">nary_multiplier</span> ... ]
+        <span style="color: #000000">mults</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">get_mults_rec</span> <span style="color: #000000">inps</span>
+        <span style="color: #000000">best_split</span> <span style="color: #6d3642; font-weight: bold">:=</span> ...
+        <span style="color: #005782">return</span> <span style="color: #000000">mul</span>( <span style="color: #000000">mults</span>[ <span style="color: #93488f">0</span> .. <span style="color: #000000">best_split</span> ] ) <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">mul</span>( <span style="color: #000000">mults</span>[ <span style="color: #000000">best_split</span>.... ] )
 </pre></div>
-<p></p>
+<p>These possibilities are used in a lot of essential optimisations. For instance, the concatenation operator works only with two variables (because it is an operator). If we want to concatenate more than two variables using this operator, we may end up with a lot of intermediate allocations and copies. A posteriori selection enable to gather the concatenations to avoid the waste.</p>
 </section>
 <section id="Examplesofactivelibraries">
 <h1>Examples of active libraries</h1>
 <h2>Auto-tuning</h2>
 
-<p><code>AutoTune</code> is a module that </p>
-<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #00aaff">def</span> <span style="color: #000000">my_test</span>
-    <span style="color: #000000">exec_time</span> <span style="color: #000000">f</span> <span style="color: #93488f">0</span> .. <span style="color: #93488f">10000</span> <span style="color: #938d7f; font-style: italic"># representative parameter(s)</span>
+<p><code>AutoTune</code> is an <em>experimental</em> module that helps to find sets of compile-time variables that minimize a given set of functions.</p>
 
-<span style="color: #000000">simd_size</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">AutoTune</span>.<span style="color: #000000">TuningParameter</span> <span style="color: #000000">my_test</span>, [<span style="color: #93488f">2</span>,<span style="color: #93488f">4</span>,<span style="color: #93488f">8</span>]
-<span style="color: #938d7f; font-style: italic"># -&gt; simd_size.val is fixed and known at compile time</span>
-<span style="color: #005782">for</span> <span style="color: #000000">v</span> <span style="color: #005782">in</span> <span style="color: #000000">simd_loop</span> <span style="color: #000000">range</span>, <span style="color: #000000">simd_size</span>.<span style="color: #000000">val</span>
-    ...
+<p>It uses the fact that Sane is able to compile and execute code in the middle of another compilation (+ use of graphs and caches).</p>
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #005782">import</span> <span style="color: #000000">AutoTune</span>
+
+<span style="color: #938d7f; font-style: italic"># a function with internal tunable parameters</span>
+<span style="color: #938d7f; font-style: italic"># (contains only a subset of the optimizations</span>
+<span style="color: #938d7f; font-style: italic"># to be made on a dot function)</span>
+<span style="color: #00aaff">def</span> <span style="color: #000000">dot</span> <span style="color: #000000">a</span>, <span style="color: #000000">b</span>
+    <span style="color: #000000">ule</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">AutoTune</span>.<span style="color: #000000">parameter</span> [ <span style="color: #93488f">2</span>, <span style="color: #93488f">4</span>, <span style="color: #93488f">8</span> ]
+    <span style="color: #000000">res</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">Vec</span>[ <span style="color: #000000">typeof</span>( <span style="color: #000000">a</span> ), <span style="color: #000000">ule</span> ] <span style="color: #93488f">0</span>
+    <span style="color: #005782">for</span> <span style="color: #000000">c</span> <span style="color: #005782">in</span> <span style="color: #000000">by_chunks</span> <span style="color: #93488f">0</span> .. <span style="color: #000000">a</span>.<span style="color: #000000">size</span>, <span style="color: #000000">ule</span>
+        <span style="color: #005782">for</span> <span style="color: #000000">j</span> <span style="color: #005782">in</span> <span style="color: #000000">unrolled</span> <span style="color: #93488f">0</span> .. <span style="color: #000000">c</span>.<span style="color: #000000">size</span>
+            <span style="color: #000000">res</span>[ <span style="color: #000000">j</span> ] <span style="color: #6d3642; font-weight: bold">+=</span> <span style="color: #000000">a</span>[ <span style="color: #000000">c</span>[ <span style="color: #000000">j</span> ] ] <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">b</span>[ <span style="color: #000000">c</span>[ <span style="color: #000000">j</span> ] ]
+    <span style="color: #000000">res</span>.<span style="color: #000000">sum</span>
+
+<span style="color: #938d7f; font-style: italic"># make a tuned version of &#39;dot&#39; for a given set of representative parameters.</span>
+<span style="color: #938d7f; font-style: italic"># &#39;va&#39; is a function that constructs a Varargs from its arguments</span>
+<span style="color: #000000">t_dot</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">AutoTune</span>.<span style="color: #000000">tuned</span> <span style="color: #000000">dot</span>, [ {
+    <span style="color: #118811">&quot;pond&quot;</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #93488f">1</span>, <span style="color: #118811">&quot;args&quot;</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">va</span> <span style="color: #000000">vec</span>( <span style="color: #93488f">1</span> .. <span style="color: #93488f">1000</span> ), <span style="color: #000000">vec</span>( <span style="color: #93488f">1</span> .. <span style="color: #93488f">1000</span> )
+} ]
+
+<span style="color: #938d7f; font-style: italic"># &#39;t_dot&#39; is the same thing as &#39;dot&#39; with an optimized set of parameters</span>
+<span style="color: #000000">info</span> <span style="color: #000000">t_dot</span> <span style="color: #000000">vec</span>( <span style="color: #93488f">1</span> .. <span style="color: #93488f">1000</span> ), <span style="color: #000000">vec</span>( <span style="color: #93488f">1</span> .. <span style="color: #93488f">1000</span> )
 </pre></div>
-<h2>String storage</h2>
+<h2>Compact representations</h2>
 
-<p>String storage and interpolation give a good example on transformations that take place during the compilation that helps develop truly convenient solution while ensuring to get the best performances.</p>
+<p>Memory representation or potentially mutable variables are rarely compact. For instance, a <code>String</code> will take at least 24 bytes (on a 64 bits machine) even of the string is very small, a lot of small numbers are stored in too wide integers, etc...</p>
 
-<p>STORAGE</p>
+<p>But one can use introspection and generative programming to generate and handle compact representations.</p>
 
-<p>Strings created using double quotes are by default of type String (which is a clone of the std::string defined in clang). It is very convenient for a vast majority of applications, but for large sizes, it may involve dynamic memory allocation. For some performance critical or embeded applications it is simply a no go.</p>
+<p>In the following example, we use <code>operator mem_size</code>, which is an optionnal static method. Its mission is to compute the memory footprint of an instance (in bits), givent a pointer to its start.</p>
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># generates a class to handle compact representation of T</span>
+<span style="color: #938d7f; font-style: italic"># For the sake of simplicity, this class works with bytes</span>
+<span style="color: #938d7f; font-style: italic"># and there&#39;s no ctor nor setters.</span>
+<span style="color: #938d7f; font-style: italic"># This is the generic version</span>
+<span style="color: #00aaff">class</span> <span style="color: #000000">CompactRepr</span>[ <span style="color: #000000">T</span> ]
+    <span style="color: #938d7f; font-style: italic"># method to compute offset of a given attribute</span>
+    <span style="color: #005782">static</span>
+    <span style="color: #00aaff">def</span> <span style="color: #000000">offset_of</span> <span style="color: #000000">base_ptr</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">AT</span>, <span style="color: #000000">name</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">StringLike</span>
+        <span style="color: #000000">ptr</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">orp</span>
+        <span style="color: #005782">for</span> <span style="color: #000000">attr</span> <span style="color: #005782">in</span> <span style="color: #000000">T</span>.<span style="color: #000000">attributes</span>
+            <span style="color: #005782">if</span> <span style="color: #000000">attr</span>.<span style="color: #000000">name</span> <span style="color: #6d3642; font-weight: bold">==</span> <span style="color: #000000">name</span>
+                <span style="color: #005782">break</span>
+            <span style="color: #000000">ptr</span> <span style="color: #6d3642; font-weight: bold">+=</span> ( <span style="color: #93488f">7</span> <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #000000">CompactRepr</span>[ <span style="color: #000000">attr</span>.<span style="color: #000000">type</span> ]<span style="color: #6d3642; font-weight: bold">::</span><span style="color: #000000">operator</span> <span style="color: #000000">mem_size</span> <span style="color: #000000">ptr</span> ) <span style="color: #6d3642; font-weight: bold">//</span> <span style="color: #93488f">8</span>
+        <span style="color: #000000">ptr</span> <span style="color: #6d3642; font-weight: bold">-</span> <span style="color: #000000">this</span>.<span style="color: #000000">val</span>
 
-<p>Incidentally, allocation is understood by the compiler. If the there's no real need for this dynamic memory because it is finally copied elsewhere, the allocation and desallocation won't take place at all.</p>
-<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># there&#39;s a *symbolic* allocation, actually not executed at all</span>
-<span style="color: #938d7f; font-style: italic"># because only the content is used (to get a `static const char *`)</span>
-<span style="color: #000000">p</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">StaticCStr</span> <span style="color: #118811">&quot;string with length &gt; 23 chars...&quot;</span>
+    <span style="color: #938d7f; font-style: italic"># method to compute memory footprint</span>
+    <span style="color: #005782">static</span>
+    <span style="color: #00aaff">def</span> <span style="color: #000000">operator</span> <span style="color: #000000">mem_size</span> <span style="color: #000000">base_ptr</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">AT</span>
+        <span style="color: #000000">offset_of</span> <span style="color: #000000">base_ptr</span>, <span style="color: #118811">&quot;-&quot;</span>
 
-<span style="color: #938d7f; font-style: italic"># and now, we have a pointer in .data, on a zero-ended string</span>
-<span style="color: #000000">strlen</span> <span style="color: #000000">p</span> <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #93488f">2</span> <span style="color: #938d7f; font-style: italic"># returns length - 2</span>
-</pre></div>
-<p>INTERPOLATION</p>
+    <span style="color: #938d7f; font-style: italic"># make the getters</span>
+    <span style="color: #005782">for</span> <span style="color: #000000">attr</span> <span style="color: #005782">in</span> <span style="color: #000000">T</span>.<span style="color: #000000">attributes</span>
+        <span style="color: #00aaff">def</span> \<span style="color: #000000">get_$</span>( <span style="color: #000000">attr</span>.<span style="color: #000000">name</span> )
+            @<span style="color: #000000">reinterpret_cast</span> <span style="color: #000000">Ptr</span>[ <span style="color: #000000">CompactRepr</span>[ <span style="color: #000000">attr</span>.<span style="color: #000000">type</span> ] ], <span style="color: #000000">this</span>.<span style="color: #000000">val</span> <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #000000">kv</span> <span style="color: #000000">offset_of</span> <span style="color: #000000">this</span>.<span style="color: #000000">val</span>, <span style="color: #000000">attr</span>.<span style="color: #000000">name</span>
 
-<p>String interpolations ("...${...}...") may also involve memory allocation which may be abad thing e.g. if not done with the right allocator... But it actually occurs only if really needed, depending on the target of the string.</p>
+<span style="color: #938d7f; font-style: italic"># surdefinition for positive integers (VLQ)</span>
+<span style="color: #00aaff">class</span> <span style="color: #000000">CompactRepr</span>[ <span style="color: #000000">T</span> ] <span style="color: #005782">when</span> <span style="color: #000000">T</span>.<span style="color: #000000">inherits</span>( <span style="color: #000000">Number</span> ) <span style="color: #6d3642; font-weight: bold">&amp;&amp;</span> <span style="color: #000000">T</span><span style="color: #6d3642; font-weight: bold">::</span><span style="color: #000000">is_integer</span> <span style="color: #6d3642; font-weight: bold">&amp;&amp;</span> <span style="color: #000000">T</span><span style="color: #6d3642; font-weight: bold">::</span><span style="color: #000000">is_signed</span> <span style="color: #6d3642; font-weight: bold">==</span> <span style="color: #005782">false</span>
+    <span style="color: #938d7f; font-style: italic"># method to compute memory footprint</span>
+    <span style="color: #005782">static</span>
+    <span style="color: #00aaff">def</span> <span style="color: #000000">operator</span> <span style="color: #000000">mem_size</span> <span style="color: #000000">base_ptr</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">AT</span>
+        <span style="color: #000000">ptr</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">reinterpret_cast</span> <span style="color: #000000">Ptr</span>[ <span style="color: #000000">PI8</span> ], <span style="color: #000000">base_ptr</span>
+        <span style="color: #005782">while</span> @<span style="color: #000000">ptr</span> <span style="color: #6d3642; font-weight: bold">&gt;=</span> <span style="color: #93488f">128</span>
+            <span style="color: #6d3642; font-weight: bold">++</span><span style="color: #000000">ptr</span>
+        <span style="color: #000000">ptr</span> <span style="color: #6d3642; font-weight: bold">-</span> <span style="color: #000000">base_ptr</span>
 
-<p>In Sane, "...${...}..." creates a symbolic graph</p>
-<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># extract of the Enum class definition</span>
-<span style="color: #00aaff">class</span> <span style="color: #000000">Enum</span>[ <span style="color: #000000">id</span>, <span style="color: #000000">name</span>, <span style="color: #000000">item_names</span> ]
-    <span style="color: #005782">static</span> <span style="color: #000000">__nb_items</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #93488f">0</span>
-    <span style="color: #005782">if</span> <span style="color: #000000">__nb_items</span> <span style="color: #6d3642; font-weight: bold">==</span> <span style="color: #93488f">0</span>
-        <span style="color: #005782">for</span> <span style="color: #000000">item_name</span> <span style="color: #005782">in</span> <span style="color: #000000">item_names</span> 
-            <span style="color: #000000">num</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">post_inc</span> <span style="color: #000000">__nb_items</span>
-            <span style="color: #005782">static</span>
-            <span style="color: #00aaff">def</span> \\<span style="color: #000000">get_$item_name</span>
-                <span style="color: #000000">Enum</span>[ <span style="color: #000000">id</span>, <span style="color: #000000">name</span>, <span style="color: #000000">item_names</span> ] <span style="color: #000000">__value</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">num</span>
+    <span style="color: #938d7f; font-style: italic"># conversion </span>
+    <span style="color: #00aaff">def</span> <span style="color: #000000">convert</span> <span style="color: #000000">x</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">PrimitiveNumber</span>
+        <span style="color: #000000">ptr</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">reinterpret_cast</span> <span style="color: #000000">Ptr</span>[ <span style="color: #000000">PI8</span> ], <span style="color: #000000">this</span>
+        <span style="color: #000000">x</span>.<span style="color: #000000">construct</span> <span style="color: #93488f">0</span>
+        <span style="color: #000000">shift</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #93488f">0</span>
+        <span style="color: #005782">while</span> @<span style="color: #000000">ptr</span> <span style="color: #6d3642; font-weight: bold">&gt;=</span> <span style="color: #93488f">128</span>
+            <span style="color: #000000">x</span> <span style="color: #6d3642; font-weight: bold">+=</span> <span style="color: #000000">typeof</span>( <span style="color: #000000">x</span> )( @<span style="color: #000000">ptr</span> <span style="color: #6d3642; font-weight: bold">-</span> <span style="color: #93488f">128</span> ) <span style="color: #6d3642; font-weight: bold">&lt;&lt;</span> <span style="color: #000000">shift</span>
+            <span style="color: #000000">shift</span> <span style="color: #6d3642; font-weight: bold">+=</span> <span style="color: #93488f">7</span>
+            <span style="color: #6d3642; font-weight: bold">++</span><span style="color: #000000">ptr</span>
+        <span style="color: #000000">x</span> <span style="color: #6d3642; font-weight: bold">+=</span> <span style="color: #000000">typeof</span>( <span style="color: #000000">x</span> )( @<span style="color: #000000">ptr</span> ) <span style="color: #6d3642; font-weight: bold">&lt;&lt;</span> <span style="color: #000000">shift</span>
+            
+    <span style="color: #938d7f; font-style: italic"># display</span>
+    <span style="color: #00aaff">def</span> <span style="color: #000000">write_to_stream</span> <span style="color: #005782">mut</span> <span style="color: #000000">os</span>
+        <span style="color: #000000">os</span> <span style="color: #6d3642; font-weight: bold">&lt;&lt;</span> <span style="color: #000000">T</span> <span style="color: #000000">self</span>
 
-    <span style="color: #000000">__value</span> <span style="color: #6d3642; font-weight: bold">~=</span> <span style="color: #000000">SI32</span>
+<span style="color: #938d7f; font-style: italic"># usage example</span>
+<span style="color: #00aaff">class</span> <span style="color: #000000">MyClass</span>
+    <span style="color: #000000">a</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">PI32</span>
+    <span style="color: #000000">b</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">PT</span>
+
+<span style="color: #000000">C</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">CompactRepr</span>[ <span style="color: #000000">MyClass</span> ]
+
+<span style="color: #000000">i</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">reinterpret_cast</span> <span style="color: #000000">Ptr</span>[ <span style="color: #000000">C</span> ], <span style="color: #000000">my_ptr</span>
+<span style="color: #000000">info</span> <span style="color: #000000">sizeof</span> <span style="color: #000000">i</span> <span style="color: #938d7f; font-style: italic"># something between 2 and 15 bytes</span>
+<span style="color: #000000">info</span> <span style="color: #000000">i</span><span style="color: #6d3642; font-weight: bold">-&gt;</span><span style="color: #000000">a</span>
+<span style="color: #000000">info</span> <span style="color: #000000">i</span><span style="color: #6d3642; font-weight: bold">-&gt;</span><span style="color: #000000">b</span>
 </pre></div>
 <p></p>
 </section>
 <section id="Asynchronouscode">
 <h1>Asynchronous code</h1>
-<p>async/await are cool but intrusive and procedural, whereas data driven would be more relevant.</p>
+<p>Sane allows functions to pause when they do not have the data needed to progress. It can be seen as a kind of <strong>data-driven coroutine</strong> ability. It can also be seen as a <a href="http://reactivex.io">Reactive Extension</a> with a deep language support (notably to be able to transparently work with <code>for</code>s, <code>if</code>s, ...).</p>
 
-<p>Besides, a runtime can't be defined by a language, it has to be a library: needs are the same if you're on the embeded world, if you're developping a game, and so on...</p>
+<p>Nevertheless, it is purely optional (activated only if RX function are used). Remark: the current event loop is simple and does not allow a real control (scheduling, message passing, thread pinning)... There's work to do on this topic.</p>
+
+<!-- Besides, a runtime can't be defined by a language, it has to be a library: needs are the same if you're on the embedded world, if you're developing a game, and so on... -->
+
+<p>A simple example:</p>
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #005782">import</span> <span style="color: #000000">fs</span>
+
+<span style="color: #938d7f; font-style: italic"># reads are launched in parallel</span>
+<span style="color: #000000">t</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">read</span>( <span style="color: #118811">&quot;a.txt&quot;</span> ) <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #000000">read</span>( <span style="color: #118811">&quot;b.txt&quot;</span> )
+<span style="color: #938d7f; font-style: italic"># this sum is computed immediatly without waited for the result of the reads</span>
+<span style="color: #938d7f; font-style: italic"># (data of t is not needed to compute this sum)</span>
+<span style="color: #000000">info</span> <span style="color: #000000">sum</span> <span style="color: #000000">vec</span> <span style="color: #93488f">0</span> .. <span style="color: #93488f">1000</span>
+<span style="color: #000000">info</span> <span style="color: #000000">t</span> <span style="color: #938d7f; font-style: italic"># here we say that stdout depends on the sum of the two reads</span>
+</pre></div>
+<p>It generate something like</p>
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #005782">void</span> <span style="color: #00ff00">f0</span>( <span style="color: #005782">bool</span> <span style="color: #6d3642; font-weight: bold">*</span><span style="color: #000000">R0</span> ) {
+    <span style="color: #005782">if</span> ( <span style="color: #6d3642; font-weight: bold">*</span><span style="color: #000000">R0</span> <span style="color: #6d3642; font-weight: bold">==</span> <span style="color: #000000">false</span> ) {
+        <span style="color: #6d3642; font-weight: bold">*</span><span style="color: #000000">R0</span> <span style="color: #6d3642; font-weight: bold">=</span> <span style="color: #000000">true</span>;
+        <span style="color: #005782">return</span>;
+    }
+}
+<span style="color: #005782">int</span> <span style="color: #00ff00">main</span>() {
+    <span style="color: #005782">bool</span> <span style="color: #6d3642; font-weight: bold">*</span><span style="color: #000000">R0</span> <span style="color: #6d3642; font-weight: bold">=</span> <span style="color: #000000">Allocator</span><span style="color: #6d3642; font-weight: bold">::</span><span style="color: #000000">New</span>( <span style="color: #000000">Bool</span>, <span style="color: #93488f">0</span> );
+    <span style="color: #000000">EventLoop</span><span style="color: #6d3642; font-weight: bold">::</span><span style="color: #000000">reg_read</span>( &quot;a.txt&quot;, <span style="color: #000000">f0</span>, <span style="color: #000000">R0</span> );
+    <span style="color: #000000">EventLoop</span><span style="color: #6d3642; font-weight: bold">::</span><span style="color: #000000">reg_read</span>( &quot;b.txt&quot;, <span style="color: #000000">f0</span>, <span style="color: #000000">R0</span> );
+    ...
+}
+</pre></div>
+<p>Language support enable to generate code to make examples like that really efficient (more efficient than futures or observable which basically add layers of indirection)</p>
+</section>
+<section id="Codegeneration">
+<h1>Code generation</h1>
+<p>Sane currently mainly targets C++ and Javascript (WebAsm), but other languages are welcome :)</p>
+
+<p>In all the cases, Sane provides the tool to generate whole programs (binaries and so on), but also code for functions, classes, modules... thanks notably to the deep introspection and (again) the compile-time execution abilities.</p>
+
+<p>For instance, one can output the contents of a class made by generative programming:</p>
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #00aaff">class</span> <span style="color: #000000">Foo</span>
+    <span style="color: #00aaff">def</span> <span style="color: #000000">bar</span>
+        <span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #000000">kv</span> <span style="color: #000000">sum</span> <span style="color: #93488f">0</span> .. <span style="color: #93488f">10</span>
+
+    <span style="color: #00aaff">def</span> <span style="color: #000000">baz</span> <span style="color: #000000">a</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">SI32</span>, <span style="color: #000000">c</span>
+        <span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #000000">c</span>
+
+    <span style="color: #005782">for</span> <span style="color: #000000">name</span> <span style="color: #005782">in</span> <span style="color: #118811">&quot;ab&quot;</span>
+        \<span style="color: #000000">$name</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">SI32</span>
+
+<span style="color: #938d7f; font-style: italic"># by default, Codegen generate code for methods returning something</span>
+<span style="color: #938d7f; font-style: italic"># if not specified, arg_types are found using the type constraints</span>
+<span style="color: #000000">print</span> <span style="color: #000000">Codegen</span>.<span style="color: #000000">generate_code_for</span> <span style="color: #000000">Foo</span>, <span style="color: #000000">target</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #118811">&quot;C++&quot;</span>, <span style="color: #000000">arg_types</span><span style="color: #6d3642; font-weight: bold">:</span> { <span style="color: #118811">&quot;baz&quot;</span><span style="color: #6d3642; font-weight: bold">:</span> [ { <span style="color: #118811">&quot;b&quot;</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">SI32</span> } ] }
+</pre></div>
+<p>It generates something like </p>
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #005782">class</span> <span style="color: #00ff00; font-weight: bold">Foo</span> {
+<span style="color: #005782">public</span><span style="color: #6d3642; font-weight: bold">:</span>
+    <span style="color: #000000">SI32</span> <span style="color: #000000">bar</span>();
+    <span style="color: #000000">SI32</span> <span style="color: #00ff00">baz</span>( <span style="color: #000000">SI32</span> <span style="color: #000000">a</span>, <span style="color: #000000">SI32</span> <span style="color: #000000">b</span> );
+
+    <span style="color: #000000">SI32</span> <span style="color: #000000">a</span>;
+    <span style="color: #000000">SI32</span> <span style="color: #000000">b</span>;
+}
+
+<span style="color: #000000">SI32</span> <span style="color: #000000">Foo</span><span style="color: #6d3642; font-weight: bold">::</span><span style="color: #000000">bar</span>() {
+    <span style="color: #005782">return</span> <span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #93488f">45</span>;
+}
+<span style="color: #000000">SI32</span> <span style="color: #000000">Foo</span><span style="color: #6d3642; font-weight: bold">::</span><span style="color: #000000">baz</span>( <span style="color: #000000">SI32</span> <span style="color: #000000">a</span>, <span style="color: #000000">SI32</span> <span style="color: #000000">b</span> ) {
+    <span style="color: #005782">return</span> <span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #000000">b</span>;
+}
+</pre></div>
+<p></p>
+</section>
+<section id="Currentstatus">
+<h1>Current status</h1>
+<p>All the features in the documents have been tested in intermediate prototypes. Since there's stable interpreter, the compiler is currently rewritten in Sane... so it's totally a good time for comments and potentially deep modifications !</p>
 </section>
 </main>
       </div>

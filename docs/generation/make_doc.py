@@ -1,6 +1,7 @@
 from pygments.token import Keyword, Name, Comment, String, Error, Number, Operator, Generic
 from pygments.formatters import HtmlFormatter
 from pygments.lexer import RegexLexer, include
+from pygments.lexers import get_lexer_by_name
 from pygments.style import Style
 from pygments.token import Token
 import pygments.unistring as uni
@@ -93,7 +94,7 @@ sections = []
 
 skip = False
 for l in c.split( "\n" ):
-    if l.startswith( "```python" ):
+    if l.startswith( "```python" ) or l.startswith( "```C++" ):
         skip = True
     elif l.startswith( "```" ):
         skip = False
@@ -123,16 +124,20 @@ o.write( '<main role="main" class="col-sm-9 ml-sm-auto col-md-10 pt-3">\n' )
 for s in sections:
     o.write( '<section id="' + id_filt( s[ 0 ] ) + '">\n' )
     o.write( '<h1>' + s[ 0 ] + '</h1>\n' )
-    l = s[ 1 ].split( "```python" )
+    l = s[ 1 ].split( "```" )
     o.write( markdown2.markdown( l[ 0 ] ) )
-    del l[ 0 ]
-    for i in l:
-        m = i.split( "```" )
-        o.write( pygments.highlight( m[ 0 ], SaneLexer(), HtmlFormatter( style = SaneStyle, noclasses = True ) ) )
+    for i in range( 1, len( l ), 2 ):
+        print( i )
+        if l[ i ].startswith( "python" ):
+            o.write( pygments.highlight( l[ i ][ 6: ], SaneLexer(), HtmlFormatter( style = SaneStyle, noclasses = True ) ) )
+        else:
+            o.write( pygments.highlight( l[ i ][ 4: ], get_lexer_by_name( "C++", stripall=True ), HtmlFormatter( style = SaneStyle, noclasses = True ) ) )
         try:
-            o.write( markdown2.markdown( m[ 1 ] ) )
+            o.write( markdown2.markdown( l[ i + 1 ] ) )
         except UnicodeEncodeError as e:
             print( e )
+        except IndexError:
+            pass
     o.write( '</section>\n' )
 
 o.write( '</main>\n' )
