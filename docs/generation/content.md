@@ -524,18 +524,18 @@ info T::A # => A (thanks to the generated `static def get_A` in the class scope)
 
 ## Compile-time Symbolic computations
 
-Sane enables at compile-time to get SSA (Single Static Assignment) graphs representations of functions. Theses graphs can then be used to create another graph............
+Sane enables to handle SSA (Single Static Assignment) trees at compile-time.
 
-Sane gives access to SSA graphs formed during the compilation.
+It is for instance possible to get a representation of what a function or a block does. Trees can be filtered (transformations) or created *ab anitio*. They can then be passed back to the compiler which will be able to generate tuned and optimized code from this representation.
 
-One can for instance get a symbolic representation of what a function does, generate at CT some code from the construction of a SSA graph...
+Here is a (simplified) example of automatic optimized differentiation.
 
 ```python
 # extract of a function to differentiate at a graph level
-def diff node: CtGraph
+def ssa_diff node: SsaGraph
     switch node
-        Symbolic::mul => node.children[ 0 ] * diff node.children[ 1 ] +
-                         node.children[ 1 ] * diff node.children[ 0 ] 
+        Symbolic::mul => node.children[ 0 ] * ssa_diff node.children[ 1 ] +
+                         node.children[ 1 ] * ssa_diff node.children[ 0 ] 
         ... 
 
 # a simple function
@@ -548,7 +548,7 @@ def foo n, x
 # graph representation + differentiation of foo
 x := ct_symbol FP64
 n := ct_symbol SI32
-sym_diff := diff ct_graph( foo( x, n ) ), x
+sym_diff := ssa_diff ct_graph( foo( x, n ) ), x
 
 # compile time optimized differentiation of foo
 foo_diff := sym_diff.subs [ x, n ], [ xv, nv ]
@@ -576,7 +576,7 @@ In the same vein, it is possible to handle structures instead of text (as e.g. h
 
 Almost every objects handled by the compiler is actually accessible and modifiable within the language. It's valid for types, scopes, definition of methods, classes, and so on.
 
-Compilation objects can thus be created *ab initio*, to be consecutively handled by the compiler.
+Compilation objects can for instance be created *ab initio*, to be consecutively handled by the compiler.
 
 ```python
 # creation
@@ -594,11 +594,9 @@ info i # => T( a: 100 )
 
 ## Selection
 
-In Sane, functions implementations can be selected according to their a posteriori usage.
+In Sane, functions implementations can be selected according to their *a posteriori* usage, notably to allow *global optimizations*.
 
-When functions (or methods) that are qualified switchable are called, Sane marks theirs outputs in the graph (including captured variables). Before code emission, these marks are sent to the registered "switch procedures", allowing to change the actual implementations.
-
-There possibilities are used in a lot of essential optimisations. For instance, the concatenation operator works only with two variables (because it is an operator). If we want to concatenate more than two variables using this operator, we may end up with a lot of intermediate allocations and copies. A posteriori selection enable to gather the concatenations to avoid the waste.
+When functions (or methods) that are qualified `switchable` are called, Sane marks them in the generated graph (which includes the captured variables). Before code emission, these marks are sent to the registered "switch procedures", allowing to **choose the best implementations** depdending on the global context.
 
 ```python
 # a standard matrix class (with a `switchable` procedure)
@@ -611,77 +609,123 @@ class Matrix
 # standard multiplications (left to right)
 a := p * q * r * v
 
-# addition of a "swither" (a different implementation, providing the same result)
+# addition of a "switcher" (a different implementation, providing the same result)
 # to call a procedure able to find the best ways to do the multiplications
 globals.switchers.add
     oper: Matrix::operator*
     func: inps, outs =>
         # (simplified code)
-        return [ nary_multiplier ... ]
+        mults := get_mults_rec inps
+        best_split := ...
+        return mul( mults[ 0 .. best_split ] ) * mul( mults[ best_split.... ] )
 ```
 
-
-
+These possibilities are used in a lot of essential optimisations. For instance, the concatenation operator works only with two variables (because it is an operator). If we want to concatenate more than two variables using this operator, we may end up with a lot of intermediate allocations and copies. A posteriori selection enable to gather the concatenations to avoid the waste.
 
 # Examples of active libraries
 
 ## Auto-tuning
 
-`AutoTune` is a module that 
+`AutoTune` is an *experimental* module that helps to find sets of compile-time variables that minimize a given set of functions.
+
+It uses the fact that Sane is able to compile and execute code in the middle of another compilation (+ use of graphs and caches).
+
 
 ```python
-def my_test
-    exec_time f 0 .. 10000 # representative parameter(s)
+import AutoTune
 
-simd_size := AutoTune.TuningParameter my_test, [2,4,8]
-# -> simd_size.val is fixed and known at compile time
-for v in simd_loop range, simd_size.val
-    ...
+# a function with internal tunable parameters
+# (contains only a subset of the optimizations
+# to be made on a dot function)
+def dot a, b
+    ule := AutoTune.parameter [ 2, 4, 8 ]
+    res := Vec[ typeof( a ), ule ] 0
+    for c in by_chunks 0 .. a.size, ule
+        for j in unrolled 0 .. c.size
+            res[ j ] += a[ c[ j ] ] * b[ c[ j ] ]
+    res.sum
+
+# make a tuned version of 'dot' for a given set of representative parameters.
+# 'va' is a function that constructs a Varargs from its arguments
+t_dot := AutoTune.tuned dot, [ {
+    "pond": 1, "args": va vec( 1 .. 1000 ), vec( 1 .. 1000 )
+} ]
+
+# t_dot is now 
+info t_dot vec( 1 .. 1000 ), vec( 1 .. 1000 )
 ```
         
+## Compact representations
 
+Memory representation or potentially mutable variables are rarely compact. For instance, a `String` will take at least 24 bytes (on a 64 bits machine) even of the string is very small, a lot of small numbers are stored in too wide integers, etc...
 
+But one can use introspection and generative programming to generate and handle compact representations.
 
-        
-## String storage
-
-String storage and interpolation give a good example on transformations that take place during the compilation that helps develop truly convenient solution while ensuring to get the best performances.
-
-STORAGE
-
-Strings created using double quotes are by default of type String (which is a clone of the std::string defined in clang). It is very convenient for a vast majority of applications, but for large sizes, it may involve dynamic memory allocation. For some performance critical or embeded applications it is simply a no go.
-
-Incidentally, allocation is understood by the compiler. If the there's no real need for this dynamic memory because it is finally copied elsewhere, the allocation and desallocation won't take place at all.
+In the following example, we use `operator mem_size`, which is an optionnal static method. Its mission is to compute the memory footprint of an instance (in bits), givent a pointer to its start.
 
 ```python
-# there's a *symbolic* allocation, actually not executed at all
-# because only the content is used (to get a `static const char *`)
-p := StaticCStr "string with length > 23 chars..."
+# generates a class to handle compact representation of T
+# For the sake of simplicity, this class works with bytes
+# and there's no ctor nor setters.
+# This is the generic version
+class CompactRepr[ T ]
+    # method to compute offset of a given attribute
+    static
+    def offset_of base_ptr: AT, name: StringLike
+        ptr := orp
+        for attr in T.attributes
+            if attr.name == name
+                break
+            ptr += ( 7 + CompactRepr[ attr.type ]::operator mem_size ptr ) // 8
+        ptr - this.val
 
-# and now, we have a pointer in .data, on a zero-ended string
-strlen p + 2 # returns length - 2
+    # method to compute memory footprint
+    static
+    def operator mem_size base_ptr: AT
+        offset_of base_ptr, "-"
+
+    # make the getters
+    for attr in T.attributes
+        def \get_$( attr.name )
+            @reinterpret_cast Ptr[ CompactRepr[ attr.type ] ], this.val + kv offset_of this.val, attr.name
+
+# surdefinition for positive integers (VLQ)
+class CompactRepr[ T ] when T.inherits( Number ) && T::is_integer && T::is_signed == false
+    # method to compute memory footprint
+    static
+    def operator mem_size base_ptr: AT
+        ptr := reinterpret_cast Ptr[ PI8 ], base_ptr
+        while @ptr >= 128
+            ++ptr
+        ptr - base_ptr
+
+    # conversion 
+    def convert x: PrimitiveNumber
+        ptr := reinterpret_cast Ptr[ PI8 ], this
+        x.construct 0
+        shift := 0
+        while @ptr >= 128
+            x += typeof( x )( @ptr - 128 ) << shift
+            shift += 7
+            ++ptr
+        x += typeof( x )( @ptr ) << shift
+            
+    # display
+    def write_to_stream mut os
+        os << T self
+
+# usage example
+class MyClass
+    a: PI32
+    b: PT
+
+C := CompactRepr[ MyClass ]
+
+i := reinterpret_cast Ptr[ C ], my_ptr
+info sizeof i # something between 2 and 15 bytes
+info i->a
+info i->b
 ```
-
-INTERPOLATION
-
-String interpolations ("...${...}...") may also involve memory allocation which may be abad thing e.g. if not done with the right allocator... But it actually occurs only if really needed, depending on the target of the string.
-
-In Sane, "...${...}..." creates a symbolic graph
-
-```python
-# extract of the Enum class definition
-class Enum[ id, name, item_names ]
-    static __nb_items := 0
-    if __nb_items == 0
-        for item_name in item_names 
-            num := post_inc __nb_items
-            static
-            def \\get_$item_name
-                Enum[ id, name, item_names ] __value: num
-
-    __value ~= SI32
-```
-      
 
 
 # Asynchronous code
@@ -689,4 +733,14 @@ class Enum[ id, name, item_names ]
 async/await are cool but intrusive and procedural, whereas data driven would be more relevant.
 
 Besides, a runtime can't be defined by a language, it has to be a library: needs are the same if you're on the embeded world, if you're developping a game, and so on...
+
+
+# Code generation
+
+Sane currently target essentially C++ and Javascript (using WebAsm), but other targets are welcome.
+
+In all the cases, Sane provide the tool to generate whole programs, but also functions, classes or modules.
+
+
+For instance, a class made by generative programming can be outputed to C++
 
