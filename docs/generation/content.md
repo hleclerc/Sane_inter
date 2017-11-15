@@ -408,47 +408,55 @@ foo move v # rvalue: true.  No copy, no mem alloc
 
 ## Heap
 
-Variables can of course be created on the heap, with the (heap or mixed) allocator of your choice. `new` and `delete` are regular standard functions (not operators) that use a slub allocator (modifiable globally if wanted).
+Variables can of course be created on the heap, with the (heap or mixed) allocator of your choice. `new` and `delete` are regular standard functions (not operators) that use a slub allocator (modifiable globally if wanted) but that can be surdefined, locally or globally.
+
+Besides, it is common to use different allocators in different parts of the programs (e.g. with calls like `my_allocator.new Type[, ctor_args]`. That's one on the reason why `new` and `delete` are regular functions.
 
 ## Stack(s)
 
-If not specified, variables are of course created on *a* stack. By default, variables are created on the *current* stack. Nevertheless, as an optimization, if they are intended to be returned or used elsewhere, they can be created directly on a parent stack, with compile-time handling of a ref counter.
+If not specified, variables are of course created on *a* stack. By default, variables are created on the *current* stack. Nevertheless, as an optimization, if they are intended to be returned or used elsewhere, they can be created directly on a parent stack.
 
 ```python
 def foo
     vec 0 .. 1e6
-a := foo() # the vector 'vec 0 .. 1e6' is directly created in this stack (not in the stack of f)
+# the vector 'vec 0 .. 1e6' is directly created 
+# in the stack of a, not in the stack of foo
+a := foo()
 ```
+
+<!-- Internally, stack variable are handled with a ref counter, intended -->
 
 ## Notations for references and pointers
 
-For faster reading (and conformance with the base syntax), pointers and references use specific operators.
+For faster reading (and conformance with the base syntax), pointers and references have the specific signs.
 
 ```python
 # new is a regular function (explaining the ',' after the type)
 p := new String, "123" # -> type = Ptr[ String ]
-# '@' allows for getting the references
+# '@' allows to get the references
 info @p
 # '->' works as usual
 info p->size
-# '\' allows for getting a pointer
+# '\' allows to get a pointer
 a := "456"
 q := \a # -> a Ptr[ String ] pointing to a
 ```
 
 # Generative programming
 
-Metaprogramming is at the heart of the facilities offered to ease and speed up the development processes in Sane, while ensuring the best performances.
+Of course, Sane can profitably be used to generate code formatted in strings, to be included in a second compilation phase...
+
+Nevertheless, as we will see below, the Sane compiler is able to **execute and cache the result of any Sane code during the compilation**. It opens up an important set of new possibilities, providing access to more flexibility, clarity and efficiency.
 
 ## Compile-time execution
 
-The Sane compiler is able to execute any Sane code during the compilation. It will do it
+The Sane compiler executes code during the compilation
 
-* if explicitely required (`kv` function),
-* if mandatory (notably for *generative programming* or e.g. for template parameters),
-* or if trivial (trivial simplifications that do not penalize the compilation time)
+* if explicitely required (via for instance `kv` function),
+* if mandatory (notably for template parameters, computed names, ...),
+* or if trivial (simplifications that do not penalize the compilation time)
 
-Of course, CT execution will not occur on data intended to be handled at run-time (e.g. files, unless explicitly stated -- notably it content is known at compile time).
+Of course, compile-time execution is not allowed to work on data intended to be handled at run-time (e.g. files, unless explicitly stated).
 
 ```python
 # a good portion of the CT simplifications are automatic 
@@ -460,17 +468,17 @@ if a != 3
 b := 0
 for i in 0 .. 10
     b += i
-if kv b != 45 # kv( b ) is known to be 45 at CT
-    never_compiled() # 
+if kv b != 45 # at CT, b is symbolic, but kv( b ) is known
+    never_compiled()
 
-# it can work with files if explicitly stated
+# if explicitly stated, it can work with files
 c := load( "fs" ).read_file_sync "my_file", kv: true
 s := c.split().filter( x => x.size == 3 ).size
 info kv s # computed entirely at CT
 
 # triggering can be implicitly 
-i := MyClass[ s ] # we store the symbolic repr
-j := MyClass[ 17 ] # but here, the equality operator forces the computation
+i := MyClass[ s ] # we store the symbolic repr (no need at this stage to get the value)
+j := MyClass[ 17 ] # here, the equality operator (s==?17) forces the computation
 ```
 
 <!-- Generative Programming involves generally programs that generate programs. In lot of cases, the point is to ensure that some computations are done before runtime, notably for performance, syntax, factorizations, interoperability...
@@ -484,16 +492,18 @@ With the handling of compile time computations, Sane provides tools for embedded
 All variable names (whether it's for look up or for creation) may be computed (using `$`s).
 
 ```python
-# creation of a variable named 'i18n'
-i${ 2 * 9 }n := 43
+# creation and use of a variable named 'i18'
+a := 9
+i$( 2 * a )n := 43
+info $( "hij"[1] )18 # => 43
 ```
 
 ## Creation in parent scopes
 
-Besides, a `\` in a variable declaration enable to declare it in a parent scope (`\` for the first parent, `\\` for the second one, ...), even in a class block (notably to define methods and attributes, static or dynamic).
+A `\` in a variable declaration enables to declare it in a parent scope (`\` for the first parent, `\\` for the second one, ...). It works also in class block (notably to define methods and attributes, static or dynamic) which can actually be a place  where any kind of code is executed (Sane use the variables in the scope to determine attributes and methods).
 
 ```python
-# (extract of the class used for enums is the std libraries)
+# This is (an extract of) the class used for enums is the std libraries
 class Enum[ id, item_names ]
     # class blocks are executed only once (for a set of template parameters)
     static __nb_items := 0
@@ -514,9 +524,11 @@ info T::A # => A (thanks to the generated `static def get_A` in the class scope)
 
 ## Compile-time Symbolic computations
 
-Sane give access to SSA graphs either for reading, modification or creation.
+Sane enables at compile-time to get SSA (Single Static Assignment) graphs representations of functions. Theses graphs can then be used to create another graph............
 
-Thus we can for instance get a symbolic representation of what a function does, as we can generate code from the construction of a SSA graph.
+Sane gives access to SSA graphs formed during the compilation.
+
+One can for instance get a symbolic representation of what a function does, generate at CT some code from the construction of a SSA graph...
 
 ```python
 # extract of a function to differentiate at a graph level

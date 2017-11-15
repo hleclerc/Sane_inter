@@ -444,25 +444,31 @@ We believe that we are able to decide what kind of enforcements and abstractions
 </pre></div>
 <h2>Heap</h2>
 
-<p>Variables can of course be created on the heap, with the (heap or mixed) allocator of your choice. <code>new</code> and <code>delete</code> are regular standard functions (not operators) that use a slub allocator (modifiable globally if wanted).</p>
+<p>Variables can of course be created on the heap, with the (heap or mixed) allocator of your choice. <code>new</code> and <code>delete</code> are regular standard functions (not operators) that use a slub allocator (modifiable globally if wanted) but that can be surdefined, locally or globally.</p>
+
+<p>Besides, it is common to use different allocators in different parts of the programs (e.g. with calls like <code>my_allocator.new Type[, ctor_args]</code>. That's one on the reason why <code>new</code> and <code>delete</code> are regular functions.</p>
 
 <h2>Stack(s)</h2>
 
-<p>If not specified, variables are of course created on <em>a</em> stack. By default, variables are created on the <em>current</em> stack. Nevertheless, as an optimization, if they are intended to be returned or used elsewhere, they can be created directly on a parent stack, with compile-time handling of a ref counter.</p>
+<p>If not specified, variables are of course created on <em>a</em> stack. By default, variables are created on the <em>current</em> stack. Nevertheless, as an optimization, if they are intended to be returned or used elsewhere, they can be created directly on a parent stack.</p>
 <div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #00aaff">def</span> <span style="color: #000000">foo</span>
     <span style="color: #000000">vec</span> <span style="color: #93488f">0</span> .. <span style="color: #93488f">1</span><span style="color: #000000">e6</span>
-<span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">foo</span>() <span style="color: #938d7f; font-style: italic"># the vector &#39;vec 0 .. 1e6&#39; is directly created in this stack (not in the stack of f)</span>
+<span style="color: #938d7f; font-style: italic"># the vector &#39;vec 0 .. 1e6&#39; is directly created </span>
+<span style="color: #938d7f; font-style: italic"># in the stack of a, not in the stack of foo</span>
+<span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">foo</span>()
 </pre></div>
+<!-- Internally, stack variable are handled with a ref counter, intended -->
+
 <h2>Notations for references and pointers</h2>
 
-<p>For faster reading (and conformance with the base syntax), pointers and references use specific operators.</p>
+<p>For faster reading (and conformance with the base syntax), pointers and references have the specific signs.</p>
 <div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># new is a regular function (explaining the &#39;,&#39; after the type)</span>
 <span style="color: #000000">p</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">new</span> <span style="color: #000000">String</span>, <span style="color: #118811">&quot;123&quot;</span> <span style="color: #938d7f; font-style: italic"># -&gt; type = Ptr[ String ]</span>
-<span style="color: #938d7f; font-style: italic"># &#39;@&#39; allows for getting the references</span>
+<span style="color: #938d7f; font-style: italic"># &#39;@&#39; allows to get the references</span>
 <span style="color: #000000">info</span> @<span style="color: #000000">p</span>
 <span style="color: #938d7f; font-style: italic"># &#39;-&gt;&#39; works as usual</span>
 <span style="color: #000000">info</span> <span style="color: #000000">p</span><span style="color: #6d3642; font-weight: bold">-&gt;</span><span style="color: #000000">size</span>
-<span style="color: #938d7f; font-style: italic"># &#39;\&#39; allows for getting a pointer</span>
+<span style="color: #938d7f; font-style: italic"># &#39;\&#39; allows to get a pointer</span>
 <span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #118811">&quot;456&quot;</span>
 <span style="color: #000000">q</span> <span style="color: #6d3642; font-weight: bold">:=</span> \<span style="color: #000000">a</span> <span style="color: #938d7f; font-style: italic"># -&gt; a Ptr[ String ] pointing to a</span>
 </pre></div>
@@ -470,19 +476,21 @@ We believe that we are able to decide what kind of enforcements and abstractions
 </section>
 <section id="Generativeprogramming">
 <h1>Generative programming</h1>
-<p>Metaprogramming is at the heart of the facilities offered to ease and speed up the development processes in Sane, while ensuring the best performances.</p>
+<p>Of course, Sane can profitably be used to generate code formatted in strings, to be included in a second compilation phase...</p>
+
+<p>Nevertheless, as we will see below, the Sane compiler is able to <strong>execute and cache the result of any Sane code during the compilation</strong>. It opens up an important set of new possibilities, providing access to more flexibility, clarity and efficiency.</p>
 
 <h2>Compile-time execution</h2>
 
-<p>The Sane compiler is able to execute any Sane code during the compilation. It will do it</p>
+<p>The Sane compiler executes code during the compilation</p>
 
 <ul>
-<li>if explicitely required (<code>kv</code> function),</li>
-<li>if mandatory (notably for <em>generative programming</em> or e.g. for template parameters),</li>
-<li>or if trivial (trivial simplifications that do not penalize the compilation time)</li>
+<li>if explicitely required (via for instance <code>kv</code> function),</li>
+<li>if mandatory (notably for template parameters, computed names, ...),</li>
+<li>or if trivial (simplifications that do not penalize the compilation time)</li>
 </ul>
 
-<p>Of course, CT execution will not occur on data intended to be handled at run-time (e.g. files, unless explicitly stated -- notably it content is known at compile time).</p>
+<p>Of course, compile-time execution is not allowed to work on data intended to be handled at run-time (e.g. files, unless explicitly stated).</p>
 <div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># a good portion of the CT simplifications are automatic </span>
 <span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">:=</span> [ <span style="color: #93488f">1</span>, <span style="color: #93488f">2</span>, <span style="color: #93488f">3</span> ].<span style="color: #000000">size</span>
 <span style="color: #005782">if</span> <span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">!=</span> <span style="color: #93488f">3</span>
@@ -492,17 +500,17 @@ We believe that we are able to decide what kind of enforcements and abstractions
 <span style="color: #000000">b</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #93488f">0</span>
 <span style="color: #005782">for</span> <span style="color: #000000">i</span> <span style="color: #005782">in</span> <span style="color: #93488f">0</span> .. <span style="color: #93488f">10</span>
     <span style="color: #000000">b</span> <span style="color: #6d3642; font-weight: bold">+=</span> <span style="color: #000000">i</span>
-<span style="color: #005782">if</span> <span style="color: #000000">kv</span> <span style="color: #000000">b</span> <span style="color: #6d3642; font-weight: bold">!=</span> <span style="color: #93488f">45</span> <span style="color: #938d7f; font-style: italic"># kv( b ) is known to be 45 at CT</span>
-    <span style="color: #000000">never_compiled</span>() <span style="color: #938d7f; font-style: italic"># </span>
+<span style="color: #005782">if</span> <span style="color: #000000">kv</span> <span style="color: #000000">b</span> <span style="color: #6d3642; font-weight: bold">!=</span> <span style="color: #93488f">45</span> <span style="color: #938d7f; font-style: italic"># at CT, b is symbolic, but kv( b ) is known</span>
+    <span style="color: #000000">never_compiled</span>()
 
-<span style="color: #938d7f; font-style: italic"># it can work with files if explicitly stated</span>
+<span style="color: #938d7f; font-style: italic"># if explicitly stated, it can work with files</span>
 <span style="color: #000000">c</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">load</span>( <span style="color: #118811">&quot;fs&quot;</span> ).<span style="color: #000000">read_file_sync</span> <span style="color: #118811">&quot;my_file&quot;</span>, <span style="color: #000000">kv</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #005782">true</span>
 <span style="color: #000000">s</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">c</span>.<span style="color: #000000">split</span>().<span style="color: #000000">filter</span>( <span style="color: #000000">x</span> <span style="color: #6d3642; font-weight: bold">=&gt;</span> <span style="color: #000000">x</span>.<span style="color: #000000">size</span> <span style="color: #6d3642; font-weight: bold">==</span> <span style="color: #93488f">3</span> ).<span style="color: #000000">size</span>
 <span style="color: #000000">info</span> <span style="color: #000000">kv</span> <span style="color: #000000">s</span> <span style="color: #938d7f; font-style: italic"># computed entirely at CT</span>
 
 <span style="color: #938d7f; font-style: italic"># triggering can be implicitly </span>
-<span style="color: #000000">i</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">MyClass</span>[ <span style="color: #000000">s</span> ] <span style="color: #938d7f; font-style: italic"># we store the symbolic repr</span>
-<span style="color: #000000">j</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">MyClass</span>[ <span style="color: #93488f">17</span> ] <span style="color: #938d7f; font-style: italic"># but here, the equality operator forces the computation</span>
+<span style="color: #000000">i</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">MyClass</span>[ <span style="color: #000000">s</span> ] <span style="color: #938d7f; font-style: italic"># we store the symbolic repr (no need at this stage to get the value)</span>
+<span style="color: #000000">j</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">MyClass</span>[ <span style="color: #93488f">17</span> ] <span style="color: #938d7f; font-style: italic"># here, the equality operator (s==?17) forces the computation</span>
 </pre></div>
 <!-- Generative Programming involves generally programs that generate programs. In lot of cases, the point is to ensure that some computations are done before runtime, notably for performance, syntax, factorizations, interoperability...
 
@@ -513,13 +521,15 @@ With the handling of compile time computations, Sane provides tools for embedded
 <h2>Computed names</h2>
 
 <p>All variable names (whether it's for look up or for creation) may be computed (using <code>$</code>s).</p>
-<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># creation of a variable named &#39;i18n&#39;</span>
-<span style="color: #000000">i$</span>{ <span style="color: #93488f">2</span> <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #93488f">9</span> }<span style="color: #000000">n</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #93488f">43</span>
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># creation and use of a variable named &#39;i18&#39;</span>
+<span style="color: #000000">a</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #93488f">9</span>
+<span style="color: #000000">i$</span>( <span style="color: #93488f">2</span> <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">a</span> )<span style="color: #000000">n</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #93488f">43</span>
+<span style="color: #000000">info</span> <span style="color: #000000">$</span>( <span style="color: #118811">&quot;hij&quot;</span>[<span style="color: #93488f">1</span>] )<span style="color: #93488f">18</span> <span style="color: #938d7f; font-style: italic"># =&gt; 43</span>
 </pre></div>
 <h2>Creation in parent scopes</h2>
 
-<p>Besides, a <code>\</code> in a variable declaration enable to declare it in a parent scope (<code>\</code> for the first parent, <code>\\</code> for the second one, ...), even in a class block (notably to define methods and attributes, static or dynamic).</p>
-<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># (extract of the class used for enums is the std libraries)</span>
+<p>A <code>\</code> in a variable declaration enables to declare it in a parent scope (<code>\</code> for the first parent, <code>\\</code> for the second one, ...). It works also in class block (notably to define methods and attributes, static or dynamic) which can actually be a place  where any kind of code is executed (Sane use the variables in the scope to determine attributes and methods).</p>
+<div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># This is (an extract of) the class used for enums is the std libraries</span>
 <span style="color: #00aaff">class</span> <span style="color: #000000">Enum</span>[ <span style="color: #000000">id</span>, <span style="color: #000000">item_names</span> ]
     <span style="color: #938d7f; font-style: italic"># class blocks are executed only once (for a set of template parameters)</span>
     <span style="color: #005782">static</span> <span style="color: #000000">__nb_items</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #93488f">0</span>
@@ -539,9 +549,11 @@ With the handling of compile time computations, Sane provides tools for embedded
 </pre></div>
 <h2>Compile-time Symbolic computations</h2>
 
-<p>Sane give access to SSA graphs either for reading, modification or creation.</p>
+<p>Sane enables at compile-time to get SSA (Single Static Assignment) graphs representations of functions. Theses graphs can then be used to create another graph............</p>
 
-<p>Thus we can for instance get a symbolic representation of what a function does, as we can generate code from the construction of a SSA graph.</p>
+<p>Sane gives access to SSA graphs formed during the compilation.</p>
+
+<p>One can for instance get a symbolic representation of what a function does, generate at CT some code from the construction of a SSA graph...</p>
 <div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># extract of a function to differentiate at a graph level</span>
 <span style="color: #00aaff">def</span> <span style="color: #000000">diff</span> <span style="color: #000000">node</span><span style="color: #6d3642; font-weight: bold">:</span> <span style="color: #000000">CtGraph</span>
     <span style="color: #000000">switch</span> <span style="color: #000000">node</span>
