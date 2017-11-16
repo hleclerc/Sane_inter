@@ -1,0 +1,15 @@
+.res*
+*.autosave
+.directory
+out.cpp
+Sane.creator
+Sane.creator.*
+Sane.config
+Sane.files
+Sane.includes
+err
+res
+ext
+doc/public
+*.pyc
+doc/PygmentSaneLexer/sanelexer.egg-info
