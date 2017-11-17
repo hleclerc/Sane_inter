@@ -2,7 +2,7 @@
 
 Sane is a code generator, designed to **speed up the development** of programs optimized for **execution speed and memory usage**.
 
-In itself, the language is not going to provide any abstraction that would drive the programmers away from the hardware, nor any stubborn dogmatic rule that would perpetually force to spend time on workarounds. In place of that, Sane allows and promotes the use and development of **active libraries** (libraries that take part in the process of compilation). Teams and developers can therefore **choose the *right* level of abstraction**, depending on the context, to meet the needs in terms of programmation speed, security and execution performance.
+In itself, the language is not going to provide any abstraction that would drive the programmers away from the hardware, nor any stubborn dogmatic rule that would perpetually force them to spend time on workarounds. In place of that, Sane allows and promotes the use and development of **active libraries** (libraries that take part in the process of compilation). Teams and developers can therefore **choose the *right* level of abstraction**, depending on the context, to meet the needs in terms of programming speed, security and execution performance.
 
 Sane is basically very close to C++, except for the **streamlined syntax**, the **compilation processes**, and last but not least, the dramatically improved **compile-time abilities** which notably drives the tools for **generative programming** and **compiler *aided* decisions**.
 
@@ -394,7 +394,7 @@ s := "..."
 foo s + 2, s
 ```
 
-`move x` create a new object, with the ressources of `x` (`y := move x` moves the ressources of `x` to a new object `y` of the same type).
+`move x` create a new object, with the resources of `x` (`y := move x` moves the resources of `x` to a new object `y` of the same type).
 
 Besides, `forward x` is equivalent to `move x` if `x` is an rvalue. In the other case, it returns the reference on `x`.
 
@@ -456,7 +456,7 @@ Nevertheless, as we will see below, the Sane compiler is able to **execute and c
 
 The Sane compiler executes code during the compilation
 
-* if explicitely required (via for instance `kv` function),
+* if explicitly required (via for instance `kv` function),
 * if mandatory (notably for template parameters, computed names, ...),
 * or if trivial (simplifications that do not penalize the compilation time)
 
@@ -558,7 +558,7 @@ sym_diff := ssa_diff ct_graph( foo( x, n ) ), x
 foo_diff := sym_diff.subs [ x, n ], [ xv, nv ]
 ```
 
-These symbolic representations can be seen as the level above the AST representation (also accessible via std introspection as shown later). They enable what one can call "code instrospection and filtering".
+These symbolic representations can be seen as the level above the AST representation (also accessible via std introspection as shown later). They enable what one can call "code introspection and filtering".
 
 It is for instance used in the module `vectorize` (providing ways to simplify the writing of loops with SIMD instructions). In all the cases, transformations are triggered by standard calls and are a library concern (meaning that you have the choice to select them, to modify or create new ones for full control and extensibility).
 
@@ -624,7 +624,7 @@ globals.switchers.add
         return mul( mults[ 0 .. best_split ] ) * mul( mults[ best_split.... ] )
 ```
 
-These possibilities are used in a lot of essential optimisations. For instance, the concatenation operator works only with two variables (because it is an operator). If we want to concatenate more than two variables using this operator, we may end up with a lot of intermediate allocations and copies. A posteriori selection enable to gather the concatenations to avoid the waste.
+These possibilities are used in a lot of essential optimizations. For instance, the concatenation operator works only with two variables (because it is an operator). If we want to concatenate more than two variables using this operator, we may end up with a lot of intermediate allocations and copies. A posteriori selection enable to gather the concatenations to avoid the waste.
 
 # Examples of active libraries
 
@@ -665,7 +665,7 @@ Memory representation or potentially mutable variables are rarely compact. For i
 
 But one can use introspection and generative programming to generate and handle compact representations.
 
-In the following example, we use `operator mem_size`, which is an optionnal static method. Its mission is to compute the memory footprint of an instance (in bits), givent a pointer to its start.
+In the following example, we use `operator mem_size`, which is an optional static method. Its mission is to compute the memory footprint of an instance (in bits), given a pointer to its start.
 
 ```python
 # generates a class to handle compact representation of T
