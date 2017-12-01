@@ -1,0 +1,122 @@
+import NullableRcPtr
+import ./Value
+import ./Inst
+import ./Cst
+import ./gvm
+
+bo := ref load "./BinOp.met"
+
+export
+class ValWrapAnc
+    def construct val: Value
+        init_of val, val
+
+    def write_to_stream os
+        os << val
+
+    val ~= Value
+    
+export
+class ValWrapUnknownValue
+    pass
+
+export
+class ValWrap[ T ] extends ValWrapAnc when T.inherits Number
+    static valwrap_kv_size := 0
+    static valwrap_kv_alig := 1
+    if not valwrap_kv_size
+        valwrap_kv_size = T in [ ST, PT ] ? gvm->sizeof_PT : 8 * sizeof T
+        valwrap_kv_alig = T in [ ST, PT ] ? gvm->aligof_PT : 8 * aligof T
+
+    def construct value: Value
+        init_of super, value
+
+    def construct kv: Number
+        init_of self, Value gvm->type_$( typeof( kv ) ), NullableRcPtr[ Inst ] new Cst, valwrap_kv_size, valwrap_kv_alig, \kv
+
+    def operator+ fles: ValWrap[ U ] with U when U.inherits Number
+        ValWrap[ T ] bo.make_Add self.val, fles.val
+
+    def convert dst: Number
+        dst.construct val.apply_kv kv => T( kv ), () => throw ValWrapUnknownValue()
+
+export
+class ValWrap[ T ] extends ValWrapAnc when T == AT
+    static valwrap_kv_size := 0
+    static valwrap_kv_alig := 1
+    if not valwrap_kv_size
+        valwrap_kv_size = gvm->sizeof_PT
+        valwrap_kv_alig = gvm->aligof_PT
+
+    def construct value: Value
+        init_of super, value
+
+    def construct kv: Number
+        init_of self, Value gvm->type_$( typeof( kv ) ), NullableRcPtr[ Inst ] new Cst, valwrap_kv_size, valwrap_kv_alig, \kv
+
+    def operator+ fles: ValWrap[ U ] with U when U.inherits Number
+        ValWrap[ T ] bo.make_Add self.val, fles.val
+
+    def convert dst: Number
+        dst.construct val.apply_kv kv => T( kv ), () => throw ValWrapUnknownValue()
+
+
+export
+class ValWrap[ T ] extends ValWrapAnc
+    def construct value: Value
+        init_of super, value
+
+    def construct
+        init_of self, Value gvm->vtype_for( T ), NullableRcPtr[ Inst ] new Cst, valwrap_kv_size, valwrap_kv_alig
+
+    static def get_valwrap_kv_size
+        res := 0
+        for attr in T.attributes
+            type := attr.type
+            res = ceil( res, ValWrap[ type ]::valwrap_kv_alig ) + ValWrap[ type ]::valwrap_kv_size
+        res
+
+    static def get_valwrap_kv_alig
+        res := 1
+        for attr in T.attributes
+            type := attr.type
+            res = lcm res, ValWrap[ type ]::valwrap_kv_alig
+        res
+
+    # get_..., set_... for each attributes of T
+    # for attr in T.attributes
+    #     name := attr.name
+    #     type := attr.type
+    #     off  := attr.off
+
+    #     def \get_$name 
+    #         n_var := var
+    #         n_var.type = vm->type_$( type )
+    #         n_var.off += off
+    #         res := ValWrap[ type ] n_var
+    #         res
+
+
+
+# operators
+global def operator>= self, fles when not typeof( self ).has_base_class( ValWrap ) and     typeof( fles ).has_base_class( ValWrap ); ValWrap[ typeof self ]( self ).operator>= fles
+global def operator>= self, fles when     typeof( self ).has_base_class( ValWrap ) and not typeof( fles ).has_base_class( ValWrap ); ValWrap[ typeof self ]( self ).operator>= fles
+
+global def operator<  self, fles when not typeof( self ).has_base_class( ValWrap ) and     typeof( fles ).has_base_class( ValWrap ); ValWrap[ typeof self ]( self ).operator<  fles
+global def operator<  self, fles when     typeof( self ).has_base_class( ValWrap ) and not typeof( fles ).has_base_class( ValWrap ); ValWrap[ typeof self ]( self ).operator<  fles
+
+
+global
+def operator>= self: ValWrap[ S ], fles: ValWrap[ F ] with S, F
+    try
+        S( self ) >= F( fles )
+    catch e 
+        TODO
+    
+global
+def operator< self: ValWrap[ S ], fles: ValWrap[ F ] with S, F
+    try
+        S( self ) < F( fles )
+    catch e 
+        TODO
+    

@@ -1,0 +1,153 @@
+import ./Variable
+import ./AstCode
+import ./gvm
+import SpVec
+import Map
+
+#
+export
+class Scope
+    enum ScopeType
+        ROOT
+        CALL
+        IF_EXE
+        FOR_BEG
+        FOR_EXE
+        CTOR_VAL
+        CTOR_TYPE
+
+    class Nv
+        var          ~= Variable
+        name         ~= String
+        STATIC       ~= Bool
+        EXPORT       ~= Bool
+        GLOBAL       ~= Bool
+        CATCHED      ~= Bool
+        CALLABLE     ~= Bool
+        TEMPLATE     ~= Bool
+        NO_DEC_REF   ~= Bool
+        SELF_AS_ARG  ~= Bool
+
+    def construct type: ScopeType, parent: NullablePtr[ Scope ]
+        init_of parent, parent
+        init_of type  , type
+
+    def reg name: StringAncestor, var: Variable, CALLABLE? false, STATIC? false, EXPORT? false, GLOBAL ? false, TEMPLATE? false, CATCHED? false, NO_DEC_REF? false, SELF_AS_ARG? false, SUPER? false
+        res := variables.push_back
+            var        : var
+            name       : name       
+            STATIC     : STATIC     
+            EXPORT     : EXPORT     
+            GLOBAL     : GLOBAL     
+            CATCHED    : CATCHED    
+            CALLABLE   : CALLABLE   
+            TEMPLATE   : TEMPLATE   
+            NO_DEC_REF : NO_DEC_REF 
+            SELF_AS_ARG: SELF_AS_ARG
+
+        name_map.set name, res
+
+        res->var
+
+    def find name: StringAncestor, pos: AstCode::Pos, ret_err? true, warn_if_err? ret_err, allow_ambiant? true, ret_z_if_in_self? false ~> Variable
+        # from the current scope to the deeper ones
+        for s in var_parent_list
+            if allow_ambiant == false && s->parent == null_ptr
+                break
+
+            # scope s
+            if nv_ptr := s->name_map.find name
+                nv := @@nv_ptr
+                # access to dynamic attribute is forbidden in some contexts
+                if ret_z_if_in_self && ( s->type == Scope::ScopeType::CTOR_TYPE || s->type == Scope::ScopeType::CTOR_VAL ) && ! ( nv.TEMPLATE || nv.STATIC || nv.CATCHED )
+                    return Variable()
+                # if it's only a futur attr (not filled now)
+                if ! nv.var
+                    TODO
+                    # Variable res( vm, vm->type_GetSetter );
+                    # GetSetter *gs = rcast( res.ptr() );
+
+                    # gs.get = { vm, vm->type_DelayedVarInScope };
+                    # DelayedVarInScope *div = rcast( gs.get.ptr() );
+                    # delayed_vars[ name ] << div;
+                    # div->scope = this;
+                    # div->name = name;
+
+                    # return res;
+                return nv.var
+
+            #
+            if s->self_var && s->self_method_name != "operator ."
+                if res := s->self_var.find_attribute s, name, ret_err: false
+                    return ret_z_if_in_self ? Variable() : res
+
+        # else, try in predefs
+        if allow_ambiant
+            if res := gvm->predefs.find name
+                return @res
+
+            if res := gvm->predeffs.find name
+                return ( @res )()
+
+        if warn_if_err
+            gvm->add_error pos, "impossible to find variable '$( name )' from current scope"
+        ret_err ? gvm->var_error : Variable()
+        
+    def get_var_parent_list
+        class Sweep
+            def operator for block
+                while s 
+                    block s 
+                    s = s->var_parent
+            s ~= NullablePtr[ Scope ]
+        Sweep s: this
+        
+    def get_parent_list
+        class Sweep
+            def operator for block
+                while s 
+                    block s 
+                    s = s->parent
+            s ~= NullablePtr[ Scope ]
+        Sweep s: this
+
+    def get_var_parent
+        type == ScopeType::CALL || type == ScopeType::FOR_EXE ? root : parent
+
+    def get_root
+        parent ? parent->root : this
+
+    def get_avoid_static ~> Bool
+        type in [ ScopeType::CTOR_VAL, ScopeType::CTOR_TYPE ]
+
+    def get_parent_interp count: Number? 0, squeeze_for_beg: Bool? true
+        if ! this
+            gvm->add_error "Not enough scope parents"
+            return gvm->scope
+
+        if count == 0
+            return this
+
+        if type == ScopeType::FOR_EXE
+            nb_for := 1
+            for s in parent_list
+                if s->type == ScopeType::FOR_BEG
+                    if --nb_for == 0
+                        res := squeeze_for_beg ? s->parent : s
+                        return res->get_parent_interp count - 1, squeeze_for_beg
+                else if s->type == ScopeType::FOR_EXE
+                    ++nb_for
+
+        if type == ScopeType::IF_EXE
+            return parent->parent->get_parent_interp count - 1, squeeze_for_beg
+
+        return parent->get_parent_interp count - 1, squeeze_for_beg
+
+
+    self_method_name ~= String
+    variables        ~= SpVec[ Nv ]
+    self_var         ~= Variable
+    name_map         ~= Map[ String, Ptr[ Nv ] ]
+    parent           ~= NullablePtr[ Scope ]
+    type             ~= ScopeType
+

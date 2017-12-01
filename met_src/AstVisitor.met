@@ -1,0 +1,20 @@
+import ./ast_tok_types
+
+#
+export 
+class AstVisitor
+    def construct names: Number
+        init_of names, names
+
+    virtual
+    def on_visit_error
+        stderr << "Visiting error!\n"
+
+    # + define virtual defs
+    for at in ast_tok_types
+        virtual
+        def \on_$( at.name ) ...args
+            throw "TODO: surdef of on_$( at.name )"
+
+
+    names ~= PT # index in gvm->names_vec

@@ -1,0 +1,25 @@
+import ./Value
+import ./Cst
+import RcPtr => RcObj
+
+#
+export
+class VRef extends RcObj
+    virtual abstract
+    def get_value ~> Value
+
+    virtual abstract
+    def set off: Value, val: Value
+
+    virtual
+    def set off: Number, val: Value
+        set Cst::make( off ), val
+
+    virtual
+    def inc_ref
+        pass
+
+    virtual
+    def dec_ref
+        pass
+        

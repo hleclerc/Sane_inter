@@ -1,0 +1,5 @@
+import ./Vm
+
+#
+export
+gvm := NullablePtr[ Vm ] null_ptr

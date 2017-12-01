@@ -1,0 +1,67 @@
+import ./Functions/write_content
+import ./ValWrap
+import ./Value
+import ./Inst 
+import ./gvm
+import RcPtr
+
+#
+export
+class Cst extends Inst
+    # def construct size: Number? type->kv_size, alig: Number? type->kv_size, val? null_ptr, known? Bool( val )
+    def construct size: Number? type->kv_size, alig: Number? type->kv_size, val? null_ptr, known? Bool( val )
+        assert size >= 0
+        init_of value, Size( size )
+        init_of known, Size( size ), known
+        if val
+            memcpy value.ptr, val, ( size + 7 ) // 8
+
+    static def make value ~> Value
+        ValWrap[ typeof value ]( value ).val
+
+    static def make type: SurdefList | Type ~> Value
+        ValWrap[ type ]().val
+
+    static def make_null_ptr ~> Value
+        type := gvm->type_AT
+        inst := new Cst, type, type->kv_size, type->kv_alig, true
+        for v in inst->value
+            v = 0
+        Value type, RcPtr[ Inst ] inst
+
+    virtual override
+    def kv nout: Number, kno: Vec[ Bool ], dst: Vec[ Bool ], beg_dst: Number, beg_src: Number, len: Number
+        if beg_src >= value.size
+            return
+        if beg_src + len > value.size
+            len = value.size - beg_src
+        dst[ beg_dst .. beg_dst + len ] = (   dst[ beg_dst .. beg_dst + len ] &   kno[ beg_dst .. beg_dst + len ] ) |
+                                          ( value[ beg_src .. beg_src + len ] & ~ kno[ beg_dst .. beg_dst + len ] )
+        kno[ beg_dst .. beg_dst + len ] = known[ beg_src .. beg_src + len ]
+
+    virtual override
+    def write_dot os
+        write_to_stream os, type, 0, 0
+
+    virtual override
+    def write_to_stream os, type? null_ptr, nout: Number? 0, off: Number? 0
+        if type
+            write_content type, value.ptr, off, os
+        else
+            os << value
+
+    virtual override
+    def type nout: Number
+        vtype
+
+    virtual override
+    def is_true type, nout, off
+        value.some_true
+
+    virtual override
+    def is_false type, nout, off
+        value.all_false
+
+    value ~= Vec[ Bool ]
+    known ~= Vec[ Bool ]
+    

@@ -1,0 +1,160 @@
+import ./AstVisitor
+import ./Variable
+import ./VarWrap
+import ./AstCode
+import ./Scope
+import ./Cst
+import ./gvm
+import RcString
+
+#
+export
+class AstVisitorVm extends AstVisitor
+    def construct names: Number
+        init_of super, names
+
+    virtual override
+    def on_number want_ret: Bool, pos: AstCode::Pos, value: RcString
+        res      := PI64 0
+        off      := 0
+        exp      := 0
+        dec      := 0
+        chr      := value.begin
+        long     := false
+        unsigned := false
+        # before ".", "e", ...
+        while chr < value.end && @chr >= "0" && @chr <= "9"
+            res = 10 * res + PI8 @( post_inc chr ) - "0"
+        # remaining stuff
+        while chr < value.end
+            if @chr == "."
+                while ++chr < value.end && @chr >= "0" && @chr <= "9"
+                    dec = 10 * dec + PI8 @chr - "0"
+                    ++off
+            else if @chr == "e"
+                ++chr
+                minus := false
+                if @chr == "-"
+                    ++chr
+                    minus = true
+                while chr < value.end && @chr >= "0" && @chr <= "9"
+                    exp = 10 * exp + PI8 @( post_inc chr ) - "0"
+                if minus
+                    exp = -exp
+
+        if long || unsigned || dec || exp 
+            info res, off, dec, exp
+            TODO
+        Variable Cst::make SI32 res
+    
+    virtual override
+    def on_block want_ret: Bool, items: Vec[ AstCode ]
+        if s := items.size
+            for i in 0 .. --s
+                items[ i ].visit self, want_ret: false
+            items[ s ].visit self, want_ret: want_ret
+        else 
+            gvm->ref_void
+
+    virtual override
+    def on_assign want_ret: Bool, pos: AstCode::Pos, name: RcString, cname: AstCode, nb_scope_rec: PI8, value: AstCode, flags: PI8
+        if gvm->scope->type == Scope::ScopeType::CTOR_VAL
+            # if ( flags & ASSIGN_FLAG_static )
+            #     return scope->vm->ref_void;
+
+            # if ( scope->wpc && scope->wpc->count( name ) )
+            #     return scope->vm->ref_void;
+
+            # // find attribute references
+            # auto iter_attr = scope->ctor_self.type->attributes.find( name );
+            # if ( iter_attr == scope->ctor_self.type->attributes.end() )
+            #     return scope->add_error( "Attribute '{}' not registered in type", name ), scope->vm->ref_void;
+
+            # // call ctor recursively
+            # if ( iter_attr->second.type->has_a_constructor() ) {
+            #     Variable attr = scope->ctor_self.sub_part( iter_attr->second.type, iter_attr->second.off_in_bits / 8 );
+            #     Variable ctor = attr.find_attribute( scope, "construct" );
+
+            #     if ( flags & ASSIGN_FLAG_type ) // ~=
+            #         ctor.apply( scope, false );
+            #     else // :=
+            #         ctor.apply( scope, false, rhs_func() );
+
+            #     return attr;
+            # }
+
+            # // complete size information
+            # // Value size = scope->ctor_room_inst->children[ 0 ];
+            # // Value alig = scope->ctor_room_inst->children[ 1 ];
+            # // Value va = attr.p_get( scope );
+            # // scope->ctor_room_inst->mod_child( 1, make_Lcm( alig, va.alig() ) );                         // alig = lcm ( alig, attr.alig );
+            # // scope->ctor_room_inst->mod_child( 0, make_Add( make_Ceil( size, va.alig() ), va.size() ) ); // size = ceil( size, attr.alig ) + attr.size;
+            # return scope->vm->ref_void;
+            TODO
+
+        if name.empty
+            TODO
+
+        # get the value to store
+        val := value.visit self, want_ret: true
+        if flags & AstCode::ASSIGN_FLAG_type
+            val = val.apply true, call_ctor: scope->type != Scope::Scope_type::CTOR_TYPE
+        if flags & AstCode::ASSIGN_FLAG_const
+            val.cst = true
+
+        #
+        gvm->scope->reg name, val,
+            STATIC: flags & AstCode::ASSIGN_FLAG_static,
+            EXPORT: flags & AstCode::ASSIGN_FLAG_export,
+            GLOBAL: flags & AstCode::ASSIGN_FLAG_global
+
+    virtual override
+    def on_ss_block want_ret: Bool, items: Vec[ AstCode ] ~> Variable
+        if s := items.size
+            for i in 0 .. --s
+                items[ i ].visit self, want_ret: false
+            return items[ s ].visit self, want_ret: want_ret
+        gvm->var_void
+
+    virtual override
+    def on_variable want_ret: Bool, pos: AstCode::Pos, name: RcString ~> Variable
+        gvm->scope->find name, pos
+
+    virtual override
+    def on_def want_ret: Bool, pos: AstCode::Pos, name: RcString, cname: AstCode, nb_scope_rec: PI8, arg_names: Vec[ RcString ], arg_constraints: Vec[ AstCode ], arg_def_vals: Vec[ AstCode ], arg_splats: Vec[ PT ], with_names: Vec[ RcString ], with_constraints: Vec[ AstCode ], with_def_vals: Vec[ AstCode ], with_splats: Vec[ PT ], condition: AstCode, pert: AstCode, def_pert_num: SI32, def_pert_exp: SI32, flags: PI32, block: Vec[ AstCode ], self_constraint: AstCode, return_type: AstCode, wpc_block: Vec[ AstCode ] ~> Variable
+        store := flags & AstCode::CALLABLE_FLAG_global ? 
+            gvm->scope->root : 
+            gvm->scope->get_parent_interp count: nb_scope_rec
+        if store->avoid_static
+            return gvm->var_void
+
+        # get name
+        if name.empty
+            # ASSERT( cname.size(), "..." );
+            # Variable vn = scope->find_variable( "String" ).apply( scope, true, scope->visit( this->names, cname, true ) );
+            # if ( vn.error() )
+            #     return scope->add_error( "Not enough scope parents" ), ret_or_dec_ref( vm->ref_error );
+            # name = *reinterpret_cast<String *>( vn.ptr() );
+            TODO
+
+            
+        # find or make a surdef
+        sl := VarWrap[ SurdefList ] if ppnv := store->name_map.find name 
+            (@ppnv)->var # surdef already exist => use the variable
+        else
+            store->reg
+                name
+                Variable Cst::make SurdefList
+                CALLABLE   : true
+                SELF_AS_ARG: flags & AstCode::CALLABLE_FLAG_self_as_arg
+                GLOBAL     : flags & AstCode::CALLABLE_FLAG_global
+                EXPORT     : flags & AstCode::CALLABLE_FLAG_export
+                STATIC     : flags & AstCode::CALLABLE_FLAG_static
+
+        # make a new Def            
+        d := Variable Cst::make Def
+        # sl.lst << d
+        # info sl.lst
+
+        # sl.var
+        Variable()

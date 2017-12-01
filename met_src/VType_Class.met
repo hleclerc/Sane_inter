@@ -1,0 +1,18 @@
+import ./Variable
+import ./VarWrap
+import ./VType
+import ./Cst
+
+#
+export
+class VType_Class extends VType
+    def construct
+        init_of super, "Class", 0, 1
+    
+    # make a new Variable
+    virtual 
+    def make_var ...args ~> Variable
+        res := VarWrap[ Class ] Variable Cst::make this
+        res.instances.val = null_ptr
+        res.var
+            

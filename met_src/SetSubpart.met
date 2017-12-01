@@ -1,0 +1,69 @@
+import ./ValWrap
+import ./Value  
+import ./Inst   
+import ./gvm     
+
+#
+export
+class SetSubpart extends Inst
+    def construct old: Value, off: Value, val: Value
+        init_of super, [ old, off, val ]
+
+    virtual override
+    def inp_corr nout
+        0
+
+    virtual override
+    def write_dot os
+        os << "SetSupbart"
+
+    virtual override
+    def write_to_stream os, type? null_ptr, nout: Number? 0, off: Number? 0
+        os << "SetSupbart($( children[ 0 ] ),$( children[ 1 ] ),$( children[ 2 ] ))"
+
+    virtual override
+    def type nout: Number
+        children[ 0 ].type
+
+    virtual override
+    def kv nout: Number, kno: Vec[ Bool ], dst: Vec[ Bool ], beg_dst: Number, beg_src: Number, len: Number
+        try 
+            # if size / offset not known, we can't do anything
+            beg_ssp := PT ValWrap[ PT ] children[ 1 ]
+            len_ssp := PT ValWrap[ PT ] children[ 2 ].size
+
+            # we have to get data from...
+            end_ssp := beg_ssp + len_ssp
+            end_src := beg_src + len
+            if beg_src < beg_ssp # left part of children[ 0 ] and...
+                if end_src <= beg_ssp # => only children[ 0 ]
+                    children[ 0 ].inst->kv children[ 0 ].nout, kno, dst, beg_dst, beg_src, len
+                else if end_src <= end_ssp
+                    children[ 2 ].inst->kv children[ 2 ].nout, kno, dst, beg_dst + beg_ssp - beg_src, 0, end_src - beg_ssp
+                    children[ 0 ].inst->kv children[ 0 ].nout, kno, dst, beg_dst, beg_src, len
+                else
+                    children[ 2 ].inst->kv children[ 2 ].nout, kno, dst, beg_dst + beg_ssp - beg_src, 0, len_ssp
+                    children[ 0 ].inst->kv children[ 0 ].nout, kno, dst, beg_dst, beg_src, len
+            else if beg_src < end_ssp # children[ 2 ] and...
+                if end_src <= end_ssp
+                    children[ 2 ].inst->kv children[ 2 ].nout, kno, dst, beg_dst, beg_src - beg_ssp, len
+                else
+                    children[ 2 ].inst->kv children[ 2 ].nout, kno, dst, beg_dst, beg_src - beg_ssp, end_ssp - beg_src
+                    children[ 0 ].inst->kv children[ 0 ].nout, kno, dst, beg_dst, beg_src, len
+            else # right part of children[ 0 ]
+                children[ 0 ].inst->kv children[ 0 ].nout, kno, dst, beg_dst, beg_src, len
+        catch e
+            pass
+
+    virtual override
+    def is_true type, nout, off
+        beg_ssp := ValWrap[ PT ] children[ 1 ]
+        end_ssp := beg_ssp + ValWrap[ PT ] children[ 2 ].size
+        children[ off >= beg_ssp && off < end_ssp ? 2 : 0 ].is_true
+
+    virtual override
+    def is_false type, nout, off
+        beg_ssp := ValWrap[ PT ] children[ 1 ]
+        end_ssp := beg_ssp + ValWrap[ PT ] children[ 2 ].size
+        children[ off >= beg_ssp && off < end_ssp ? 2 : 0 ].is_false
+    

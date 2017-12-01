@@ -1,0 +1,31 @@
+import ./Value
+import ./VType
+import ./Inst 
+import ./gvm
+
+#
+export
+class Sym extends Inst
+    def construct ctype: Ptr[ VType ], name: StringAncestor, size: Number, alig: Number
+        init_of ctype, type
+        init_of name , name
+        init_of size , size
+        init_of alig , alig
+
+    virtual override
+    def write_dot os
+        os << name
+
+    virtual override
+    def type nout: Number
+        ctype
+
+    ctype ~= Ptr[ VType ]
+    name  ~= String
+    size  ~= SI32
+    alig  ~= SI32
+    
+export
+def make_Sym type: Ptr[ VType ], name: StringAncestor, size: Number? type->kv_size, alig: Number? type->kv_alig
+    Value type, new Sym, type, name, size, alig
+

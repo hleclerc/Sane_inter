@@ -1,0 +1,8 @@
+import os
+
+#
+export
+def exec_dot filename, viewer? "gv"
+    res := os.system "dot -Tpdf $( filename ) > $( filename ).pdf"
+    os.system "$( viewer ) $( filename ).pdf &"
+

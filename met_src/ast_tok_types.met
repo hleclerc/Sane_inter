@@ -1,0 +1,68 @@
+import ./AstCode
+import RcString
+
+export
+class AstTokType
+    class Attr
+        name ~= String
+        type ~= Type
+    name     ~= String
+    attrs    ~= Vec[ Attr ]
+    save_pos ~= SI32
+
+
+def dt tok_name, save_pos, ...args # ~> AstTokType
+    AstTokType name: tok_name, save_pos: save_pos, attrs: range( args.values.size ).map i =>
+        AstTokType::Attr name: args.names[ i ], type: @args.values[ i ]
+
+export
+ast_tok_types := [
+    dt "pass"                  , 0
+    dt "variable"              , 1, name: RcString
+    dt "var_assembly"          , 1, args: Vec[ AstCode ]
+    dt "continue"              , 1  
+    dt "break"                 , 1
+    dt "false"                 , 0
+    dt "true"                  , 0
+    dt "self"                  , 1  
+    dt "this"                  , 1  
+    dt "number"                , 1, value: RcString
+    dt "string"                , 1, value: RcString
+    dt "get_attr"              , 0, obj: AstCode, name: RcString
+    dt "scope_resolution"      , 0, obj: AstCode, name: RcString
+    dt "get_attr_ptr"          , 0, obj: AstCode, name: RcString
+    dt "get_attr_calc"         , 0, obj: AstCode, args: Vec[ AstCode ]
+    dt "scope_resolution_calc" , 0, obj: AstCode, args: Vec[ AstCode ]
+    dt "get_attr_ptr_calc"     , 0, obj: AstCode, args: Vec[ AstCode ]
+    dt "ss_block"              , 0, items: Vec[ AstCode ]
+    dt "block"                 , 0, items: Vec[ AstCode ]
+    dt "apply_op"              , 1, name: RcString, args: Vec[ AstCode ]
+    dt "apply"                 , 1, f: AstCode, args: Vec[ AstCode ], names: Vec[ RcString ], splats: Vec[ PT ]
+    dt "select"                , 1, f: AstCode, args: Vec[ AstCode ], names: Vec[ RcString ], splats: Vec[ PT ]
+    dt "chbeba"                , 1, f: AstCode, args: Vec[ AstCode ], names: Vec[ RcString ], splats: Vec[ PT ]
+    dt "init_of"               , 1, name: RcString, args: Vec[ AstCode ], names: Vec[ RcString ], splats: Vec[ PT ]
+    dt "assign"                , 1, name: RcString, cname: AstCode, nb_scope_rec:PI8, value: AstCode, flags: PI8
+    dt "destruct_assign"       , 1, names: Vec[ RcString ], equal: Vec[ AstCode ], types: Vec[ AstCode ], value: AstCode, flags: PI8
+    dt "def"                   , 1, name: RcString, cname: AstCode, nb_scope_rec: PI8, arg_names: Vec[ RcString ], arg_constraints: Vec[ AstCode ], arg_def_vals: Vec[ AstCode ], arg_splats: Vec[ PT ], with_names: Vec[ RcString ], with_constraints: Vec[ AstCode ], with_def_vals: Vec[ AstCode ], with_splats: Vec[ PT ], condition: AstCode, pert: AstCode, def_pert_num: SI32, def_pert_exp: SI32, flags: PI32, block: Vec[ AstCode ], self_constraint: AstCode, return_type: AstCode, wpc_block: Vec[ AstCode ]
+    dt "class"                 , 1, name: RcString, cname: AstCode, nb_scope_rec: PI8, arg_names: Vec[ RcString ], arg_constraints: Vec[ AstCode ], arg_def_vals: Vec[ AstCode ], arg_splats: Vec[ PT ], with_names: Vec[ RcString ], with_constraints: Vec[ AstCode ], with_def_vals: Vec[ AstCode ], with_splats: Vec[ PT ], condition: AstCode, pert: AstCode, def_pert_num: SI32, def_pert_exp: SI32, flags: PI32, block: Vec[ AstCode ], inheritance_names: Vec[ RcString ], inheritance: Vec[ AstCode ]
+    dt "if_else"               , 0, cond: AstCode, ok: Vec[ AstCode ], ko: Vec[ AstCode ]
+    dt "if"                    , 0, cond: AstCode, ok: Vec[ AstCode ]
+    dt "while"                 , 0, cond: AstCode, ok: Vec[ AstCode ]
+    dt "return"                , 1, value: AstCode
+    dt "for"                   , 1, name: RcString, container: AstCode, block: Vec[ AstCode ]
+    dt "typeof"                , 1, value: AstCode
+    dt "sizeof"                , 1, value: AstCode
+    dt "aligof"                , 1, value: AstCode
+    dt "sizeof_bits"           , 1, value: AstCode
+    dt "aligof_bits"           , 1, value: AstCode
+    dt "lambda"                , 1, arg_names: Vec[ RcString ], arg_constraints: Vec[ AstCode ], arg_def_vals: Vec[ AstCode ], splats: Vec[ PT ], body: AstCode
+    dt "and"                   , 1, v0: AstCode, v1: AstCode
+    dt "or"                    , 1, v0: AstCode, v1: AstCode
+    dt "vec"                   , 0, values: Vec[ AstCode ]
+    dt "matrix"                , 0, values: Vec[ AstCode ], sizes: Vec[ PT ]
+    dt "info"                  , 1, str: Vec[ RcString ], code: Vec[ AstCode ]
+    dt "assert"                , 1, str: RcString, code: AstCode
+    dt "try_catch"             , 1, try_body: AstCode, arg_name: RcString, arg_constraint: AstCode, catch_body: AstCode, with_names: Vec[ RcString ], with_constraints: Vec[ AstCode ], with_def_vals: Vec[ AstCode ], with_splats: Vec[ PT ]
+    dt "import"                , 1, filename: RcString, names: Vec[ RcString ], attrs:Vec[ RcString ]
+    dt "enum"                  , 1, name: RcString, items:Vec[ RcString ]
+]

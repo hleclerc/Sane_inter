@@ -1,0 +1,62 @@
+import RcPtr => RcPtr, RcObj
+import ./RefCount
+import ./Value
+
+#
+export
+class Inst extends RcObj
+    def construct rese_children: Number? 0
+        init_of children, Rese rese_children
+
+    def construct children: UntypedArray
+        init_of children, children
+
+    virtual 
+    def destroy
+        pass
+
+    virtual
+    def inp_corr nout
+        -1
+
+    virtual
+    def kv nout: Number, kno: Vec[ Bool ], dst: Vec[ Bool ], beg_dst: Number, beg_src: Number, len: Number
+        pass
+
+    virtual
+    def is_true type, nout, off
+        false
+
+    virtual
+    def is_false type, nout, off
+        false
+
+    virtual
+    def write_to_stream os, type? null_ptr, nout: Number? 0, off: Number? 0
+        write_dot os
+        if children
+            os << "(" << children.join( "," ) << ")"
+
+    def write_dot_rec os: Stream, set, type, nout, off
+        if set.insert this
+            # label
+            dt := ""
+            write_dot dt
+            os << "  node_$( this ) [label=\"$( dt )\"];\n"
+
+            # edges
+            for ch in children
+                os << "  node_$( this ) -> node_$( ch.inst );\n";
+                ch.inst->write_dot_rec os, set, ch.type, ch.nout, ch.off
+
+    virtual
+    def write_dot os
+        os << "write dot not defined"
+
+    virtual
+    def get_ref_count nout
+        ic := inp_corr nout 
+        if ic >= 0
+            children[ ic ].inst->get_ref_count children[ ic ].nout
+
+    children ~= Vec[ Value ]

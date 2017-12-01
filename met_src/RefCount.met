@@ -1,0 +1,16 @@
+import ./Value
+
+#
+export
+class RefCount
+    def inc 
+        ++val
+
+    def dec 
+        --val
+
+    def operator== v: Number
+        val == v
+
+    private
+        val := 0

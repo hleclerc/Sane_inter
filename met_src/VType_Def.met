@@ -1,0 +1,15 @@
+import ./Variable
+import ./VType
+import ./Cst
+
+#
+export
+class VType_Def extends VType
+    def construct
+        init_of super, "Def", 0, 1
+    
+    # make a new Variable
+    virtual 
+    def make_var ...args ~> Variable
+        Cst::make this
+        

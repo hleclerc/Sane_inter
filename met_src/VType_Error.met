@@ -1,0 +1,11 @@
+import ./VType
+
+#
+export
+class VType_Error extends VType
+    def construct
+        init_of super, "Error", 0, 1
+
+    def write_content os, ptr: AT, off: Number
+        os << "error"
+    

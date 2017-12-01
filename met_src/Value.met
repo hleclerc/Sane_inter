@@ -1,0 +1,105 @@
+import ./Graphviz => exec_dot
+import ./VarWrap
+import ./Inst 
+import ./gvm
+import NullableRcPtr
+import File
+import Set 
+
+
+#
+export
+class Value
+    class NotAKnownValue
+        pass
+
+    def construct type: NullablePtr[ VarWrap[ Type ] ], inst: NullableRcPtr[ Inst ], nout: Number? 0, off: Number? 0
+        init_of type, type
+        init_of inst, inst
+        init_of nout, nout
+        init_of off , off 
+
+    def construct v: Value
+        init_of type, v.type
+        init_of inst, v.inst
+        init_of nout, v.nout
+        init_of off , v.off 
+
+    def construct
+        init_of type, gvm->type_Error
+        init_of inst, null_ptr
+        init_of nout, 0
+        init_of off , 0
+
+    def convert Bool
+        inst
+
+    def get_size 
+        type->get_size inst, nout, off
+
+    def write_to_stream os
+        if inst
+            inst->write_to_stream os, type, nout, off
+        else
+            os << "null"
+
+    # return true if dst is fully known
+    def kv dst: Vec[ Bool ], beg_dst: Number, beg_src: Number, len: Number ~> Bool
+        kno := Vec[ Bool ] Size( len ), false
+        v := this
+        while true 
+            v->inst->kv nout, kno, dst, beg_dst, beg_src + v->off, len
+            if kno.all_true
+                return true
+            i := v->inst->inp_corr v->nout
+            if i < 0
+                return false
+            v = \ v->inst->children[ i ]
+
+    # if known value, return cb_ok( elementary type ). Else, return cb_ko()
+    def apply_kv cb_ok, cb_ko
+        dst := Vec[ Bool ] Size type->kv_size
+        if kv dst, 0, 0, dst.size
+            type->apply_kv dst.ptr.val, 0, cb_ok, cb_ko
+        else
+            cb_ko()
+
+    # if known value, return cb( elementary type ). Else, return default value
+    def apply_kv_dv default_value, cb_ok
+        apply_kv cb_ok, () => default_value
+
+    #
+    def to_Bool
+        info self, is_true, is_false
+        if is_true || is_false
+            return is_true
+        throw NotAKnownValue()
+
+    #
+    def get_is_true
+        inst->is_true type, nout, off
+
+    #
+    def get_is_false
+        inst->is_false type, nout, off
+
+    def display_dot lst: Array[ Value, 1 ]
+        filename := "pouet"
+        f := File filename 
+        f << "digraph Value {\n"
+
+        s ~= Set[ Ptr[ Inst ] ]
+        for v in lst
+            v.inst->write_dot_rec f, s, v.type, v.nout, v.off
+
+        f << "}\n"
+        exec_dot "pouet"
+        
+    def display_dot
+        display_dot vec [ self ]
+        
+
+    type ~= NullablePtr[ VarWrap[ Type ] ]  #
+    inst ~= NullableRcPtr[ Inst ]           # instruction that produced this values
+    nout ~= SI32                            # num output in inst
+    off  ~= SI32                            # offset in output

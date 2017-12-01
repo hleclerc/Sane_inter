@@ -1,0 +1,27 @@
+import ./Value 
+import ./Inst  
+import ./gvm
+import ./Cst
+
+#
+export
+class BinOp[ Op ] extends Inst
+    def construct a: Value, b: Value
+        init_of super, [ a, b ]
+
+    virtual override
+    def write_dot os
+        os << Op
+
+    virtual
+    def type nout: Number
+        todo
+
+    
+export
+def make_Add a: Value, b: Value
+    # known value
+    if res := a.apply_kv_dv Value(), va => b.apply_kv_dv Value(), vb => Cst::make va + vb
+        return res
+    # new graph item
+    Value a.type, new BinOp[ "+" ], a, b

@@ -1,0 +1,86 @@
+import ./VRefLeaf
+import ./VarWrap
+import ./Value   
+import ./VRef    
+import NullableRcPtr
+
+#~
+  There's no copy ctor: we have to choose if we want to make an owning variable (with handling of rec_count)
+    or a temporary reference.
+~#
+export
+class Variable
+    # Used to construct temporary reference variables
+    class TempRef
+        def construct var: Variable 
+            init_of var, UntypedRef::make var
+        var ~= UntypedRef
+
+    #
+    def construct vref: NullableRcPtr[ VRef ], type: NullablePtr[ VarWrap[ Type ] ], off: Number, own? true, cst? false
+        init_of vref, vref
+        init_of type, type
+        init_of off , off 
+        init_of own , own 
+        init_of cst , cst 
+        # if vref && own
+        #     vref->inc_ref()
+
+    # construct a new VRef using a Value    
+    def construct val: Value, cst? false
+        init_of vref, new VRefLeaf, val
+        init_of type, val.type
+        init_of off , val.off
+        init_of own , true
+        init_of cst , cst
+
+    # 
+    def construct var: Variable
+        init_of self, var.vref, var.type, var.off, var.own, var.cst  
+
+    # construct an temporary reference var
+    def construct a: TempRef
+        init_of vref, a.var->vref 
+        init_of type, a.var->type
+        init_of off , a.var->off  
+        init_of own , false
+        init_of cst , a.var->cst  
+
+    # null variable (not defined)
+    def construct
+        init_of vref, null_ptr
+        init_of type, null_ptr
+
+    def destroy
+        if vref && own
+            vref->dec_ref()
+
+    def convert Bool
+        vref
+
+    def get_value ~> Value
+        if vref 
+            val := vref->value
+            Value type, val.inst, val.nout, val.off + off
+        else
+            Value()
+
+    def write_to_stream os 
+        if vref
+            v := self.get_value()
+            if type == v.type && off == 0
+                os << v
+            else
+                os << "$( v )[$( @type ),off=$( off )]"
+        else
+            os << "null"
+
+    def find_attribute name: StringAncestor, ret_err? true, warn_if_err? ret_err
+        TODO
+        Variable()
+
+    type ~= NullablePtr[ VarWrap[ Type ] ] # 
+    vref ~= NullableRcPtr[ VRef ]
+    off  ~= SI32                 
+    own  ~= Bool                 
+    cst  ~= Bool                 

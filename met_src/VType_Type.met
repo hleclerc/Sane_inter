@@ -1,0 +1,11 @@
+import ./VType
+
+#
+export
+class VType_Type extends VType
+    def construct
+        init_of super, "Type", sizeof_bits( Type ), aligof_bits( Type )
+
+    def write_content os, ptr: AT, off: Number
+        os << "type..."
+    

@@ -1,0 +1,28 @@
+import ./VType
+import ./Cst
+import ./gvm
+
+#
+export
+class VType_BT[ T ] extends VType
+    def construct
+        init_of super, String( T ), sizeof_bits( T ), aligof_bits( T )
+
+    virtual override
+    def write_content os, ptr: AT, off: Number
+        os << @Ptr[ T ]( ptr + off )
+
+    virtual override
+    def apply_kv ptr: AT, off: Number, cb_ok, cb_ko
+        if gvm->reverse_endianness || gvm->sizeof_PT != sizeof PT
+            TODO
+        cb_ok @Ptr[ T ]( ptr + off )
+
+    virtual override
+    def get_size inst, nout, off
+        Cst::make sizeof_bits T
+
+    virtual
+    def destroy_var var
+        pass
+    

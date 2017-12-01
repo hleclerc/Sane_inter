@@ -1,0 +1,142 @@
+import ./AstVisitorVm
+import ./Variable
+import ./SrcError
+import ./VRefLeaf
+import ./VarWrap
+import ./AstCode 
+import ./Value
+import ./Scope
+import ./Inst
+import ./Ast
+import ./Cst
+import CompactBinStreamReader 
+import NullableRcPtr
+import RcString
+import SpVec
+import Map
+import fs
+import os
+
+#
+export
+class Vm
+    #
+    static aryt_types := [
+        SI32
+        PT
+    ]
+
+    # 
+    static predefined_type_names := [
+        "Vec_UntypedRef"
+        "Vec_SI32"
+        "Ptr_SI32"
+        "UntypedRef"
+        "SurdefList"
+        "Error"
+        "Class"
+        "Type"
+        "Def"
+    ] +++ aryt_types.map( n => String n )
+
+    # classes
+    # static classes := Vec[ String ]
+    #     types.map( t => t->bootstrap_name ).filter( n => ! n.has "[" ) +++ [
+    #         "NullablePtr"
+    #         "Ptr"
+    #         "Vec"
+    #     ]
+
+    def construct reverse_endianness? false, sizeof_PT? sizeof( PT ), aligof_PT? aligof( PT )
+        init_of reverse_endianness, reverse_endianness
+        init_of sizeof_PT         , sizeof_PT
+        init_of aligof_PT         , aligof_PT
+        init_of scope             , new Scope, Scope::ScopeType::ROOT, NullablePtr[ Scope ] null_ptr
+
+        # initialisation of types (phase 1: make variables with a wrong type. Phase 2: correct the type)
+        # Cst is of the wrong size
+        nt := NullablePtr[ VarWrap[ Type ] ] null_ptr
+        for name in predefined_type_names
+            type_$name = new VarWrap[ Type ], Variable Value nt, NullableRcPtr[ Inst ]( new Cst, 0, 1 )
+        for name in predefined_type_names
+            static_cast( Ptr[ VRefLeaf ], type_$( name )->var.vref )->value.type = type_Type
+
+    def import_met filename: StringAncestor, cur_dir: StringAncestor? os.cwd
+        absolute_filename := fs.canonical filename, cur_dir
+        imported.insert absolute_filename, () =>
+            content := fs.read_sync absolute_filename
+            p := Ast::parse_met content, absolute_filename
+            names_vec.push_back p.names
+
+            a := AstVisitorVm names_vec.size - 1
+            p.code.visit a, want_ret: false
+
+            Variable()
+
+    def add_error msg: StringAncestor, nb_calls_to_skip: Number? 0
+        info msg
+
+    def add_error pos: AstCode::Pos, msg: StringAncestor, nb_calls_to_skip: Number? 0
+        p := SrcError::Provenance src_name( pos.nid, pos.src ), pos.pos, pos.len
+        p.disp stderr, msg, true
+
+    def src_name nid: PT, src: PT
+        c := names_vec[ nid ]
+        r := CompactBinStreamReader[ RcString ] \c
+        if src > r.read_unsigned PT
+            return "wrong_index"
+        for i in 1 .. src
+            r.skip String
+        r.read String
+
+    def vclass_for name: StringAncestor
+        cl := ref class_$( name )
+        if ! cl
+            # 2 steps initialization to avoid infinite recursion (on NullablePtr, ...)
+            cl = new VarWrap[ Class ], type_Class->make_var()
+        cl
+
+    def vtype_for type
+        # it is an hardcoded type ?
+        name := string_repr_for_type type
+        for tested in predefined_type_names
+            if tested == name
+                return type_$name
+        # look for a registered type in the class
+        cl := vclass_for type.base_class_name
+        for i in cl->instance_list
+            info i
+            TODO
+        # else, make a new instance
+        nt := VarWrap[ NullablePtr[ Type ] ] 
+        cl->instances->next = cl->instances
+        TODO # cl->instances = 
+
+    static
+    def string_repr_for_type type
+        String( type ).map s => 
+            if s in "[,"
+                "_"
+            else if s == "]"
+                ""
+            else
+                s
+
+
+    reverse_endianness ~= Bool
+    call_stack         ~= SpVec[ AstCode::Pos ]   # current in progress calls 
+    sizeof_PT          ~= SI32
+    aligof_PT          ~= SI32
+    names_vec          ~= Vec[ RcString ]         # to get a number for each Ast::parse_met().names
+    var_error          ~= Variable
+    var_void           ~= Variable
+    imported           ~= Map[ String, Variable ]
+    predeffs           ~= Map[ String, Function[ Variable ] ]
+    predefs            ~= Map[ String, Variable ]
+    scope              ~= NullablePtr[ Scope ]
+    # class_... attributes
+    # for name in classes
+    #     \class_$( name ) := NullablePtr[ VarWrap[ Class ] ] null_ptr
+    # type_... attributes
+    for name in predefined_type_names
+        \type_$name ~= NullablePtr[ VarWrap[ Type ] ]

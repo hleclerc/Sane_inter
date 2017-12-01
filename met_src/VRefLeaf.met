@@ -1,0 +1,46 @@
+import ./SetSubpart
+import ./RefCount
+import ./Value
+import ./VRef
+import ./gvm
+import RcPtr
+
+#
+export
+class VRefLeaf extends VRef
+    def construct val: Value 
+        assert val.off == 0
+        init_of val, val
+
+    virtual override
+    def get_value ~> Value
+        val
+
+    virtual override
+    def set off: Value, n_val: Value
+        val.inst = new SetSubpart, val, off, n_val
+
+    virtual
+    def inc_ref
+        pass # print "inc_ref", val
+
+    virtual
+    def dec_ref
+        if no_cpt_use || not_constructed
+            return
+        rc ~= RefCount
+        val.inst->get_ref_count val.nout
+        # destruction ?
+        if rc == 1
+            import ./Variable
+            assert val.off == 0
+            val.type->destroy_var Variable RcPtr[ VRef ]( this ), val.type, val.off, own: false
+        # else, add a dec_ref
+        else
+            pass # ...
+
+
+
+    val             ~= Value
+    not_constructed := false
+    no_cpt_use      := false

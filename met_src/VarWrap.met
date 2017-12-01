@@ -1,0 +1,157 @@
+import NullableRcPtr
+import ./Variable
+import ./Value
+import ./Inst
+import ./Cst
+import ./gvm
+
+bo  := ref load "./BinOp.met"
+
+export
+class VarWrapAnc
+    def construct v: Variable
+        init_of var, v
+
+    def write_to_stream os
+        os << var
+
+    var ~= Variable
+    
+export
+class VarWrapUnknownValue
+    dcs := 78
+
+export
+class VarWrap[ T ] extends VarWrapAnc when T.inherits Number
+    static kv_size := 0
+    static kv_alig := 1
+    if not kv_size
+        kv_size = T in [ ST, PT ] ? gvm->sizeof_PT : 8 * sizeof T
+        kv_alig = T in [ ST, PT ] ? gvm->aligof_PT : 8 * aligof T
+
+    def construct val: Variable
+        init_of super, val
+
+    def construct kv: Number # when typeof( kv ).inherits Number
+        init_of self, Variable Value gvm->vtype_for( typeof( kv ) ), NullableRcPtr[ Inst ] new Cst, kv_size, kv_alig, \kv
+
+    def operator= val: Number
+        var.vref->set Cst::make( PT var.off ), Cst::make T val
+
+    def operator+ fles: VarWrap[ U ] with U
+        VarWrap[ T ] Variable bo.make_Add self.var.value, fles.var.value
+
+    def convert dst: Number
+        dst.construct var.value.apply_kv kv => T( kv ), () => throw VarWrapUnknownValue()
+
+export
+class VarWrap[ T ] extends VarWrapAnc when T == AT
+    def construct val: Variable
+        init_of super, val
+
+    def construct val: NullPtr
+        init_of super, Variable Cst::make_null_ptr()
+
+    def operator= val: NullPtr
+        POUET
+        # var.vref->set Cst::make( PT var.off ), Cst::make T val
+
+# helper to get orig args as get setters
+export
+class VarWrapWithOrigAttrs[ T ] extends VarWrapAnc
+    def construct variable: Variable
+        init_of super, variable
+
+    def construct
+        init_of super, Variable Value gvm->vtype_for( T ), NullableRcPtr[ Inst ] new Cst, kv_size, kv_alig
+
+    static def get_kv_size
+        res := 0
+        for attr in T.attributes
+            res = ceil( res, VarWrap[ attr.type ]::kv_alig ) + VarWrap[ attr.type ]::kv_size
+        res
+
+    static def get_kv_alig
+        res := 1
+        for attr in T.attributes
+            res = lcm res, VarWrap[ attr.type ]::kv_alig
+        res
+
+    # get_..., set_... for each attributes of T
+    for attr in T.attributes
+        type := attr.type
+        name := attr.name
+
+        def \get_$name
+            off := 0
+            for attr in T.attributes
+                if attr.name == name
+                    break
+                off = ceil( off, VarWrap[ attr.type ]::kv_alig ) + VarWrap[ attr.type ]::kv_size
+                
+            n_var := var
+            n_var.type = gvm->vtype_for type
+            n_var.off += off
+            VarWrap[ type ] n_var
+
+        def \set_$name val
+            off := 0
+            for attr in T.attributes
+                if attr.name == name
+                    break
+                off = ceil( off, VarWrap[ attr.type ]::kv_alig ) + VarWrap[ attr.type ]::kv_size
+                
+            if val is_a Value
+                var.vref->set Cst::make( var.off + off ), val
+            else if val is_a Variable
+                var.vref->set Cst::make( var.off + off ), val.value
+            else
+                # make a new variable
+                nv := VarWrap[ type ] val
+                var.vref->set Cst::make( var.off + off ), nv.var.value
+
+
+export
+class VarWrap[ T ] extends VarWrapWithOrigAttrs[ T ]
+    def construct val: VarWrap[ T ]
+        init_of super, val.var
+
+    def construct variable: Variable
+        init_of super, variable
+
+    def construct
+        pass
+
+
+export
+class VarWrap[ T ] when T == Class extends VarWrapWithOrigAttrs[ T ]
+    def construct val: VarWrap[ T ]
+        init_of super, val.var
+
+    def construct val: Variable
+        init_of super, val
+
+    def get_instance_list
+        class BF
+            def operator for block
+                ptr := vc->instances 
+                while ptr 
+                    block ptr
+                    ptr = ptr->prev
+            vc ~= Ptr[ VarWrap[ Class ] ]
+        BF vc: this
+
+export
+class VarWrap[ T ] when T.has_base_class NullablePtr extends VarWrapWithOrigAttrs[ T ]
+    def construct val: VarWrap[ T ]
+        init_of super, val.var
+
+    def construct val: Variable
+        init_of super, val
+
+    def convert Bool
+        info var
+        info var.value
+        var.value.to_Bool()
+
+

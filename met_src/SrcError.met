@@ -1,0 +1,80 @@
+import fs 
+
+#
+export
+class SrcError
+    class Provenance
+        def construct provenance: StringAncestor, pos: Number, len: Number
+            init_of provenance, provenance
+
+            content := fs.read_sync provenance, () => ""
+
+            b := SI32 pos
+            while b >= 0 && content[ b ] != "\n" && content[ b ] != "\r"
+                --b
+            ++b
+            e := SI32 pos
+            while e < content.size && content[ e ] != "\n" && content[ e ] != "\r"
+                ++e
+            if b > e
+                b = e
+
+            complete_line = content[ b .. e ]
+
+            col = pos - b + 1
+            line = 1
+            for i in 0 .. pos + 1
+                line += ( content[ i ] == "\n" )
+
+        def disp os, msg: StringAncestor, display_col? true, beg_line? "  "
+            os << "\033[1m" << provenance << ":"
+            if line > 0
+                os << line
+                if col > 0
+                    os << ":" << col
+                os << ": "
+
+            os << "error: " << msg << ( display_col ? "\n" : " in '" )
+            if complete_line
+                disp_line os, display_col, beg_line
+            os << ( display_col ? "\n" : "'\n" )
+
+        def disp_line os, display_col? true, beg_line? "  "
+            if complete_line.size < 64
+                os << beg_line
+                os.write complete_line.data, complete_line.size
+                if display_col 
+                    os << "\n" << beg_line
+                    for i in 1 .. col
+                        os << " "
+            else if complete_line.size - col < 64 # only the ending
+                os << beg_line << "..."
+                os.write complete_line.data + complete_line.size - 64, 64
+                if display_col
+                    os << "\n" << beg_line
+                    for i in 1 .. 64 + 3 - complete_line.size + col
+                        os << " " 
+            else if col < 64 # only the beginning
+                os << beg_line
+                os.write complete_line, 64
+                os << "..." 
+                if display_col
+                    os << "\n" << beg_line
+                    for i in 1 .. col
+                        os << " " 
+            else # middle
+                os << beg_line << "..." 
+                os.write complete_line.data + col - 32, 61
+                os << "..." 
+                if display_col
+                    os << "\n" << beg_line
+                    for i in 1 .. 32 + 3
+                        os << " " 
+            if  display_col
+                os << "^" 
+            os << "\n"
+
+        complete_line ~= String
+        provenance    ~= String # name of file
+        line          ~= SI32
+        col           ~= SI32

@@ -1,0 +1,22 @@
+import ./gvm
+import ./Vm
+import os
+
+# gvm is a global variable describing the machine state
+gvm = new Vm
+
+for arg in os.argv[ 1.... ]
+    gvm->import_met arg
+
+# class A 
+#     static
+#     def get_foo
+#         1
+
+#     static
+#     def get_bar
+#         1
+
+# i := A()
+# a := va i.foo, i.bar
+# info a

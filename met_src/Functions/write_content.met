@@ -1,0 +1,17 @@
+import ../gvm
+
+#
+export 
+def write_content type, inst, nout, off, os
+    os << "pouet"
+
+#
+export 
+def write_content type, data, off, os
+    # aryt ?
+    for T in gvm->aryt_types
+        if type == gvm->type_$T
+            return os << @rcast( Ptr[ T ], data )
+
+    #
+    os << "pouet"

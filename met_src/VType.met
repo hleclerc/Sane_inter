@@ -1,0 +1,74 @@
+import ./Variable
+import ./VarWrap
+import ./Value
+
+# type of a variable or a value
+export
+class VType
+    def construct n: String, s: Number? -1, a: Number? -1
+        init_of bootstrap_kv_size, s
+        init_of bootstrap_kv_alig, a
+        init_of bootstrap_name   , n
+        init_of content          , null_ptr
+
+    virtual
+    def write_content os, ptr: AT, off: Number
+        os << "(content for type $( name ))"
+
+    virtual 
+    def apply_kv ptr: AT, off: Number, cb_ok, cb_ko
+        cb_ko()
+        
+    virtual 
+    def write_to_stream s
+        s << bootstrap_name
+
+    virtual
+    def destroy_var var
+        if destructor := var.find_attribute "destroy"
+            destructor.apply()
+
+    # make a new Variable
+    virtual 
+    def make_var ...args ~> Variable
+        TODO
+
+    virtual 
+    def get_size inst, nout, off
+        import ./Cst
+        Cst::make 0
+
+    # -> get ValWrap[ Type ]
+    def get_vw
+        if ! content 
+            import NullableRcPtr
+            import ./Inst
+            import ./Cst
+            import ./gvm
+            content = new Variable, Value NullableRcPtr[ Inst ] new Cst, gvm->type_Type
+        VarWrap[ Type ] @content
+
+    # update attributes using the ValWrap[ Type ] (we use a level of indirection, to enable the bootstrap of Vm)
+    for i in Type.attributes
+        name := i.name
+
+        # get_... can be changed by some bootstrap data (bootstrap_name, ...)
+        def \get_$( name )
+            # name return a String (for convenience)
+            if name in [ "name" ]
+                # self.bootstrap_$name ? ValWrap[ String ]( self.bootstrap_$name ) : self.vw.get_$name()
+                self.bootstrap_$name ? self.bootstrap_$name : self.vw.get_$name()
+            # get_kv_... return Numbers (for convenience)
+            else if name in [ "kv_size", "kv_alig" ]
+                try self.bootstrap_$name >= 0 ? self.bootstrap_$name : SI32 self.vw.get_$name() catch e ( -1 )
+            else
+                self.vw.get_$name()
+
+        # set_...
+        def \set_$( name ) val
+            self.vw.set_$( name ) val
+
+    bootstrap_kv_size := -1                       # in BITS
+    bootstrap_kv_alig := -1                       # in BITS
+    bootstrap_name    := ""                       #
+    content           ~= NullablePtr[ Variable ]  # 

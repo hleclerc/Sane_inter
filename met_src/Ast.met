@@ -1,0 +1,24 @@
+import ./AstCode
+import RcString 
+
+#
+export
+class Ast
+    def construct names: StringAncestor, code: StringAncestor
+        init_of names, names
+        init_of code , code 
+
+    def construct read: Read
+        init_of names, read
+        init_of code , read
+
+    def construct 
+        pass 
+
+    # make an Ast from source code
+    static def parse_met str: String, loc: String? "local" ~> Ast
+        __primitive_parse_met str, loc, Ast
+
+    names ~= RcString
+    code  ~= AstCode
+

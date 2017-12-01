@@ -66,7 +66,7 @@ def foo a, b; info a + b
 def bar a, b; ( c := a + b; 2 * c )
 ```
 
-As a rule of thumb, if the compiler can take care of an *obvious* simplification, this simplification is enabled for the greater goods.
+As a rule of thumb, if the compiler can take care of an *obvious* simplification, it will take care of this obvious simplification, for the greater goods.
 
 ```python
 # Std def of a lambda functions without parameter
@@ -95,7 +95,7 @@ def foo a: SI32, b? a + 1, c? b + 1
 foo 15, c: 18
 ```
 
-By default, arguments is passed as *immutable references*.
+By default, arguments are passed as *immutable references*.
 
 "Deconstification" is possible, using the `mut` keyword.
 
@@ -129,7 +129,7 @@ class Mesh[ ElemTypes ]
 
 # Templates
 
-The word "template" refers to that of C++. Template in Sane works roughly in the same way as in C++: functions code are actually generated according to the input types and needed compile-time known values. It enables a first-level of compile-time or static polymorphism.
+The word "template" refers to that of C++. Template in Sane works roughly in the same way as in C++: functions code are actually generated according to the input types and compile-time values. It enables a first-level of compile-time or static polymorphism.
 
 The main differences with C++ are that:
 

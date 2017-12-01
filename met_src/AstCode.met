@@ -1,0 +1,85 @@
+import CompactBinStreamReader 
+import ./AstVisitor
+import RcString 
+
+#
+ast_tok_funcs ~= CtVec
+
+# 
+export
+class AstCode
+    static ASSIGN_FLAG_static            :=    1
+    static ASSIGN_FLAG_const             :=    2
+    static ASSIGN_FLAG_type              :=    4
+    static ASSIGN_FLAG_export            :=    8
+    static ASSIGN_FLAG_global            :=   16
+    static ASSIGN_FLAG_ref               :=   32
+    static ASSIGN_FLAG_private           :=   64
+    static ASSIGN_FLAG_protected         :=  128
+
+    static CALLABLE_FLAG_self_as_arg     :=    1
+    static CALLABLE_FLAG_abstract        :=    2
+    static CALLABLE_FLAG_static          :=    4
+    static CALLABLE_FLAG_export          :=    8
+    static CALLABLE_FLAG_global          :=   16
+    static CALLABLE_FLAG_virtual         :=   32
+    static CALLABLE_FLAG_override        :=   64
+    static CALLABLE_FLAG_private         :=  128
+    static CALLABLE_FLAG_protected       :=  256
+    static CALLABLE_FLAG_inline          :=  512
+    static CALLABLE_FLAG_named_converter := 1024
+
+    class Pos
+        def construct nid, reader 
+            init_of nid, nid
+            src = reader.read_unsigned PT
+            if src
+                pos = reader.read_unsigned PT
+                len = 1
+
+        nid ~= PT # index in names_vec
+        src ~= PT # index in names_vec[ nid ]
+        pos ~= PT # pos in the sourcefile
+        len ~= PT # length token in sourcefile
+
+    def construct read: Read # cs: CompactBinStreamReader[ T ] with T
+        init_of content, @read.stream->buf
+        content.skip_some PT read
+
+    def construct content: StringAncestor
+        init_of content, content
+
+    def construct ac: AstCode
+        init_of content, ac.content
+
+    def convert Bool 
+        content
+
+    def visit v: AstVisitor, ...additional_args
+        # tok_funcs not constructed yet, do it now (this test will disappear at compile time)
+        if ast_tok_funcs.size == 0
+            import ./ast_tok_types
+            for at in ast_tok_types
+                ast_tok_funcs.push_back ( reader, visitor ) =>
+                    # prepare arguments
+                    values ~= Varargs
+                    if at.save_pos 
+                        values.values << UntypedRef::make Pos v.names, reader
+                        values.names << "pos"
+                    for arg in at.attrs
+                        values.values << UntypedRef::make arg.type Read reader
+                        values.names << arg.name
+                    # call visitor function
+                    visitor.on_$( at.name ) ...additional_args, ...values
+
+
+        r := CompactBinStreamReader[ RcString ] \content
+        num := r.read_unsigned PI8
+        if r.error
+            return v.on_visit_error()
+        ast_tok_funcs[ num ] r, v
+
+    content ~= RcString
+
+
+
