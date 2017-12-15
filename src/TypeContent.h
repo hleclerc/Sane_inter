@@ -1,0 +1,4 @@
+#ifndef TYPECONTENT_H
+#define TYPECONTENT_H
+
+#endif // TYPECONTENT_H
