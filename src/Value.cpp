@@ -13,3 +13,10 @@ Value &Value::operator=( const Value &value ) {
     return *this;
 }
 
+void Value::write_to_stream( std::ostream &os ) const {
+    if ( inst )
+        inst->write_to_stream( os, type, offset );
+    else
+        os << "NULL";
+}
+

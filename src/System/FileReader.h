@@ -1,20 +1,17 @@
 #pragma once
 
 #include <experimental/filesystem>
-#include "Rc_string.h"
 
 /**
   Read file content and add a \0 at the end.
 
   data is freed by the destructor
 */
-struct File_reader {
+struct FileReader {
     using path = std::experimental::filesystem::path;
 
-    File_reader( const Rc_string &name );
-    File_reader( const path &name );
-    File_reader( const char *name );
-    ~File_reader();
+    FileReader( const path &name );
+    ~FileReader();
 
     operator bool() const;
 

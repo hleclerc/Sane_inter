@@ -1,4 +1,11 @@
-#ifndef ARYTHMETICTYPES_H
-#define ARYTHMETICTYPES_H
-
-#endif // ARYTHMETICTYPES_H
+BT( Bool )
+BT( SI64 )
+BT( PI64 )
+BT( SI32 )
+BT( PI32 )
+BT( SI16 )
+BT( PI16 )
+BT( SI8  )
+BT( PI8  )
+BT( PT   )
+BT( ST   )

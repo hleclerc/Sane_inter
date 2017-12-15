@@ -2,7 +2,7 @@ CMD = nsmake run -O3 -g3 --cpp-flag -march=native --cpp-flag -Wall -o sane src/s
 
 all: cmp
 
-cmp: test
+cmp: # test
 	${CMD} tests/basic.met
 	
 # prof:

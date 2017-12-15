@@ -1,16 +1,16 @@
-#include "File_reader.h"
+#include "FileReader.h"
 #include "Error_list.h"
 
 #include <stdlib.h>
 #include <string.h>
 
-Error_list::Provenance::Provenance( const char *beg, const char *pos, const Rc_string &provenance, const Rc_string &msg ) : provenance( provenance ), msg( msg ) {
+ErrorList::Provenance::Provenance( const char *beg, const char *pos, const RcString &provenance, const RcString &msg ) : provenance( provenance ), msg( msg ) {
     _init( beg, pos );
 }
 
-Error_list::Provenance::Provenance( const Rc_string &src, int off, const Rc_string &msg ) : provenance( src ), msg( msg ) {
+ErrorList::Provenance::Provenance( const String &src, int off, const RcString &msg ) : provenance( src ), msg( msg ) {
     if ( src.size() and off >= 0 ) {
-        File_reader rf( src );
+        FileReader rf( src );
         if ( rf ) {
             _init( rf.data, rf.data + off );
             return;
@@ -21,11 +21,11 @@ Error_list::Provenance::Provenance( const Rc_string &src, int off, const Rc_stri
     col  = -1;
 }
 
-Error_list::Provenance::Provenance( int line, const Rc_string &provenance ) : provenance( provenance ), line( line ) {
+ErrorList::Provenance::Provenance( int line, const RcString &provenance ) : provenance( provenance ), line( line ) {
     col = -1;
 }
 
-void Error_list::Provenance::_init( const char *beg, const char *pos ) {
+void ErrorList::Provenance::_init( const char *beg, const char *pos ) {
     if ( not pos ) {
         col  = 0;
         line = 0;
@@ -41,7 +41,7 @@ void Error_list::Provenance::_init( const char *beg, const char *pos ) {
     if ( b > e )
         b = e;
 
-    complete_line = Rc_string( b, e );
+    complete_line = RcString( b, e );
 
     col = pos - b + 1;
     line = 1;
@@ -49,7 +49,7 @@ void Error_list::Provenance::_init( const char *beg, const char *pos ) {
         line += ( *b == '\n' );
 }
 
-void display_line( std::ostream &os, const Rc_string &complete_line, int col, bool display_col ) {
+void display_line( std::ostream &os, const RcString &complete_line, int col, bool display_col ) {
     if ( display_col )
         os << "  ";
     if ( complete_line.size() < 64 ) {
@@ -91,40 +91,40 @@ void display_line( std::ostream &os, const Rc_string &complete_line, int col, bo
         os << "^";
 }
 
-Error_list::Error::Error() {
+ErrorList::Error::Error() {
     display_escape_sequences = true;
     due_to_not_ended_expr = false;
     display_col = true;
     warn = false;
 }
 
-Error_list::Error &Error_list::Error::ac( const char *beg, const char *pos, const Rc_string &provenance ) {
+ErrorList::Error &ErrorList::Error::ac( const char *beg, const char *pos, const RcString &provenance ) {
     caller_stack.push_back( beg, pos, provenance );
     return *this;
 }
 
-Error_list::Error &Error_list::Error::ac( const Rc_string &src, int off ) {
+ErrorList::Error &ErrorList::Error::ac( const RcString &src, int off ) {
     if ( src && off >= 0 )
         caller_stack.push_back( src, off );
     return *this;
 }
 
-Error_list::Error &Error_list::Error::ap( const char *beg, const char *pos, const Rc_string &provenance, const Rc_string &msg ) {
+ErrorList::Error &ErrorList::Error::ap( const char *beg, const char *pos, const RcString &provenance, const RcString &msg ) {
     possibilities.push_back( beg, pos, provenance, msg );
     return *this;
 }
 
-Error_list::Error &Error_list::Error::ap( const Rc_string &src, int off, const Rc_string &msg ) {
+ErrorList::Error &ErrorList::Error::ap( const RcString &src, int off, const RcString &msg ) {
     possibilities.push_back( src, off, msg );
     return *this;
 }
 
-void Error_list::Error::write_to_stream( std::ostream &os ) const {
+void ErrorList::Error::write_to_stream( std::ostream &os ) const {
     // last item in caller stack
     if ( caller_stack.size() ) {
         if ( display_escape_sequences )
             os << "\033[1m";
-        const Error_list::Provenance &po = caller_stack[ 0 ];
+        const ErrorList::Provenance &po = caller_stack[ 0 ];
         if ( po.provenance.size() )
             os << po.provenance << ":";
         if ( po.line ) {
@@ -150,7 +150,7 @@ void Error_list::Error::write_to_stream( std::ostream &os ) const {
 
     // caller_stack
     for( size_t num_prov = 1; num_prov < caller_stack.size(); ++num_prov ) {
-        const Error_list::Provenance &po = caller_stack[ num_prov ];
+        const ErrorList::Provenance &po = caller_stack[ num_prov ];
         if ( po.provenance.size() )
             os << po.provenance << ":";
         if ( po.line ) {
@@ -169,7 +169,7 @@ void Error_list::Error::write_to_stream( std::ostream &os ) const {
         for ( size_t i = 0; i < possibilities.size();++i ) {
             for( size_t j = 0; ; ++j ) {
                 if ( j == i ) {
-                    const Error_list::Provenance & po = possibilities[ i ];
+                    const ErrorList::Provenance & po = possibilities[ i ];
                     if ( po.provenance.size() and po.line )
                         os << "" << po.provenance << ":" << po.line << ":" << po.col << ": ";
                     else
@@ -195,11 +195,11 @@ static bool term_supports_color() {
 }
 
 
-Error_list::Error_list() {
+ErrorList::ErrorList() {
     display_escape_sequences = term_supports_color();
 }
 
-Error_list::Error &Error_list::add( const Rc_string &msg, bool warn, bool due_to_not_ended_expr ) {
+ErrorList::Error &ErrorList::add( const RcString &msg, bool warn, bool due_to_not_ended_expr ) {
     error_list.emplace_back();
 
     Error *e = &error_list.back();
@@ -212,12 +212,12 @@ Error_list::Error &Error_list::add( const Rc_string &msg, bool warn, bool due_to
     return *e;
 }
 
-void Error_list::write_to_stream( std::ostream &os ) const {
+void ErrorList::write_to_stream( std::ostream &os ) const {
     for ( size_t i = 0; i < error_list.size(); ++i )
         os << error_list[ i ];
 }
 
-size_t Error_list::size() const {
+size_t ErrorList::size() const {
     size_t res = 0;
     for( size_t i = 0; i < error_list.size(); ++i )
         res += error_list[ i ].warn == false;

@@ -10,9 +10,11 @@ public:
     Variable( const Value &value ); // make a RefLeaf from a value
     Variable() {} // void Variable
 
-    Variable   &operator=( const Variable &value );
+    Variable   &operator=      ( const Variable &value );
 
-    operator    bool() const { return ref; }
+    operator    bool           () const { return ref; }
+
+    void        write_to_stream( std::ostream &os ) const;
 
     RcPtr<Ref> ref;
     Type      *type;

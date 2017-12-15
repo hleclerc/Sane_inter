@@ -1,14 +1,23 @@
-#include "../lib/globals/var_wrappers.h"
 #include <boost/filesystem.hpp>
+#include "System/FileReader.h"
 #include "System/Stream.h"
+#include "Ast/AstMaker.h"
+#include "AstVisitorVm.h"
 #include "Inst/Cst.h"
+#include "KnownRef.h"
+#include "Import.h"
+#include "Type.h"
 #include "Vm.h"
 
 //// nsmake lib_name boost_filesystem
 
-Vm::Vm() {
+Vm::Vm() : scope( 0 ), main_scope( Scope::ScopeType::ROOT ) {
     init_mode = false;
     error_stream = &std::cerr;
+
+    #define BT( T ) type_##T = new Type;
+    #include "BaseTypes.h"
+    #undef BT
 }
 
 Variable Vm::import( const String &filename, const String &import_dir, bool display_lexems ) {
@@ -22,35 +31,37 @@ Variable Vm::import( const String &filename, const String &import_dir, bool disp
         return iter->second;
 
     // prepare a result variable
-    Var_Import res;
-    imported.insert( iter, std::make_pair( abso, res.var ) );
+    KnownRef<Import> *ref_import = new KnownRef<Import>;
+    Variable res( ref_import, type_Import );
+    Import *import = &ref_import->data;
 
-//    Import *import = rcast( res.ptr() );
-//    import->filename = absolute_filename;
-//    import->finished = false;
+    imported.insert( iter, std::make_pair( abso, res ) );
 
-//    // parse
-//    Ast_maker am( &el );
-//    File_reader fr( path );
-//    size_t old_el_size = el.size();
-//    am.parse( fr.data, path.c_str(), display_lexems );
-//    Ast_crepr ac = am.to_Ast_crepr();
+    import->finished = false;
+    import->filename = abso;
 
-//    if ( display_lexems ) {
-//        AstVisitorDisplay ad( std::cout );
-//        ast_visit( ad, ac.code );
-//    }
+    // parse
+    FileReader fr( abso );
+    AstMaker am( &error_list );
+    size_t old_el_size = error_list.size();
+    am.parse( fr.data, abso.c_str(), display_lexems );
+    AstCrepr ac = am.to_AstCrepr();
 
-//    // if parse error, return an Error var
-//    if ( old_el_size != el.size() ) {
-//        imported[ path.string() ] = ref_error;
-//        return ref_error;
-//    }
+    if ( display_lexems ) {
+        AstVisitorDisplay ad( std::cout );
+        ast_visit( ad, ac.code );
+    }
 
-//    // exec
-//    Scope loc( Scope::Scope_type::BLOCK, &main_scope );
-//    loc.import = import;
-//    loc.visit( ac, false );
+    // if parse error, return an Error var
+    if ( old_el_size != error_list.size() ) {
+        imported[ abso ] = ref_error;
+        return ref_error;
+    }
+
+    // exec
+    Scope loc( Scope::ScopeType::BLOCK );
+    loc.import = import;
+    visit( ac, false );
 
     //
     //    for( Scope::NV *nv = loc.last_var; nv; nv = nv->prev )
@@ -58,8 +69,8 @@ Variable Vm::import( const String &filename, const String &import_dir, bool disp
     //            import->exports << Import::Export{ String( nv->name ), nv->var };
     //    std::reverse( import->exports.begin(), import->exports.end() );
 
-//    import->finished = true;
-    return res.var;
+    import->finished = true;
+    return res;
 }
 
 String Vm::path( const String &filename, const String &import_dir ) {
@@ -109,8 +120,8 @@ String Vm::path( const String &filename, const String &import_dir ) {
 //    std::cerr << msg << ": " << error << std::endl;
 //}
 
-Error_list::Error &Vm::prep_Error( int nb_calls_to_skip, const String &msg ) {
-    Error_list::Error &error = error_list.add( msg );
+ErrorList::Error &Vm::prep_Error( int nb_calls_to_skip, const String &msg ) {
+    ErrorList::Error &error = error_list.add( msg );
     //    bool disp = true;
     //    for( const Scope *s = this; s; s = s->parent ) {
     //        if ( s->pos.cur_names && disp ) {
@@ -128,3 +139,35 @@ void Vm::disp_Error( const Error &error ) const {
     *error_stream << error;
 }
 
+
+Variable Vm::visit( const AstCrepr &ac, bool want_ret ) {
+    return visit( ac.names, ac.code, want_ret );
+}
+
+Variable Vm::visit( const RcString &names, const RcString &code, bool want_ret ) {
+    auto _ = raii_save( pos );
+
+    AstVisitorVm av( names, want_ret );
+    ast_visit( av, code );
+    return av.ret;
+}
+
+Variable Vm::visit( const RcString &names, const Vec<RcString> &code, bool want_ret ) {
+    if ( code.size() ) {
+        for( size_t i = 0; i < code.size() - 1; ++i )
+            visit( names, code[ i ], false );
+        return visit( names, code.back(), want_ret );
+    }
+    ASSERT( want_ret == false, "..." );
+    return {};
+}
+
+Variable Vm::visit( const Vec<AstCrepr> &creps, bool want_ret ) {
+    if ( creps.size() ) {
+        for( size_t i = 0; i < creps.size() - 1; ++i )
+            visit( creps[ i ], false );
+        return visit( creps.back(), want_ret );
+    }
+    ASSERT( want_ret == false, "..." );
+    return {};
+}

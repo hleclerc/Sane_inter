@@ -1,7 +1,7 @@
 #include "../src/gvm.h"
 #include <gtest/gtest.h>
 
-TEST( Vm, ne ) {
+TEST( Vm, error_if_file_does_not_exist ) {
     gvm = new Vm;
     std::ostringstream ss;
     gvm->error_stream = &ss;

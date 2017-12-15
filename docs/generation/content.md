@@ -600,7 +600,7 @@ info i # => T( a: 100 )
 
 In Sane, functions implementations can be selected according to their *a posteriori* usage, notably to allow *global optimizations*.
 
-When functions (or methods) that are qualified `switchable` are called, Sane marks them in the generated graph (which includes the captured variables). Before code emission, these marks are sent to the registered "switch procedures", allowing to **choose the best implementations** depdending on the global context.
+When functions (or methods) that are qualified `switchable` are called, Sane marks them in the generated graph (which includes the captured variables). Before code emission, these marks are sent to the registered "switch procedures", allowing to **choose the best implementations** depending on the global context.
 
 ```python
 # a standard matrix class (with a `switchable` procedure)
@@ -661,7 +661,7 @@ info t_dot vec( 1 .. 1000 ), vec( 1 .. 1000 )
         
 ## Compact representations
 
-Memory representation or potentially mutable variables are rarely compact. For instance, a `String` will take at least 24 bytes (on a 64 bits machine) even of the string is very small, a lot of small numbers are stored in too wide integers, etc...
+Memory representation of potentially mutable variables are rarely compact. For instance, a `String` will take at least 24 bytes (on a 64 bits machine) even of the string is very small, a lot of small numbers are stored in too wide integers, etc...
 
 But one can use introspection and generative programming to generate and handle compact representations.
 
@@ -713,7 +713,7 @@ class CompactRepr[ T ] when T.inherits( Number ) && T::is_integer && T::is_signe
             shift += 7
             ++ptr
         x += typeof( x )( @ptr ) << shift
-            
+          is  
     # display
     def write_to_stream mut os
         os << T self
@@ -837,4 +837,4 @@ SI32 Foo::baz( SI32 a, SI32 b ) {
 
 # Current status
 
-All the features in the documents have been tested in intermediate prototypes. Since there's stable interpreter, the compiler is currently rewritten in Sane... so it's totally a good time for comments and potentially deep modifications !
+All the features in the documents have been tested in intermediate prototypes. Since there's a stable interpreter, the compiler is currently rewritten in Sane... so it's totally a good time for comments and potentially deep modifications !

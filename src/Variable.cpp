@@ -14,3 +14,10 @@ Variable &Variable::operator=( const Variable &value ) {
     return *this;
 }
 
+void Variable::write_to_stream( std::ostream &os ) const {
+    if ( ref )
+        os << *ref;
+    else
+        os << "NULL";
+}
+

@@ -1,0 +1,52 @@
+pass                  0
+variable              1 name:String
+var_assembly          1 args:VecLex
+continue              1  
+break                 1
+false                 0
+true                  0
+self                  1  
+this                  1  
+number                1 value:String
+string                1 value:String
+get_attr              0 obj:Lex name:String
+scope_resolution      0 obj:Lex name:String
+get_attr_ptr          0 obj:Lex name:String
+get_attr_calc         0 obj:Lex args:VecLex
+scope_resolution_calc 0 obj:Lex args:VecLex
+get_attr_ptr_calc     0 obj:Lex args:VecLex
+ss_block              0 items:VecLex
+block                 0 items:VecLex
+apply_op              1 name:String args:VecLex
+apply                 1 f:Lex args:VecLex names:VecString splats:VecPT
+select                1 f:Lex args:VecLex names:VecString splats:VecPT
+chbeba                1 f:Lex args:VecLex names:VecString splats:VecPT
+init_of               1 name:String args:VecLex names:VecString splats:VecPT
+assign                1 name:String cname:Lex nb_scope_rec:PI8 value:Lex flags:PI8
+destruct_assign       1 names:VecString equal:VecLex types:VecLex value:Lex flags:PI8
+def                   1 name:String cname:Lex nb_scope_rec:PI8 arg_names:VecString arg_constraints:VecLex arg_def_vals:VecLex arg_splats:VecPT with_names:VecString with_constraints:VecLex with_def_vals:VecLex with_splats:VecPT condition:Lex pertinence:Lex def_pert_num:SI32 def_pert_exp:SI32 flags:PI32 block:VecLex self_constraint:Lex return_type:Lex wpc:VecLex
+class                 1 name:String cname:Lex nb_scope_rec:PI8 arg_names:VecString arg_constraints:VecLex arg_def_vals:VecLex arg_splats:VecPT with_names:VecString with_constraints:VecLex with_def_vals:VecLex with_splats:VecPT condition:Lex pertinence:Lex def_pert_num:SI32 def_pert_exp:SI32 flags:PI32 block:VecLex inheritance_names:VecString inheritance:VecLex
+if_else               0 cond:Lex ok:VecLex ko:VecLex
+if                    0 cond:Lex ok:VecLex
+while                 0 cond:Lex ok:VecLex
+return                1 value:Lex
+for                   1 name:String container:Lex block:VecLex
+typeof                1 value:Lex
+sizeof                1 value:Lex
+aligof                1 value:Lex
+sizeof_bits           1 value:Lex
+aligof_bits           1 value:Lex
+lambda                1 arg_names:VecString arg_constraints:VecLex arg_def_vals:VecLex splats:VecPT body:Lex
+and                   1 v0:Lex v1:Lex
+or                    1 v0:Lex v1:Lex
+vec                   0 values:VecLex
+map                   0 keys:VecLex values:VecLex
+matrix                0 values:VecLex sizes:VecPT
+raii                  1 values:VecLex
+info                  1 str:VecString code:VecLex
+assert                1 str:String code:Lex
+try_catch             1 try_body:Lex arg_name:String arg_constraint:Lex catch_body:Lex with_names:VecString with_constraints:VecLex with_def_vals:VecLex with_splats:VecPT
+import                1 filename:String names:VecString attrs:VecString
+enum                  1 name:String items:VecString
+
+

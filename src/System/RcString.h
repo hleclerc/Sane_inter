@@ -4,33 +4,33 @@
 
 #include <string.h>
 #include "xxhash.h"
-#include "Rc_ptr.h"
+#include "RcPtr.h"
 
 /**
 */
-class Rc_string {
+class RcString {
 public:
     enum { PRC = 8 };
 
-    Rc_string( Rc_string &rc, char *b, char *e ) : _content( rc._content ), _begin( b ), _end( e ) { ASSERT_IF_DEBUG( _end == 0 || _end <= _content->data + _content->rese ); }
-    Rc_string( const char *b, const char *e );
-    Rc_string( const std::string &str );
-    Rc_string( const char *str );
-    Rc_string( size_t size );
-    Rc_string() { _begin = 0; _end = 0; }
+    RcString( RcString &rc, char *b, char *e ) : _content( rc._content ), _begin( b ), _end( e ) { ASSERT_IF_DEBUG( _end == 0 || _end <= _content->data + _content->rese ); }
+    RcString( const char *b, const char *e );
+    RcString( const std::string &str );
+    RcString( const char *str );
+    RcString( size_t size );
+    RcString() { _begin = 0; _end = 0; }
 
-    Rc_string &operator=( const Rc_string &that ) { _content = that._content; _begin = that._begin; _end = that._end; return *this; }
+    RcString &operator=( const RcString &that ) { _content = that._content; _begin = that._begin; _end = that._end; return *this; }
 
     operator          std::string    () const { return { _begin, _end }; }
     explicit operator bool           () const { return size(); }
-    bool              operator<      ( const Rc_string &that ) const { return size() == that.size() ? strncmp( _begin, that._begin, size() ) < 0 : size() < that.size(); }
-    bool              operator==     ( const Rc_string &that ) const { return size() == that.size() && strncmp( _begin, that._begin, size() ) == 0; }
-    bool              operator!=     ( const Rc_string &that ) const { return size() != that.size() || strncmp( _begin, that._begin, size() ) != 0; }
+    bool              operator<      ( const RcString &that ) const { return size() == that.size() ? strncmp( _begin, that._begin, size() ) < 0 : size() < that.size(); }
+    bool              operator==     ( const RcString &that ) const { return size() == that.size() && strncmp( _begin, that._begin, size() ) == 0; }
+    bool              operator!=     ( const RcString &that ) const { return size() != that.size() || strncmp( _begin, that._begin, size() ) != 0; }
 
     void              write_to_stream( std::ostream &os ) const;
     bool              ack_read_byte  () { return _begin < _end ? true : ack_error(); } ///< return true if ok to read a byte. Else, set end to 0 (to signal an error) and return false.
     bool              ack_read_some  ( ST len ) { return _begin + len <= _end ? true : ack_error(); } ///< return true if ok to `len` bytes. Else, set end to 0 (to signal an error) and return false.
-    bool              begins_with    ( const Rc_string &str ) const;
+    bool              begins_with    ( const RcString &str ) const;
     bool              ack_error      () { _begin = 0; _end = 0; return false; } ///< set error flag to true, and return false
     void              read_some      ( void *data, ST size );
     void              skip_some      ( ST size ) { _begin += size; ASSERT_IF_DEBUG( _begin <= _end ); }
@@ -59,13 +59,13 @@ protected:
     char             *_end;
 };
 
-Rc_string operator+( const char      *a, const Rc_string &b );
-Rc_string operator+( const Rc_string &a, const Rc_string &b );
-Rc_string operator+( const Rc_string &a, const char      *b );
+RcString operator+( const char      *a, const RcString &b );
+RcString operator+( const RcString &a, const RcString &b );
+RcString operator+( const RcString &a, const char      *b );
 
 namespace std {
-    template<> struct hash<Rc_string> {
-        typedef Rc_string argument_type;
+    template<> struct hash<RcString> {
+        typedef RcString argument_type;
         typedef std::size_t result_type;
         result_type operator()( argument_type const &s ) const {
             //            result_type hash = 5381;

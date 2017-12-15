@@ -11,9 +11,11 @@ public:
     Value( const Value &value ); //
     Value() {} // void value
 
-    Value      &operator=( const Value &value );
+    Value      &operator=      ( const Value &value );
 
-    operator    bool     () const { return inst; }
+    operator    bool           () const { return inst; }
+
+    void        write_to_stream( std::ostream &os ) const;
 
     RcPtr<Inst> inst;
     Type       *type;

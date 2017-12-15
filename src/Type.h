@@ -1,11 +1,14 @@
-#ifndef TYPE_H
-#define TYPE_H
+#pragma once
 
-
-class Type
-{
+#include "TypeContent.h"
+#include "KnownRef.h"
+/**
+*/
+class Type {
 public:
     Type();
+
+
+    KnownRef<TypeContent> content;
 };
 
-#endif // TYPE_H
