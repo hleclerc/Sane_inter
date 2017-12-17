@@ -12,7 +12,8 @@
 //// nsmake lib_name boost_filesystem
 
 Vm::Vm() : scope( 0 ), main_scope( Scope::ScopeType::ROOT ) {
-    init_mode = false;
+    nb_breaks    = 0;
+    init_mode    = false;
     error_stream = &std::cerr;
 
     #define BT( T ) type_##T = new Type;

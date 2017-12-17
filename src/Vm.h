@@ -45,14 +45,17 @@ public:
     #include "BaseTypes.h"
     #undef BT
 
+    Variable      ref_void;
+    Variable      ref_error;
+
+    int           nb_breaks; ///<
+
     Position      pos;
     Scope        *scope;
     Vec<String>   includes;
     MSV           imported;
     bool          init_mode;
-    Variable      ref_void;
-    Variable      ref_error;
-    ErrorList    error_list;
+    ErrorList     error_list;
     Scope         main_scope;
     CS            call_stack;
     std::ostream *error_stream;

@@ -37,12 +37,13 @@ Variable AstVisitorVm::on_var_assembly( const Vec<RcString> &args ) {
 }
 
 Variable AstVisitorVm::on_break() {
-    scope->nb_breaks = scope->nb_scopes_to_break();
+    gvm->nb_breaks = gvm->scope->nb_scopes_to_break();
     return gvm->ref_void;
 }
 
 Variable AstVisitorVm::on_continue() {
-    scope->nb_conts = scope->nb_scopes_to_cont();
+    gvm->nb_breaks = gvm->scope->nb_scopes_to_cont();
+    return gvm->ref_void;
 }
 
 Variable AstVisitorVm::on_self() {
