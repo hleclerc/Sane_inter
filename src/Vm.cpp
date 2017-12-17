@@ -3,7 +3,9 @@
 #include "System/Stream.h"
 #include "Ast/AstMaker.h"
 #include "AstVisitorVm.h"
+#include "Inst/Void.h"
 #include "Inst/Cst.h"
+#include "Primitives.h"
 #include "KnownRef.h"
 #include "Import.h"
 #include "Type.h"
@@ -11,14 +13,24 @@
 
 //// nsmake lib_name boost_filesystem
 
-Vm::Vm() : scope( 0 ), main_scope( Scope::ScopeType::ROOT ) {
-    nb_breaks    = 0;
-    init_mode    = false;
-    error_stream = &std::cerr;
+Vm::Vm() : main_scope( Scope::ScopeType::ROOT ) {
+    nb_breaks          = 0;
+    init_mode          = false;
+    error_stream       = &std::cerr;
+    reverse_endianness = false;
 
-    #define BT( T ) type_##T = new Type;
+    main_scope.parent = 0;
+    scope = &main_scope;
+
+    #define BT( T ) type_##T = new Type( #T );
     #include "BaseTypes.h"
     #undef BT
+
+    for( Primitive_decl *pd = last_Primitive_decl; pd; pd = pd->prev )
+        predefs[ RcString( "__primitive_" ) + pd->name ] = make_Void( types.push_back_val( pd->func() ) );
+
+    for( Primitive_func *pd = last_Primitive_func; pd; pd = pd->prev )
+        predeffs[ pd->name ] = pd->func;
 }
 
 Variable Vm::import( const String &filename, const String &import_dir, bool display_lexems ) {

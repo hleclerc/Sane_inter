@@ -1,4 +1,4 @@
-CMD = nsmake run -O3 -g3 --cpp-flag -march=native --cpp-flag -Wall -o sane src/sane.cpp
+CMD = nsmake run -O3 -g3 --cpp-flag -march=native --cpp-flag -Wall --cpp-flag -std=c++17 -o sane src/sane.cpp
 
 all: cmp
 

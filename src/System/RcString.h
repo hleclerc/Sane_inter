@@ -1,7 +1,5 @@
 #pragma once
 
-//// nsmake cpp_flag -std=c++17
-
 #include <string.h>
 #include "xxhash.h"
 #include "RcPtr.h"

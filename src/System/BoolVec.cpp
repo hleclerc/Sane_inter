@@ -1,9 +1,9 @@
-#include "Bool_vec.h"
+#include "BoolVec.h"
 
-Bool_vec::Bool_vec( Reference, void *data, size_t size ) : data( (PI8 *)data ), size( size ), rese( 0 ) {
+BoolVec::BoolVec( Reference, void *data, size_t size ) : data( (PI8 *)data ), size( size ), rese( 0 ) {
 }
 
-Bool_vec::Bool_vec( size_t size, bool val ) : size( size ), rese( size ) {
+BoolVec::BoolVec( size_t size, bool val ) : size( size ), rese( size ) {
     size_t bs = ( size + 7 ) / 8;
     if( size )
         data = (PI8 *)malloc( bs );
@@ -16,23 +16,23 @@ Bool_vec::Bool_vec( size_t size, bool val ) : size( size ), rese( size ) {
             data[ i ] = 0;
 }
 
-Bool_vec::Bool_vec( size_t size ) : size( size ), rese( size ) {
+BoolVec::BoolVec( size_t size ) : size( size ), rese( size ) {
     size_t bs = ( size + 7 ) / 8;
     if ( size )
         data = (PI8 *)malloc( bs );
 }
 
-Bool_vec::~Bool_vec() {
+BoolVec::~BoolVec() {
     if ( rese )
         free( data );
 }
 
-void Bool_vec::write_to_stream( std::ostream &os ) const {
+void BoolVec::write_to_stream( std::ostream &os ) const {
     for( size_t i = 0; i < size; ++i )
         os << get( i );
 }
 
-bool Bool_vec::all_true() const {
+bool BoolVec::all_true() const {
     if ( size ) {
         size_t bs = size / 8;
         if ( bs )
@@ -44,7 +44,7 @@ bool Bool_vec::all_true() const {
     return true;
 }
 
-bool Bool_vec::all_false() const {
+bool BoolVec::all_false() const {
     if ( size ) {
         size_t bs = size / 8;
         if ( bs )
@@ -56,7 +56,7 @@ bool Bool_vec::all_false() const {
     return true;
 }
 
-bool Bool_vec::all_true( size_t beg, size_t end ) const {
+bool BoolVec::all_true( size_t beg, size_t end ) const {
     if ( beg % 8 )
         TODO;
 
@@ -72,7 +72,7 @@ bool Bool_vec::all_true( size_t beg, size_t end ) const {
     return true;
 }
 
-bool Bool_vec::all_false( size_t beg, size_t end ) const {
+bool BoolVec::all_false( size_t beg, size_t end ) const {
     if ( beg % 8 )
         TODO;
 
@@ -88,18 +88,29 @@ bool Bool_vec::all_false( size_t beg, size_t end ) const {
     return true;
 }
 
-void Bool_vec::set( size_t index, bool val ) {
+void BoolVec::set( size_t index, bool val ) {
     if ( val )
         data[ index / 8 ] |= ( 1 << index % 8 );
     else
         data[ index / 8 ] &= ~ ( 1 << index % 8 );
 }
 
-bool Bool_vec::get( size_t index ) const {
+void BoolVec::set( bool val ) {
+    size_t bs = ( size + 7 ) / 8;
+    if ( val )
+        for( size_t i = 0; i < bs; ++i )
+            data[ i ] = 255;
+    else
+        for( size_t i = 0; i < bs; ++i )
+            data[ i ] = 0;
+
+}
+
+bool BoolVec::get( size_t index ) const {
     return data[ index / 8 ] & ( 1 << index % 8 );
 }
 
-void Bool_vec::set( size_t beg, size_t end, bool val ) {
+void BoolVec::set( size_t beg, size_t end, bool val ) {
     PI8 *dst = data;
     if ( size_t o = beg / 8 ) {
         dst += o;

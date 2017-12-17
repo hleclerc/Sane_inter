@@ -18,6 +18,9 @@ public:
     using MSV   = std::map<String,Variable>;
     using CS    = Deque<CallStackItem>;
     using Error = ErrorList::Error;
+    using SFM   = std::map<RcString,std::function<Variable()>>;
+    using SVM   = std::map<RcString,Variable>;
+    using SVT   = std::map<RcString,Type *>;
 
     Vm();
 
@@ -52,6 +55,9 @@ public:
 
     Position      pos;
     Scope        *scope;
+    Deque<Type *> types;
+    SVM           predefs;
+    SFM           predeffs;
     Vec<String>   includes;
     MSV           imported;
     bool          init_mode;
@@ -59,5 +65,6 @@ public:
     Scope         main_scope;
     CS            call_stack;
     std::ostream *error_stream;
+    bool          reverse_endianness;
 };
 

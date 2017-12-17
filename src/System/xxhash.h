@@ -181,14 +181,14 @@ namespace xxh
         template <size_t N>
         XXH_FORCE_STATIC_INLINE hash_t<N> rotl(hash_t<N> n, int32_t r)
         {
-            if constexpr (N == 32) { return rotl32(n, r);}
+            if (N == 32) { return rotl32(n, r);}
             else { return rotl64(n, r);}
         }
 
         template <size_t N>
         XXH_FORCE_STATIC_INLINE hash_t<N> swap(hash_t<N> x)
         {
-            if constexpr (N == 32) { return swap32(x);}
+            if (N == 32) { return swap32(x);}
             else { return swap64(x);}
         }
     }
@@ -322,8 +322,8 @@ namespace xxh
         template <size_t N>
         constexpr hash_t<N> PRIME(int32_t n)
         {
-            if constexpr (N == 32) return primes32[n - 1];
-            else if constexpr (N == 64) return primes64[n - 1];
+            if (N == 32) return primes32[n - 1];
+            else if (N == 64) return primes64[n - 1];
             return 0;
         }
 
@@ -371,7 +371,7 @@ namespace xxh
 
                 hash_ret = bit_ops::rotl<N>(v1, 1) + bit_ops::rotl<N>(v2, 7) + bit_ops::rotl<N>(v3, 12) + bit_ops::rotl<N>(v4, 18);
 
-                if constexpr (N == 64)
+                if (N == 64)
                 {
                     hash_ret = mergeRound64(hash_ret, v1);
                     hash_ret = mergeRound64(hash_ret, v2);
@@ -383,7 +383,7 @@ namespace xxh
 
             hash_ret += static_cast<hash_t<N>>(len);
 
-            if constexpr (N == 64)
+            if (N == 64)
             {
                 while (p + 8 <= bEnd)
                 {
@@ -567,7 +567,7 @@ namespace xxh
             {
                 hash_ret = bit_ops::rotl<N>(v1, 1) + bit_ops::rotl<N>(v2, 7) + bit_ops::rotl<N>(v3, 12) + bit_ops::rotl<N>(v4, 18);
 
-                if constexpr (N == 64)
+                if (N == 64)
                 {
                     hash_ret = detail::mergeRound64(hash_ret, v1);
                     hash_ret = detail::mergeRound64(hash_ret, v2);
@@ -579,7 +579,7 @@ namespace xxh
 
             hash_ret += static_cast<hash_t<N>>(total_len);
 
-            if constexpr (N == 64)
+            if (N == 64)
             {
 
                 while (p + 8 <= bEnd) {

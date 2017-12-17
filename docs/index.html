@@ -92,7 +92,7 @@
 <h1>What is Sane ?</h1>
 <p>Sane is a code generator, designed to <strong>speed up the development</strong> of programs optimized for <strong>execution speed and memory usage</strong>.</p>
 
-<p>In itself, the language is not going to provide any abstraction that would drive the programmers away from the hardware, nor any stubborn dogmatic rule that would perpetually force to spend time on workarounds. In place of that, Sane allows and promotes the use and development of <strong>active libraries</strong> (libraries that take part in the process of compilation). Teams and developers can therefore <strong>choose the <em>right</em> level of abstraction</strong>, depending on the context, to meet the needs in terms of programmation speed, security and execution performance.</p>
+<p>In itself, the language is not going to provide any abstraction that would drive the programmers away from the hardware, nor any stubborn dogmatic rule that would perpetually force them to spend time on workarounds. In place of that, Sane allows and promotes the use and development of <strong>active libraries</strong> (libraries that take part in the process of compilation). Teams and developers can therefore <strong>choose the <em>right</em> level of abstraction</strong>, depending on the context, to meet the needs in terms of programming speed, security and execution performance.</p>
 
 <p>Sane is basically very close to C++, except for the <strong>streamlined syntax</strong>, the <strong>compilation processes</strong>, and last but not least, the dramatically improved <strong>compile-time abilities</strong> which notably drives the tools for <strong>generative programming</strong> and <strong>compiler <em>aided</em> decisions</strong>.</p>
 
@@ -431,7 +431,7 @@ We believe that we are able to decide what kind of enforcements and abstractions
 <span style="color: #000000">s</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #118811">&quot;...&quot;</span>
 <span style="color: #000000">foo</span> <span style="color: #000000">s</span> <span style="color: #6d3642; font-weight: bold">+</span> <span style="color: #93488f">2</span>, <span style="color: #000000">s</span>
 </pre></div>
-<p><code>move x</code> create a new object, with the ressources of <code>x</code> (<code>y := move x</code> moves the ressources of <code>x</code> to a new object <code>y</code> of the same type).</p>
+<p><code>move x</code> create a new object, with the resources of <code>x</code> (<code>y := move x</code> moves the resources of <code>x</code> to a new object <code>y</code> of the same type).</p>
 
 <p>Besides, <code>forward x</code> is equivalent to <code>move x</code> if <code>x</code> is an rvalue. In the other case, it returns the reference on <code>x</code>.</p>
 
@@ -487,7 +487,7 @@ We believe that we are able to decide what kind of enforcements and abstractions
 <p>The Sane compiler executes code during the compilation</p>
 
 <ul>
-<li>if explicitely required (via for instance <code>kv</code> function),</li>
+<li>if explicitly required (via for instance <code>kv</code> function),</li>
 <li>if mandatory (notably for template parameters, computed names, ...),</li>
 <li>or if trivial (simplifications that do not penalize the compilation time)</li>
 </ul>
@@ -578,7 +578,7 @@ With the handling of compile time computations, Sane provides tools for embedded
 <span style="color: #938d7f; font-style: italic"># compile time optimized differentiation of foo</span>
 <span style="color: #000000">foo_diff</span> <span style="color: #6d3642; font-weight: bold">:=</span> <span style="color: #000000">sym_diff</span>.<span style="color: #000000">subs</span> [ <span style="color: #000000">x</span>, <span style="color: #000000">n</span> ], [ <span style="color: #000000">xv</span>, <span style="color: #000000">nv</span> ]
 </pre></div>
-<p>These symbolic representations can be seen as the level above the AST representation (also accessible via std introspection as shown later). They enable what one can call "code instrospection and filtering".</p>
+<p>These symbolic representations can be seen as the level above the AST representation (also accessible via std introspection as shown later). They enable what one can call "code introspection and filtering".</p>
 
 <p>It is for instance used in the module <code>vectorize</code> (providing ways to simplify the writing of loops with SIMD instructions). In all the cases, transformations are triggered by standard calls and are a library concern (meaning that you have the choice to select them, to modify or create new ones for full control and extensibility).</p>
 
@@ -638,7 +638,7 @@ With the handling of compile time computations, Sane provides tools for embedded
         <span style="color: #000000">best_split</span> <span style="color: #6d3642; font-weight: bold">:=</span> ...
         <span style="color: #005782">return</span> <span style="color: #000000">mul</span>( <span style="color: #000000">mults</span>[ <span style="color: #93488f">0</span> .. <span style="color: #000000">best_split</span> ] ) <span style="color: #6d3642; font-weight: bold">*</span> <span style="color: #000000">mul</span>( <span style="color: #000000">mults</span>[ <span style="color: #000000">best_split</span>.... ] )
 </pre></div>
-<p>These possibilities are used in a lot of essential optimisations. For instance, the concatenation operator works only with two variables (because it is an operator). If we want to concatenate more than two variables using this operator, we may end up with a lot of intermediate allocations and copies. A posteriori selection enable to gather the concatenations to avoid the waste.</p>
+<p>These possibilities are used in a lot of essential optimizations. For instance, the concatenation operator works only with two variables (because it is an operator). If we want to concatenate more than two variables using this operator, we may end up with a lot of intermediate allocations and copies. A posteriori selection enable to gather the concatenations to avoid the waste.</p>
 </section>
 <section id="Examplesofactivelibraries">
 <h1>Examples of active libraries</h1>
@@ -675,7 +675,7 @@ With the handling of compile time computations, Sane provides tools for embedded
 
 <p>But one can use introspection and generative programming to generate and handle compact representations.</p>
 
-<p>In the following example, we use <code>operator mem_size</code>, which is an optionnal static method. Its mission is to compute the memory footprint of an instance (in bits), givent a pointer to its start.</p>
+<p>In the following example, we use <code>operator mem_size</code>, which is an optional static method. Its mission is to compute the memory footprint of an instance (in bits), given a pointer to its start.</p>
 <div class="highlight" style="background: #ffffff"><pre style="line-height: 125%"><span></span><span style="color: #938d7f; font-style: italic"># generates a class to handle compact representation of T</span>
 <span style="color: #938d7f; font-style: italic"># For the sake of simplicity, this class works with bytes</span>
 <span style="color: #938d7f; font-style: italic"># and there&#39;s no ctor nor setters.</span>

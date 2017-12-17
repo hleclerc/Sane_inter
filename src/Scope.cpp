@@ -2,9 +2,12 @@
 #include "Scope.h"
 #include "gvm.h"
 
-Scope::Scope( Scope::ScopeType type ) : parent( gvm->scope ), type( type ) {
+Scope::Scope( Scope::ScopeType type ) : parent( gvm ? gvm->scope : 0 ), type( type ) {
     import = 0;
     root   = parent ? parent->root : 0;
+
+    if ( gvm )
+        gvm->scope = this;
 }
 
 Scope::~Scope() {
@@ -22,6 +25,81 @@ Scope::~Scope() {
 //        else if ( nb_conts )
 //            parent->nb_conts = nb_conts - 1;
     //    }
+}
+
+Variable Scope::find_variable( const RcString &name, bool ret_err, bool allow_ambiant, bool ret_z_if_in_self ) {
+    // from the current scope to the deeper ones
+    for( Scope *s = this; s; s = s->parent_for_vars() ) {
+        if ( allow_ambiant == false && ! s->parent )
+            break;
+
+        // scope s
+        auto iter = s->variables.find( name );
+        if ( iter != s->variables.end() )
+            return ret_z_if_in_self && ( s->type == Scope::ScopeType::TYPE_CTOR || s->ctor_self ) && ! ( iter->second.flags & ( VariableFlags::TEMPLATE | VariableFlags::STATIC | VariableFlags::CATCHED ) ) ? Variable{} : iter->second.var;
+
+        // try in future attrs
+        if ( s->futur_attrs.count( name ) ) {
+            TODO;
+            //            if ( ret_z_if_in_self && ( s->type == Scope::ScopeType::TYPE_CTOR || s->ctor_self ) )
+            //                return {};
+
+            //            Variable res( vm, vm->type_GetSetter );
+            //            GetSetter *gs = rcast( res.ptr() );
+
+            //            gs->get = { vm, vm->type_DelayedVarInScope };
+            //            DelayedVarInScope *div = rcast( gs->get.ptr() );
+            //            delayed_vars[ name ] << div;
+            //            div->scope = this;
+            //            div->name = name;
+
+            //            return res;
+        }
+
+        //
+        if ( s->self && s->self_method_name != "operator ." )
+            if ( Variable res = s->self.find_attribute( name, false ) )
+                return ret_z_if_in_self ? Variable {} : res;
+    }
+
+    // else, try in predefs
+    if ( allow_ambiant ) {
+        auto iter = gvm->predefs.find( name );
+        if ( iter != gvm->predefs.end() )
+            return iter->second;
+
+        auto itef = gvm->predeffs.find( name );
+        if ( itef != gvm->predeffs.end() )
+            return itef->second();
+    }
+
+    //    // try with get_, set_, mod_, typeof_, or 'operator .'
+    //    if ( name.begins_with( "get_" ) == false && name.begins_with( "set_" ) == false && name.begins_with( "mod_" ) == false && name.begins_with( "typeof_" ) == false && name != "operator ." ) {
+    //        if ( name == "size" )
+    //            ERROR("d");
+    //        Variable g = find_variable( "get_" + name, false, allow_ambiant );
+    //        Variable s = find_variable( "set_" + name, false, allow_ambiant );
+    //        Variable m = find_variable( "mod_" + name, false, allow_ambiant );
+    //        if ( g || s || m ) {
+    //            Variable type_of = find_variable( "typeof_" + name, false, allow_ambiant );
+    //            Variable res( vm, vm->type_GetSetter );
+    //            GetSetter *gs = rcast( res.ptr() );
+    //            gs->type_of = type_of;
+    //            gs->get = g;
+    //            gs->set = s;
+    //            gs->mod = m;
+    //            return res;
+    //        }
+
+    //        //        if ( Variable op = find_attribute( scope, "operator .", false ) ) {
+    //        //            Variable str( scope->vm, scope->vm->type_String );
+    //        //            reinterpret_cast<String *>( str.ptr() )->init( name );
+    //        //            return op.apply( scope, true, str );
+    //        //        }
+    //    }
+
+    // else, return an error Value
+    return ret_err ? gvm->ref_error : Variable{};
 }
 
 size_t Scope::nb_scopes_to_catch() const {
