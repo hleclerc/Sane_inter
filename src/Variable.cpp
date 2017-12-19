@@ -74,7 +74,7 @@ Variable Variable::find_attribute( const RcString &name, bool ret_err, bool msg_
 }
 
 void Variable::setup_vtables() {
-    TODO;
+    // TODO;
 }
 
 Variable Variable::chbeba( bool want_ret, const Vec<Variable> &args, const Vec<RcString> &names ) {

@@ -1,4 +1,13 @@
-#ifndef CALLABLEWITHSELF_H
-#define CALLABLEWITHSELF_H
+#pragma once
 
-#endif // CALLABLEWITHSELF_H
+#include "Variable.h"
+
+/**
+*/
+class CallableWithSelf {
+public:
+    void     write_to_stream( std::ostream &os ) const { os << "CallableWithSelf(" << callable << "," << self << ")"; }
+
+    Variable callable;
+    Variable self;
+};

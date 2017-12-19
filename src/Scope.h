@@ -1,6 +1,7 @@
 #pragma once
 
 #include "System/RcString.h"
+#include "System/Deque.h"
 #include "Variable.h"
 #include <map>
 #include <set>
@@ -31,9 +32,13 @@ public:
 
     Scope              *parent_interp            ( bool squeeze_for_beg = false ) const;
     Scope              *parent_for_vars          () { return type == ScopeType::CALL || type == ScopeType::FOR_EXE ? root : parent; }
+    Variable           *add_static_variable      ( const Variable &var );
+
 
     Vec<RcString>       __arguments_names;
     RcString            self_method_name;
+    Deque<NV>           static_variables;
+    Type               *in_construction;
     MDV                 delayed_vars;
     std::set<RcString>  futur_attrs;
     Variable            ctor_self;

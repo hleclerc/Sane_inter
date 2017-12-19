@@ -3,7 +3,8 @@
 #include "Cst.h"
 
 Cst::Cst( int size, void *val, void *kno ) : val( size ), kno( size ) {
-    memcpy( this->val.data, val, ( size + 7 ) / 8 );
+    if ( val )
+        memcpy( this->val.data, val, ( size + 7 ) / 8 );
     if ( kno )
         memcpy( this->kno.data, kno, ( size + 7 ) / 8 );
     else
@@ -23,3 +24,6 @@ Value make_Cst_SI32( SI32 val ) {
     return { new Cst( 32, &val ), 0, gvm->type_SI32 };
 }
 
+Value make_Cst( Type *type ) {
+    return { new Cst( type->content.data.size ), 0, type };
+}

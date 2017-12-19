@@ -24,7 +24,7 @@ public:
     Vec<AstCrepr>             with_def_vals;
     Vec<PT>                   with_spreads;
 
-    AstCrepr                 condition;
+    AstCrepr                  condition;
 
     SI32                      pert_code;
     SI32                      def_pert_num;

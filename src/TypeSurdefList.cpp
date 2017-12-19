@@ -1,9 +1,19 @@
+#include "CallableWithSelf.h"
 #include "TypeSurdefList.h"
 #include "SurdefList.h"
 #include "Varargs.h"
 #include "gvm.h"
 
 TypeSurdefList::TypeSurdefList() : Type( "SurdefList" ){
+}
+
+Variable TypeSurdefList::with_self( Variable &orig, const Variable &new_self ) const {
+    Variable res( new KnownRef<CallableWithSelf>, gvm->type_CallableWithSelf );
+    CallableWithSelf *cs = res.rcast<CallableWithSelf>();
+    cs->callable = orig;
+    cs->self = new_self;
+
+    return res;
 }
 
 Variable TypeSurdefList::apply( Variable &self, bool want_ret, const Vec<Variable> &args, const Vec<RcString> &names, const Variable &with_self, ApplyFlags apply_flags ) {

@@ -7,6 +7,21 @@ Type::Type( const LString &name ) {
     content.data.name = name;
 }
 
+bool Type::has_vtable_at_the_beginning() const {
+    if ( content.data.has_new_vtable )
+        return true;
+    if ( Class *cl = orig_class() ) {
+        for( const RcString &name : cl->inheritance_names ) {
+            Type *inh_type = content.data.attributes.find( name )->second.type;
+            if ( inh_type->has_vtable_at_the_beginning() )
+                return true;
+            if ( inh_type->content.data.size )
+                break;
+        }
+    }
+    return false;
+}
+
 RcString Type::checks_type_constraint( const Variable &self, const Variable &tested_var, TCI &tci ) const {
     gvm->add_error( "checks_type_constraint for type {}", *this );
     PE( content.data.name );
@@ -35,6 +50,17 @@ void Type::spread_in( const Variable &self, Vec<Variable> &res, Vec<RcString> &n
     TODO;
 }
 
+void Type::construct( const Variable &self, const Vec<Variable> &args, const Vec<RcString> &names ) {
+    Scope new_scope( Scope::ScopeType::BLOCK );
+    new_scope.ctor_self = self;
+
+    if ( Variable constructor = self.find_attribute( "construct", false ) )
+        constructor.apply( false, args, names );
+    else
+        gvm->add_error( "Found no 'construct' method" );
+
+}
+
 double Type::get_pertinence( const Variable &self ) const {
     PE( content.data.name );
     TODO;
@@ -54,6 +80,12 @@ void Type::get_fail_info( const Variable &self, size_t &offset, RcString &source
 
 bool Type::destroy_attrs() const {
     return true;
+}
+
+void Type::add_attribute( const RcString &name, SI32 off, Type *type, Variable::Flags flags ) {
+    TypeContent::Attribute *attr = &content.data.attributes.emplace( name, TypeContent::Attribute{ name, type, off, flags, content.data.last_attribute, 0 } ).first->second;
+    ( content.data.last_attribute ? content.data.last_attribute->next : content.data.first_attribute ) = attr;
+    content.data.last_attribute = attr;
 }
 
 Variable Type::make_sl_trial( bool want_ret, const Variable &func, const Variable &self, const Vec<Variable> &sl_args, const Vec<RcString> &sl_names, const Vec<Variable> &args, const Vec<RcString> &names, const Variable &with_self, ApplyFlags apply_flags ) const {
@@ -114,6 +146,7 @@ Variable Type::find_attribute( const RcString &name, const Variable &self, Varia
 }
 
 Variable Type::with_self( Variable &orig, const Variable &new_self ) const {
+    PE( content.data.name );
     TODO;
     return {};
 }

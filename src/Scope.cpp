@@ -5,10 +5,11 @@
 #include "gvm.h"
 
 Scope::Scope( Scope::ScopeType type ) : parent( gvm ? gvm->scope : 0 ), type( type ) {
-    last_var = 0;
-    import   = 0;
-    root     = parent ? parent->root : 0;
-    wpc      = 0;
+    in_construction = 0;
+    last_var        = 0;
+    import          = 0;
+    root            = parent ? parent->root : this;
+    wpc             = 0;
 
     if ( gvm )
         gvm->scope = this;
@@ -29,6 +30,9 @@ Scope::~Scope() {
     //        else if ( nb_conts )
     //            parent->nb_conts = nb_conts - 1;
     //    }
+
+    if ( gvm )
+        gvm->scope = parent;
 }
 
 Variable Scope::find_variable( const RcString &name, bool ret_err, bool allow_ambiant, bool ret_z_if_in_self ) {
@@ -200,4 +204,14 @@ Scope *Scope::parent_interp( bool squeeze_for_beg ) const {
     if ( type == ScopeType::IF_EXE )
         return parent->parent;
     return parent;
+}
+
+Variable *Scope::add_static_variable(const Variable &var) {
+    NV *nv = static_variables.new_back_item();
+    nv->var = var;
+
+    nv->prev  = last_var;
+    last_var = nv;
+
+    return &nv->var;
 }

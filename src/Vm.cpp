@@ -3,17 +3,20 @@
 #include "System/Stream.h"
 #include "Ast/AstMaker.h"
 #include "AstVisitorVm.h"
+#include "Primitives.h"
 #include "Inst/Void.h"
 #include "Inst/Cst.h"
-#include "Primitives.h"
 #include "KnownRef.h"
+#include "RefLeaf.h"
 #include "Import.h"
 #include "Vm.h"
 
+#include "TypeCallableWithSelf.h"
 #include "TypeSlTrialClass.h"
 #include "TypeSlTrialDef.h"
 #include "TypeSurdefList.h"
 #include "TypeError.h"
+#include "TypeClass.h"
 #include "TypeDef.h"
 #include "TypeBT.h"
 
@@ -37,14 +40,21 @@ Vm::Vm( SI32 sizeof_ptr, bool reverse_endianness ) : main_scope( Scope::ScopeTyp
     #include "ArythmeticTypes.h"
     #undef BT
 
-    type_SlTrialClass = new TypeSlTrialClass;
-    type_SlTrialDef   = new TypeSlTrialDef;
-    type_SurdefList   = new TypeSurdefList;
-    type_Error        = new TypeError;
-    type_Def          = new TypeDef;
+    type_CallableWithSelf = new TypeCallableWithSelf;
+    type_SlTrialClass     = new TypeSlTrialClass;
+    type_SlTrialDef       = new TypeSlTrialDef;
+    type_SurdefList       = new TypeSurdefList;
+    type_Error            = new TypeError;
+    type_Class            = new TypeClass;
+    type_Def              = new TypeDef;
 
     // feed not initialized type_...
     #define BT( T ) if ( ! type_##T ) type_##T = new Type( #T );
+    #include "BaseTypes.h"
+    #undef BT
+
+    // base_types correspondance
+    #define BT( T ) base_types[ #T ] = type_##T;
     #include "BaseTypes.h"
     #undef BT
 
@@ -193,6 +203,37 @@ Variable Vm::visit( const AstCrepr &ac, bool want_ret ) {
 Variable Vm::new_Type( Type *type ) {
     TODO;
     return {};
+}
+
+Variable Vm::make_inst( Type *type, const Vec<Variable> &ctor_args, const Vec<RcString> &ctor_names, ApplyFlags apply_flags ) {
+    // check that all abstract surdefs are defined
+    if ( ! ( apply_flags & ApplyFlags::DONT_CALL_CTOR ) && type->content.data.abstract_methods.size() ) {
+        std::string am;
+        for( const FunctionSignature &fs : type->content.data.abstract_methods )
+            am += std::string( am.empty() ? "" : ", " ) + fs.name;
+        gvm->add_error( "{} contains abstract methods ({}) and should not be instantiated", *type, am );
+    }
+
+    // make an instance
+    Variable res( new RefLeaf( make_Cst( type ), apply_flags & ApplyFlags::DONT_CALL_CTOR ? RefLeaf::Flags::NOT_CONSTRUCTED : RefLeaf::Flags::NONE ), type );
+
+    // call constructor if necessary
+          if ( ! ( apply_flags & ApplyFlags::DONT_CALL_CTOR ) )
+        type->construct( res, ctor_args, ctor_names );
+
+    return res;
+}
+
+Type *Vm::type_ptr_for( const RcString &name, const Vec<Variable> &args ) {
+    if ( init_mode ) {
+        auto iter = base_types.find( name );
+        if ( iter != base_types.end() )
+            return iter->second;
+    }
+    Type *res = types.push_back_val( new Type( name ) );
+    for( const Variable &arg : args )
+        res->content.data.parameters << main_scope.add_static_variable( init_mode ? arg : arg.find_attribute( "operator :=" ).apply( true ) ); // TODO: make a constified copy
+    return res;
 }
 
 Variable Vm::visit( const RcString &names, const RcString &code, bool want_ret ) {

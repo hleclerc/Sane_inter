@@ -1,6 +1,6 @@
 #include "equal.h"
 
-equal::equal()
-{
-
+bool equal( const Variable &a, const Variable &b ) {
+    TODO;
+    return false;
 }

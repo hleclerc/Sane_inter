@@ -1,11 +1,5 @@
-#ifndef EQUAL_H
-#define EQUAL_H
+#pragma once
 
+#include "Variable.h"
 
-class equal
-{
-public:
-    equal();
-};
-
-#endif // EQUAL_H
+bool equal( const Variable &a,  const Variable &b );

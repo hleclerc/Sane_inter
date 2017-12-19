@@ -1,4 +1,17 @@
-def ct_info val
-    __primitive_ct_info val
+# 
+global
+def construct self pertinence -100
+    pass
 
-ct_info 987
+# try a copy constructor or a convert
+global
+def construct self, arg pertinence -101
+    wpc
+        __primitive_default_construct self, arg
+
+class Pouetox
+    def ct_info val
+        __primitive_ct_info val
+
+p := Pouetox()
+p.ct_info 987
