@@ -338,7 +338,7 @@ Sane tries then to provide types to fit the most common needs, with maximum flex
 
 ```python
 # generates a mutable 'String'
-s := "les { 2 * 4 } scarole"
+s := "les ${ 2 * 4 } scarole"
 
 # supporting common operations
 # (with potential memory allocation)

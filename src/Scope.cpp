@@ -1,29 +1,33 @@
+#include "DelayedVarInScope.h"
 #include "System/RaiiSave.h"
+#include "Import.h"
 #include "Scope.h"
 #include "gvm.h"
 
 Scope::Scope( Scope::ScopeType type ) : parent( gvm ? gvm->scope : 0 ), type( type ) {
-    import = 0;
-    root   = parent ? parent->root : 0;
+    last_var = 0;
+    import   = 0;
+    root     = parent ? parent->root : 0;
+    wpc      = 0;
 
     if ( gvm )
         gvm->scope = this;
 }
 
 Scope::~Scope() {
-//    for( const auto &d : delayed_vars )
-//        for( DelayedVarInScope *dv : d.second )
-//            dv->scope = 0;
+    for( const auto &d : delayed_vars )
+        for( DelayedVarInScope *dv : d.second )
+            dv->scope = 0;
 
-//    clear();
+    //    clear();
 
-//    if ( parent ) {
-//        parent->ret = ret;
+    //    if ( parent ) {
+    //        parent->ret = ret;
 
-//        if ( nb_breaks )
-//            parent->nb_breaks = nb_breaks - 1;
-//        else if ( nb_conts )
-//            parent->nb_conts = nb_conts - 1;
+    //        if ( nb_breaks )
+    //            parent->nb_breaks = nb_breaks - 1;
+    //        else if ( nb_conts )
+    //            parent->nb_conts = nb_conts - 1;
     //    }
 }
 
@@ -100,6 +104,40 @@ Variable Scope::find_variable( const RcString &name, bool ret_err, bool allow_am
 
     // else, return an error Value
     return ret_err ? gvm->ref_error : Variable{};
+}
+
+void Scope::reg_var( const RcString &name, const Variable &var, Scope::VariableFlags flags, bool check ) {
+    //
+    if ( import && flags & VariableFlags::EXPORT )
+        import->exports << Import::Export{ name, var };
+    // global
+    if ( flags & VariableFlags::GLOBAL )
+        return root->reg_var( name, var, flags & ~ VariableFlags::GLOBAL );
+    // already registered ?
+    bool already_present = variables.count( name );
+    if ( already_present && check ) {
+        if ( ! ( flags & Scope::VariableFlags::CATCHED ) ) {
+            gvm->add_error( "Variable '{}' is already defined in current scope", name );
+            ERROR( "." );
+        }
+        return;
+    }
+
+    // completion of futur_attrs
+    auto iter = delayed_vars.find( name );
+    if ( iter != delayed_vars.end() )
+        for( DelayedVarInScope *dv : iter->second )
+            dv->value = var;
+    // -> make a record
+    NV &nv = variables[ name ];
+    nv.flags = flags;
+    nv.name  = name;
+    nv.var   = var;
+
+    if ( ! already_present ) {
+        nv.prev  = last_var;
+        last_var = &nv;
+    }
 }
 
 size_t Scope::nb_scopes_to_catch() const {

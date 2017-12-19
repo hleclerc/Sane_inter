@@ -1,1 +1,4 @@
-__primitive_ct_info 129
+def ct_info val
+    __primitive_ct_info val
+
+ct_info 987

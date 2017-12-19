@@ -9,6 +9,7 @@ public:
     RefLeaf( const Value &value );
 
     virtual void write_to_stream( std::ostream &os ) const;
+    virtual bool is_shared      () const;
 
     Value        value;
 };

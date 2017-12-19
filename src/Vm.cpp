@@ -8,21 +8,43 @@
 #include "Primitives.h"
 #include "KnownRef.h"
 #include "Import.h"
-#include "Type.h"
 #include "Vm.h"
+
+#include "TypeSlTrialClass.h"
+#include "TypeSlTrialDef.h"
+#include "TypeSurdefList.h"
+#include "TypeError.h"
+#include "TypeDef.h"
+#include "TypeBT.h"
 
 //// nsmake lib_name boost_filesystem
 
-Vm::Vm() : main_scope( Scope::ScopeType::ROOT ) {
-    nb_breaks          = 0;
-    init_mode          = false;
-    error_stream       = &std::cerr;
-    reverse_endianness = false;
+Vm::Vm( SI32 sizeof_ptr, bool reverse_endianness ) : main_scope( Scope::ScopeType::ROOT ), sizeof_ptr( sizeof_ptr ), reverse_endianness( reverse_endianness ) {
+    nb_breaks    = 0;
+    init_mode    = false;
+    error_stream = &std::cerr;
+    nb_calls     = 0;
 
     main_scope.parent = 0;
     scope = &main_scope;
 
-    #define BT( T ) type_##T = new Type( #T );
+    #define BT( T ) type_##T = 0;
+    #include "BaseTypes.h"
+    #undef BT
+
+    // arythmetic types
+    #define BT( T ) type_##T = reverse_endianness ? (Type *)new TypeBT<T,true>( #T ) : (Type *)new TypeBT<T,false>( #T );
+    #include "ArythmeticTypes.h"
+    #undef BT
+
+    type_SlTrialClass = new TypeSlTrialClass;
+    type_SlTrialDef   = new TypeSlTrialDef;
+    type_SurdefList   = new TypeSurdefList;
+    type_Error        = new TypeError;
+    type_Def          = new TypeDef;
+
+    // feed not initialized type_...
+    #define BT( T ) if ( ! type_##T ) type_##T = new Type( #T );
     #include "BaseTypes.h"
     #undef BT
 
@@ -152,9 +174,25 @@ void Vm::disp_Error( const Error &error ) const {
     *error_stream << error;
 }
 
+RcString Vm::src_name( size_t index ) const {
+    RcString cp_cn = pos.cur_names;
+    Hpipe::BinStream<RcString> bs( &cp_cn );
+    size_t size = bs.read_unsigned();
+    if ( index >= size )
+        return {};
+    for( ; index; --index )
+        bs.skip_string();
+    return bs.read_String();
+}
+
 
 Variable Vm::visit( const AstCrepr &ac, bool want_ret ) {
     return visit( ac.names, ac.code, want_ret );
+}
+
+Variable Vm::new_Type( Type *type ) {
+    TODO;
+    return {};
 }
 
 Variable Vm::visit( const RcString &names, const RcString &code, bool want_ret ) {

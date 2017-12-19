@@ -7,7 +7,7 @@ class Type;
 */
 class Value {
 public:
-    Value( const RcPtr<Inst> &inst, Type *type, SI32 offset = 0  ); //
+    Value( const RcPtr<Inst> &inst, SI32 nout, Type *type, SI32 offset = 0  ); //
     Value( const Value &value ); //
     Value() {} // void value
 
@@ -19,6 +19,7 @@ public:
 
     RcPtr<Inst> inst;
     Type       *type;
+    SI32        nout;
     SI32        offset;
 };
 

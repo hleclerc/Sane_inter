@@ -1,4 +1,4 @@
-//#include "Ast_visitor_catched_variables.h"
+#include "AstVisitorCatchedVariables.h"
 #include "AstVisitorVm.h"
 #include "Inst/Cst.h"
 //#include "System/rcast.h"
@@ -9,8 +9,9 @@
 //#include "String.h"
 //#include "Class.h"
 //#include "Block.h"
-//#include "Def.h"
+#include "Def.h"
 //#include "AT.h"
+#include "SurdefList.h"
 #include "Type.h"
 #include "gvm.h"
 
@@ -288,26 +289,24 @@ Variable AstVisitorVm::on_init_of( RcString name, const Vec<RcString> &args, con
 }
 
 Variable AstVisitorVm::on_assign( RcString name, RcString cname, PI8 nb_scopes_rec, RcString value, PI8 flags ) {
-    TODO; return {};
-//    Scope *store = scope;
-//    while ( nb_scopes_rec-- ) {
-//        store = store->parent_interp( true );
-//        if ( ! store )
-//            return scope->add_error( "Not enough scope parents" ), ret_or_dec_ref( vm->ref_error );
-//    }
+    // target scope
+    Scope *store = gvm->scope;
+    while ( nb_scopes_rec-- ) {
+        store = store->parent_interp( true );
+        if ( ! store )
+            return gvm->add_error( "Not enough scope parents" );
+    }
 
-//    if ( name.empty() ) {
-//        ASSERT( cname.size(), "..." );
-//        Variable vn = scope->find_variable( "String" ).apply( scope, true, scope->visit( this->names, cname, true ) );
-//        name = *reinterpret_cast<String *>( vn.ptr() );
-//    }
+    if ( name.empty() ) {
+        ASSERT( cname.size(), "..." );
+        name = gvm->visit( this->names, cname, true ).as_String();
+    }
 
-//    ret_or_dec_ref( assign( store, name, [&]() { return scope->visit( names, value, true ); }, flags ) );
+    return assign( store, name, [&]() { return gvm->visit( names, value, true ); }, flags );
 }
 
 Variable AstVisitorVm::on_ss_block( const Vec<RcString> &items ) {
-    TODO; return {};
-//    ret_or_dec_ref( scope->visit( names, items, want_ret ) );
+    return gvm->visit( names, items, want_ret );
 }
 
 Variable AstVisitorVm::on_destruct_assign( const Vec<RcString> &names, const Vec<RcString> &def_vals, const Vec<RcString> &types, RcString value, PI8 flags ) {
@@ -335,118 +334,114 @@ Variable AstVisitorVm::on_destruct_assign( const Vec<RcString> &names, const Vec
 }
 
 Variable AstVisitorVm::on_def( RcString name, RcString cname, PI8 nb_scopes_rec, const Vec<RcString> &arg_names, const Vec<RcString> &arg_constraints, const Vec<RcString> &arg_def_vals, const Vec<size_t> &arg_spreads, const Vec<RcString> &with_names, const Vec<RcString> &with_constraints, const Vec<RcString> &with_def_vals, const Vec<size_t> &with_spreads, RcString condition, RcString pertinence, SI32 def_pert_num, SI32 def_pert_exp, PI32 flags, const Vec<RcString> &block, RcString self_constraint, RcString return_type, const Vec<RcString> &wpc ) {
-    TODO; return {};
-//    Scope *store = scope;
-//    while ( nb_scopes_rec-- ) {
-//        store = store->parent_interp( true );
-//        if ( ! store )
-//            return scope->add_error( "Not enough scope parents" ), ret_or_dec_ref( vm->ref_error );
-//    }
+    Scope *store = gvm->scope;
+    while ( nb_scopes_rec-- ) {
+        store = store->parent_interp( true );
+        if ( ! store )
+            return gvm->add_error( "Not enough scope parents" );
+    }
 
-//    if ( store->ctor_self )
-//        return;
+    if ( store->ctor_self )
+        return gvm->ref_void;
 
-//    // get name
-//    if ( name.empty() ) {
-//        ASSERT( cname.size(), "..." );
-//        Variable vn = scope->find_variable( "String" ).apply( scope, true, scope->visit( this->names, cname, true ) );
-//        if ( vn.error() )
-//            return scope->add_error( "Not enough scope parents" ), ret_or_dec_ref( vm->ref_error );
-//        name = *reinterpret_cast<String *>( vn.ptr() );
-//    }
+    // get name
+    if ( name.empty() ) {
+        ASSERT( cname.size(), "..." );
+        name = gvm->visit( this->names, cname, true ).as_String();
+    }
 
-//    // helper
-//    std::function<Ast_crepr(const RcString &)> ms = [&]( const RcString &cm ) { return Ast_crepr{ this->names, cm }; };
+    // helper
+    std::function<AstCrepr(const RcString &)> ms = [&]( const RcString &cm ) { return AstCrepr{ this->names, cm }; };
 
-//    // enrich or make a surdef (we have to make this before the class creation, to get the class as catched variable if necessary)
-//    Scope *l_scope = flags & CALLABLE_FLAG_global ? scope->root : store;
-//    auto iter_scope = l_scope->variables.find( name );
-//    Variable sl_var;
-//    if ( iter_scope != l_scope->variables.end() ) {
-//        sl_var = iter_scope->second.var;
-//        if ( sl_var.type != vm->type_SurdefList )
-//            return l_scope->add_error( "Variable '{}' already exists and it's not a surdef (=> impossible to register a class with this name)" ), ret_or_dec_ref( vm->ref_error );
-//        if ( flags & CALLABLE_FLAG_export )
-//            iter_scope->second.flags |= Scope::VariableFlags::SELF_AS_ARG;
-//    } else {
-//        Scope::VariableFlags vf = Scope::VariableFlags::CALLABLE;
-//        if ( flags & CALLABLE_FLAG_self_as_arg ) vf |= Scope::VariableFlags::SELF_AS_ARG;
-//        if ( flags & CALLABLE_FLAG_global      ) vf |= Scope::VariableFlags::GLOBAL;
-//        if ( flags & CALLABLE_FLAG_export      ) vf |= Scope::VariableFlags::EXPORT;
-//        if ( flags & CALLABLE_FLAG_static      ) vf |= Scope::VariableFlags::STATIC;
+    // enrich or make a surdef (we have to make this before the class creation, to get the class as catched variable if necessary)
+    Scope *l_scope = flags & CALLABLE_FLAG_global ? gvm->scope->root : store;
+    auto iter_scope = l_scope->variables.find( name );
+    Variable sl_var;
+    if ( iter_scope != l_scope->variables.end() ) {
+        sl_var = iter_scope->second.var;
+        if ( sl_var.type != gvm->type_SurdefList )
+            return gvm->add_error( "Variable '{}' already exists and it's not a surdef (=> impossible to register a class with this name)", name );
+        if ( flags & CALLABLE_FLAG_export )
+            iter_scope->second.flags |= Scope::VariableFlags::SELF_AS_ARG;
+    } else {
+        Scope::VariableFlags vf = Scope::VariableFlags::CALLABLE;
+        if ( flags & CALLABLE_FLAG_self_as_arg ) vf |= Scope::VariableFlags::SELF_AS_ARG;
+        if ( flags & CALLABLE_FLAG_global      ) vf |= Scope::VariableFlags::GLOBAL;
+        if ( flags & CALLABLE_FLAG_export      ) vf |= Scope::VariableFlags::EXPORT;
+        if ( flags & CALLABLE_FLAG_static      ) vf |= Scope::VariableFlags::STATIC;
 
-//        //
-//        sl_var = Variable( vm, vm->type_SurdefList );
-//        l_scope->reg_var( name, sl_var, vf );
-//    }
-//    SurdefList *sl = rcast( sl_var.ptr() );
+        //
+        sl_var = Variable( new KnownRef<SurdefList>, gvm->type_SurdefList );
+        l_scope->reg_var( name, sl_var, vf );
+    }
+    SurdefList *sl = sl_var.rcast<SurdefList>();
 
-//    // store a new Reference in the surdef list
-//    Variable var_def( vm, vm->type_Def );
-//    sl->lst << var_def;
+    // store a new Reference in the surdef list
+    Variable var_def( new KnownRef<Def>, gvm->type_Def );
+    sl->lst << var_def;
 
-//    Def *def = rcast( var_def.ptr() );
-//    def->name                 = name;
-//    def->arg_names            = arg_names;
-//    def->arg_constraints      = arg_constraints.map( ms );
-//    def->arg_def_vals         = arg_def_vals.map( ms );
-//    def->arg_spreads          = arg_spreads;
-//    def->with_names           = with_names;
-//    def->with_constraints     = with_constraints.map( ms );
-//    def->with_def_vals        = with_def_vals.map( ms );
-//    def->with_spreads         = with_spreads;
-//    def->condition            = ms( condition  );
-//    def->pert_code            = ms( pertinence );
-//    def->def_pert_num         = def_pert_num;
-//    def->def_pert_exp         = def_pert_exp;
-//    def->block                = block.map( ms );
-//    def->self_constraint      = ms( self_constraint );
-//    def->return_type          = ms( return_type );
-//    def->wpc_code             = wpc.map( ms );
-//    def->source               = scope->src_name( scope->pos.cur_src );
-//    def->offset               = scope->pos.cur_off;
-//    def->self_as_arg_flag     = flags & CALLABLE_FLAG_self_as_arg;
-//    def->static_flag          = flags & CALLABLE_FLAG_static;
-//    def->abstract_flag        = flags & CALLABLE_FLAG_abstract;
-//    def->virtual_flag         = flags & ( CALLABLE_FLAG_abstract | CALLABLE_FLAG_virtual | CALLABLE_FLAG_override );
-//    def->override_flag        = flags & CALLABLE_FLAG_override;
-//    def->inline_flag          = flags & CALLABLE_FLAG_inline;
-//    def->named_converter_flag = flags & CALLABLE_FLAG_named_converter;
-//    // def->valid_scope_ptr.set_scope( scope );
+    Def *def = var_def.rcast<Def>();
+    def->name                 = name;
+    def->arg_names            = arg_names;
+    def->arg_constraints      = arg_constraints.map( ms );
+    def->arg_def_vals         = arg_def_vals.map( ms );
+    def->arg_spreads          = arg_spreads;
+    def->with_names           = with_names;
+    def->with_constraints     = with_constraints.map( ms );
+    def->with_def_vals        = with_def_vals.map( ms );
+    def->with_spreads         = with_spreads;
+    def->condition            = ms( condition  );
+    def->pert_code            = ms( pertinence );
+    def->def_pert_num         = def_pert_num;
+    def->def_pert_exp         = def_pert_exp;
+    def->block                = block.map( ms );
+    def->self_constraint      = ms( self_constraint );
+    def->return_type          = ms( return_type );
+    def->wpc_code             = wpc.map( ms );
+    def->source               = gvm->src_name( gvm->pos.cur_src );
+    def->offset               = gvm->pos.cur_off;
+    def->self_as_arg_flag     = flags & CALLABLE_FLAG_self_as_arg;
+    def->static_flag          = flags & CALLABLE_FLAG_static;
+    def->abstract_flag        = flags & CALLABLE_FLAG_abstract;
+    def->virtual_flag         = flags & ( CALLABLE_FLAG_abstract | CALLABLE_FLAG_virtual | CALLABLE_FLAG_override );
+    def->override_flag        = flags & CALLABLE_FLAG_override;
+    def->inline_flag          = flags & CALLABLE_FLAG_inline;
+    def->named_converter_flag = flags & CALLABLE_FLAG_named_converter;
+    // def->valid_scope_ptr.set_scope( scope );
 
-//    //
-//    auto reg_cv = [&]( const Ast_visitor_catched_variables &avcv, Vec<CatchedVariable> &vcv ) {
-//        for( RcString catched : avcv.catched )
-//            if ( Variable ref = scope->find_variable( catched, false, false, true ) )
-//                vcv << CatchedVariable{ catched, ref };
-//    };
+    //
+    auto reg_cv = [&]( const AstVisitorCatchedVariables &avcv, Vec<CatchedVariable> &vcv ) {
+        for( RcString catched : avcv.catched )
+            if ( Variable ref = gvm->scope->find_variable( catched, false, false, true ) )
+                vcv << CatchedVariable{ catched, ref };
+    };
 
 
-//    // get catched variables for the preparation
-//    Ast_visitor_catched_variables avcv_prep;
-//    for( const RcString &name : arg_names        ) avcv_prep.internal.insert( name );
-//    for( const RcString &name : with_names       ) avcv_prep.internal.insert( name );
-//    for( const RcString &code : arg_constraints  ) ast_visit( avcv_prep, code );
-//    for( const RcString &code : arg_def_vals     ) ast_visit( avcv_prep, code );
-//    for( const RcString &code : with_constraints ) ast_visit( avcv_prep, code );
-//    for( const RcString &code : with_def_vals    ) ast_visit( avcv_prep, code );
-//    ast_visit( avcv_prep, condition  );
-//    ast_visit( avcv_prep, pertinence );
-//    reg_cv( avcv_prep, def->catched_variables_prep );
+    // get catched variables for the preparation
+    AstVisitorCatchedVariables avcv_prep;
+    for( const RcString &name : arg_names        ) avcv_prep.internal.insert( name );
+    for( const RcString &name : with_names       ) avcv_prep.internal.insert( name );
+    for( const RcString &code : arg_constraints  ) ast_visit( avcv_prep, code );
+    for( const RcString &code : arg_def_vals     ) ast_visit( avcv_prep, code );
+    for( const RcString &code : with_constraints ) ast_visit( avcv_prep, code );
+    for( const RcString &code : with_def_vals    ) ast_visit( avcv_prep, code );
+    ast_visit( avcv_prep, condition  );
+    ast_visit( avcv_prep, pertinence );
+    reg_cv( avcv_prep, def->catched_variables_prep );
 
-//    // get catched variables for the block
-//    Ast_visitor_catched_variables avcv;
-//    for( const RcString &cm   : block      ) avcv.pre_visit( cm );
-//    for( const RcString &name : arg_names  ) avcv.internal.insert( name );
-//    for( const RcString &name : with_names ) avcv.internal.insert( name );
-//    for( const RcString &code : wpc        ) ast_visit( avcv, code );
-//    for( const RcString &code : block      ) ast_visit( avcv, code );
-//    ast_visit( avcv, return_type );
-//    reg_cv( avcv, def->catched_variables );
+    // get catched variables for the block
+    AstVisitorCatchedVariables avcv;
+    for( const RcString &cm   : block      ) avcv.pre_visit( cm );
+    for( const RcString &name : arg_names  ) avcv.internal.insert( name );
+    for( const RcString &name : with_names ) avcv.internal.insert( name );
+    for( const RcString &code : wpc        ) ast_visit( avcv, code );
+    for( const RcString &code : block      ) ast_visit( avcv, code );
+    ast_visit( avcv, return_type );
+    reg_cv( avcv, def->catched_variables );
 
 
-//    // return
-//    ret_or_dec_ref( sl_var );
+    // return
+    return sl_var;
 }
 
 Variable AstVisitorVm::on_class( RcString name, RcString cname, PI8 nb_scopes_rec, const Vec<RcString> &arg_names, const Vec<RcString> &arg_constraints, const Vec<RcString> &arg_def_vals, const Vec<size_t> &arg_spreads, const Vec<RcString> &with_names, const Vec<RcString> &with_constraints, const Vec<RcString> &with_def_vals, const Vec<size_t> &with_spreads, RcString condition, RcString pertinence, SI32 def_pert_num, SI32 def_pert_exp, PI32 flags, const Vec<RcString> &block, const Vec<RcString> &inheritance_names, const Vec<RcString> &inheritance ) {
@@ -970,60 +965,60 @@ Variable AstVisitorVm::xxxxof( RcString value, int w, bool in_bytes ) {
 }
 
 Variable AstVisitorVm::assign( Scope *scope, RcString name, std::function<Variable()> rhs_func, PI8 flags ) {
-    TODO; return {};
-//    if ( scope->ctor_self ) {
-//        if ( flags & ASSIGN_FLAG_static )
-//            return scope->vm->ref_void;
+    if ( scope->ctor_self ) {
+        TODO;
+        //        if ( flags & ASSIGN_FLAG_static )
+        //            return scope->vm->ref_void;
 
-//        if ( scope->wpc && scope->wpc->count( name ) )
-//            return scope->vm->ref_void;
+        //        if ( scope->wpc && scope->wpc->count( name ) )
+        //            return scope->vm->ref_void;
 
-//        // find attribute references
-//        auto iter_attr = scope->ctor_self.type->attributes.find( name );
-//        if ( iter_attr == scope->ctor_self.type->attributes.end() )
-//            return scope->add_error( "Attribute '{}' not registered in type", name ), scope->vm->ref_void;
+        //        // find attribute references
+        //        auto iter_attr = scope->ctor_self.type->attributes.find( name );
+        //        if ( iter_attr == scope->ctor_self.type->attributes.end() )
+        //            return scope->add_error( "Attribute '{}' not registered in type", name ), scope->vm->ref_void;
 
-//        // call ctor recursively
-//        if ( iter_attr->second.type->has_a_constructor() ) {
-//            Variable attr = scope->ctor_self.sub_part( iter_attr->second.type, iter_attr->second.off_in_bits / 8 );
-//            Variable ctor = attr.find_attribute( scope, "construct" );
+        //        // call ctor recursively
+        //        if ( iter_attr->second.type->has_a_constructor() ) {
+        //            Variable attr = scope->ctor_self.sub_part( iter_attr->second.type, iter_attr->second.off_in_bits / 8 );
+        //            Variable ctor = attr.find_attribute( scope, "construct" );
 
-//            if ( flags & ASSIGN_FLAG_type ) // ~=
-//                ctor.apply( scope, false );
-//            else // :=
-//                ctor.apply( scope, false, rhs_func() );
+        //            if ( flags & ASSIGN_FLAG_type ) // ~=
+        //                ctor.apply( scope, false );
+        //            else // :=
+        //                ctor.apply( scope, false, rhs_func() );
 
-//            return attr;
-//        }
+        //            return attr;
+        //        }
 
-//        // complete size information
-//        // Value size = scope->ctor_room_inst->children[ 0 ];
-//        // Value alig = scope->ctor_room_inst->children[ 1 ];
-//        // Value va = attr.p_get( scope );
-//        // scope->ctor_room_inst->mod_child( 1, make_Lcm( alig, va.alig() ) );                         // alig = lcm ( alig, attr.alig );
-//        // scope->ctor_room_inst->mod_child( 0, make_Add( make_Ceil( size, va.alig() ), va.size() ) ); // size = ceil( size, attr.alig ) + attr.size;
-//        return scope->vm->ref_void;
-//    }
+        //        // complete size information
+        //        // Value size = scope->ctor_room_inst->children[ 0 ];
+        //        // Value alig = scope->ctor_room_inst->children[ 1 ];
+        //        // Value va = attr.p_get( scope );
+        //        // scope->ctor_room_inst->mod_child( 1, make_Lcm( alig, va.alig() ) );                         // alig = lcm ( alig, attr.alig );
+        //        // scope->ctor_room_inst->mod_child( 0, make_Add( make_Ceil( size, va.alig() ), va.size() ) ); // size = ceil( size, attr.alig ) + attr.size;
+        //        return scope->vm->ref_void;
+    }
 
 
-//    Variable rhs = rhs_func();
-//    if ( flags & ASSIGN_FLAG_type )
-//        rhs = rhs.apply( scope, true, {}, {}, scope->type != Scope::Scope_type::TYPE_CTOR );
-//    else if ( ( rhs.content->cpt_use > 1 || rhs.type->getsetter() ) && ( flags & ASSIGN_FLAG_ref ) == 0 )
-//        rhs = rhs.find_attribute( scope, "operator :=" ).apply( scope, true ); // make a copy
+    Variable rhs = rhs_func();
+    if ( flags & ASSIGN_FLAG_type )
+        rhs = rhs.apply( true, {}, {}, scope->type != Scope::ScopeType::TYPE_CTOR ? ApplyFlags::DONT_CALL_CTOR : ApplyFlags::NONE );
+    else if ( rhs.is_shared() && ( flags & ASSIGN_FLAG_ref ) == 0 )
+        rhs = rhs.find_attribute( "operator :=" ).apply( true ); // make a copy
 
-//    if ( scope->variables.count( name ) )
-//        scope->add_error( "Identifier '{}' has already been declared", name );
-//    if ( flags & ASSIGN_FLAG_const )
-//        rhs.flags |= Variable::Flags::CONST;
+    if ( gvm->scope->variables.count( name ) )
+        gvm->add_error( "Identifier '{}' has already been declared", name );
+    if ( flags & ASSIGN_FLAG_const )
+        rhs.flags |= Variable::Flags::CONST;
 
-//    Scope::VariableFlags vf = Scope::VariableFlags::NONE;
-//    if ( flags & ASSIGN_FLAG_static ) vf |= Scope::VariableFlags::STATIC;
-//    if ( flags & ASSIGN_FLAG_export ) vf |= Scope::VariableFlags::EXPORT;
-//    if ( flags & ASSIGN_FLAG_global ) vf |= Scope::VariableFlags::GLOBAL;
+    Scope::VariableFlags vf = Scope::VariableFlags::NONE;
+    if ( flags & ASSIGN_FLAG_static ) vf |= Scope::VariableFlags::STATIC;
+    if ( flags & ASSIGN_FLAG_export ) vf |= Scope::VariableFlags::EXPORT;
+    if ( flags & ASSIGN_FLAG_global ) vf |= Scope::VariableFlags::GLOBAL;
 
-//    scope->reg_var( name, rhs, vf );
-//    return rhs;
+    gvm->scope->reg_var( name, rhs, vf );
+    return rhs;
 }
 
 RcString AstVisitorVm::string_assembly( const Vec<RcString> &args ) {

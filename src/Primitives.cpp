@@ -64,10 +64,10 @@ Primitive_func::Primitive_func( const char *name, std::function<Variable()> func
     public: \
         Type_primitive_##NAME() : Type( #NAME ) {} \
         virtual void      destroy( const Variable &self, bool use_virtual ) override {} \
-        virtual Variable  apply  ( Variable &self, bool want_ret, const Vec<Variable> &args, const Vec<RcString> &names, ApplyFlags apply_flags = ApplyFlags::NONE ) override; \
+        virtual Variable  apply  ( Variable &self, bool want_ret, const Vec<Variable> &args, const Vec<RcString> &names, const Variable &with_self, ApplyFlags apply_flags = ApplyFlags::NONE ) override; \
     }; \
     Primitive_decl primitive_decl_##NAME( #NAME, []() { return new Type_primitive_##NAME; } ); \
-    Variable Type_primitive_##NAME::apply( Variable &self, bool want_ret, const Vec<Variable> &args, const Vec<RcString> &names, ApplyFlags apply_flags )
+    Variable Type_primitive_##NAME::apply( Variable &self, bool want_ret, const Vec<Variable> &args, const Vec<RcString> &names, const Variable &with_self, ApplyFlags apply_flags )
 
 #define REG_PRIMITIVE_FUNC( NAME ) \
     Variable primitive_##NAME(); \

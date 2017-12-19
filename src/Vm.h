@@ -22,7 +22,7 @@ public:
     using SVM   = std::map<RcString,Variable>;
     using SVT   = std::map<RcString,Type *>;
 
-    Vm();
+    Vm( SI32 sizeof_ptr = 8 * sizeof( void * ), bool reverse_endianness = false );
 
     Variable      import      ( const String &filename, const String &import_dir = {}, bool display_lexems = false );
     String        path        ( const String &filename, const String &import_dir = {} );
@@ -36,6 +36,7 @@ public:
     Error        &prep_Error  ( int nb_calls_to_skip, const String &msg, const Args &...args ) { return prep_Error( 0, va_string( msg, args... ) ); }
     Error        &prep_Error  ( int nb_calls_to_skip, const String &msg );
     void          disp_Error  ( const Error &error ) const;
+    RcString      src_name    ( size_t index ) const;
 
     Variable      visit       ( const RcString &names, const Vec<RcString> &code, bool want_ret );
     Variable      visit       ( const RcString &names, const RcString &code, bool want_ret );
@@ -43,6 +44,8 @@ public:
     Variable      visit       ( const AstCrepr &ac, bool want_ret );
 
     bool          want_exec   () const { return true; }
+
+    Variable      new_Type    ( Type *type );
 
     #define BT( T ) Type *type_##T;
     #include "BaseTypes.h"
@@ -59,11 +62,14 @@ public:
     SVM           predefs;
     SFM           predeffs;
     Vec<String>   includes;
+    int           nb_calls;
     MSV           imported;
     bool          init_mode;
     ErrorList     error_list;
     Scope         main_scope;
     CS            call_stack;
+    SI32          sizeof_ptr;
+    SI32          aligof_ptr;
     std::ostream *error_stream;
     bool          reverse_endianness;
 };

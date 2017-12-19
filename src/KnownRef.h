@@ -7,9 +7,12 @@
 template<class T>
 class KnownRef : public Ref {
 public:
-
     virtual void write_to_stream( std::ostream &os ) const {
         os << data;
+    }
+
+    virtual void *rcast() {
+        return &data;
     }
 
     T data;
