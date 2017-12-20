@@ -152,67 +152,68 @@ REG_PRIMITIVE_TYPE_BIN_OP( equ         )
 //    return scope->vm->new_PT( a->ptr->content->data + a->ptr->offset_in_bytes - ( b->ptr->content->data + b->ptr->offset_in_bytes ) );
 //}
 
-//REG_PRIMITIVE_TYPE( reassign ) {
-//    Variable va = args[ 0 ].ugs( scope );
-//    Variable vb = args[ 1 ].ugs( scope );
+REG_PRIMITIVE_TYPE( reassign ) {
+    Variable va = args[ 0 ];
+    Variable vb = args[ 1 ];
 
-//    // for valgrind
-//    //if ( va.type == scope->vm->type_Bool )
-//    //    *reinterpret_cast<Bool *>( va.content->data + va.off / 8 ) = 0;
+    // for valgrind
+    //if ( va.type == scope->vm->type_Bool )
+    //    *reinterpret_cast<Bool *>( va.content->data + va.off / 8 ) = 0;
 
-//    // primitive numbers
-//    if ( test_known( scope->vm, va, vb, [&]( auto &a, auto b ) { a = b; return 1; }, 0 ) )
+    // primitive numbers
+    TODO;
+//    if ( test_known( va, vb, [&]( auto &a, auto b ) { a = b; return 1; }, 0 ) )
 //        return args[ 0 ];
 
-//    // AT
-//    if ( va.type == scope->vm->type_AT ) {
-//        AT *ap = rcast( va.ptr() );
-//        if ( vb.type == scope->vm->type_AT ) {
-//            AT *bp = rcast( vb.ptr() );
-//            ap->ptr->content         = bp->ptr->content;
-//            ap->ptr->offset_in_bytes = bp->ptr->offset_in_bytes;
-//        } else if ( vb.type == scope->vm->type_NullPtr ) {
-//            ap->ptr->content         = 0;
-//            ap->ptr->offset_in_bytes = 0;
-//        } else
-//            TODO;
-//        return args[ 0 ];
-//    }
+    // AT
+    //    if ( va.type == scope->vm->type_AT ) {
+    //        AT *ap = rcast( va.ptr() );
+    //        if ( vb.type == scope->vm->type_AT ) {
+    //            AT *bp = rcast( vb.ptr() );
+    //            ap->ptr->content         = bp->ptr->content;
+    //            ap->ptr->offset_in_bytes = bp->ptr->offset_in_bytes;
+    //        } else if ( vb.type == scope->vm->type_NullPtr ) {
+    //            ap->ptr->content         = 0;
+    //            ap->ptr->offset_in_bytes = 0;
+    //        } else
+    //            TODO;
+    //        return args[ 0 ];
+    //    }
 
-//    // char = ...
-//    if ( va.type == scope->vm->type_Char ) {
-//        if ( test_known( scope->vm, vb, [&va]( auto b ) { *reinterpret_cast<char *>( va.ptr() ) = b; return 1; }, 0 ) )
-//            return args[ 0 ];
-//        if ( vb.type == scope->vm->type_Char ) {
-//            *reinterpret_cast<char *>( va.ptr() ) = *reinterpret_cast<char *>( vb.ptr() );
-//            return args[ 0 ];
-//        }
+    //    // char = ...
+    //    if ( va.type == scope->vm->type_Char ) {
+    //        if ( test_known( scope->vm, vb, [&va]( auto b ) { *reinterpret_cast<char *>( va.ptr() ) = b; return 1; }, 0 ) )
+    //            return args[ 0 ];
+    //        if ( vb.type == scope->vm->type_Char ) {
+    //            *reinterpret_cast<char *>( va.ptr() ) = *reinterpret_cast<char *>( vb.ptr() );
+    //            return args[ 0 ];
+    //        }
 
-//    }
+    //    }
 
-//    // ... = char
-//    if ( vb.type == scope->vm->type_Char ) {
-//        if ( test_known( scope->vm, va, [&vb]( auto &a ) { a = *reinterpret_cast<const char *>( vb.ptr() ); return 1; }, 0 ) )
-//            return args[ 0 ];
-//    }
+    //    // ... = char
+    //    if ( vb.type == scope->vm->type_Char ) {
+    //        if ( test_known( scope->vm, va, [&vb]( auto &a ) { a = *reinterpret_cast<const char *>( vb.ptr() ); return 1; }, 0 ) )
+    //            return args[ 0 ];
+    //    }
 
-//    // type
-//    if ( va.type == scope->vm->type_Type ) {
-//        if ( vb.type == scope->vm->type_Type ) {
-//            *reinterpret_cast<Type **>( va.ptr() ) = *reinterpret_cast<Type **>( vb.ptr() );
-//            return args[ 0 ];
-//        }
-//        if ( vb.type == scope->vm->type_SurdefList ) {
-//            Type *type = vb.apply( scope, true, {}, {}, false ).type;
-//            *reinterpret_cast<Type **>( va.ptr() ) = type;
-//            return args[ 0 ];
-//        }
-//    }
+    // type
+    if ( va.type == gvm->type_Type ) {
+        if ( vb.type == gvm->type_Type ) {
+            *va.rcast<Type *>() = *vb.rcast<Type *>();
+            return args[ 0 ];
+        }
+        if ( vb.type == gvm->type_SurdefList ) {
+            Type *type = vb.apply( true, {}, {}, ApplyFlags::DONT_CALL_CTOR ).type;
+            *va.rcast<Type *>() = type;
+            return args[ 0 ];
+        }
+    }
 
-//    if ( va.error() == false && vb.error() == false )
-//        scope->add_error( "don't known how to reassign {} and {} types", *va.type, *vb.type );
-//    return args[ 0 ];
-//}
+    if ( va.error() == false && vb.error() == false )
+        gvm->add_error( "don't known how to reassign {} and {} types", *va.type, *vb.type );
+    return args[ 0 ];
+}
 
 //REG_PRIMITIVE_TYPE( destroy ) {
 //    Variable va = args[ 0 ].ugs( scope );
@@ -308,13 +309,9 @@ REG_PRIMITIVE_TYPE( aligof_ptr_in_bits ) {
     return make_Cst_SI32( gvm->aligof_ptr );
 }
 
-//REG_PRIMITIVE_TYPE( is_little_endian ) {
-//    return scope->vm->new_Bool( __BYTE_ORDER ==__LITTLE_ENDIAN );
-//}
-
-//REG_PRIMITIVE_TYPE( has_fixed_size ) {
-//    return scope->vm->new_Bool( true );
-//}
+REG_PRIMITIVE_TYPE( is_little_endian ) {
+    return make_Cst_Bool( gvm->little_endian() );
+}
 
 //REG_PRIMITIVE_TYPE( read_sync ) {
 //    Variable a = args[ 0 ].ugs( scope );

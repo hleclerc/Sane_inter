@@ -43,7 +43,9 @@ public:
 
     Variable      new_Type     ( Type *type );
     Variable      make_inst    ( Type *type, const Vec<Variable> &ctor_args, const Vec<RcString> &ctor_names, ApplyFlags apply_flags );
+    bool          little_endian() const;
     Type         *type_ptr_for ( const RcString &name, const Vec<Variable> &args );
+
 
     #define BT( T ) Type *type_##T;
     #include "BaseTypes.h"

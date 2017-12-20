@@ -550,7 +550,19 @@ Variable AstVisitorVm::on_if( RcString cond, const Vec<RcString> &ok ) {
 
 Variable AstVisitorVm::on_if_else( RcString cond, const Vec<RcString> &ok, const Vec<RcString> &ko ) {
     Variable cond_var = gvm->visit( names, cond, true );
+
+    if ( cond_var.is_true() ) {
+        Scope new_scope( Scope::ScopeType::IF_EXE );
+        return gvm->visit( names, ok, want_ret );
+    }
+
+    if ( cond_var.is_false() ) {
+        Scope new_scope( Scope::ScopeType::IF_EXE );
+        return gvm->visit( names, ko, want_ret );
+    }
+
     P( cond_var );
+    P( cond_var.get() );
     TODO; return {};
 //    Scope cond_scope( Scope::Scope_type::BLOCK, scope );
 

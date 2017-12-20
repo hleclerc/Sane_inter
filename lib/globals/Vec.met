@@ -107,10 +107,13 @@ class Vec[ T ] extends Array[ T, 1 ]
 global
 class Vec[ T, static_size: Number ] when static_size > 0 extends Array[ T, 1 ]
     # __primitive_add_room_in_type( ( static_size - 1 ) * sizeof_successive( T ) + sizeof_in_bits( T ), aligof_in_bits( T ) )
-    def construct ...args
-        if args.size
-            init_of val, args.values[ 0 ]
-            init_of nxt, ...args.values[ 1.... ]
+    
+    def construct val, ...args
+        init_of val, args.values[ 0 ]
+        init_of nxt, ...args
+    
+    def construct
+        pass
 
     def operator[] index: Number when has_fixed_size( T )
         assert index >= 0 && index < size

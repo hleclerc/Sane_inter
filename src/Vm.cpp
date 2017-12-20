@@ -19,6 +19,7 @@
 #include "TypeLambda.h"
 #include "TypeError.h"
 #include "TypeClass.h"
+#include "TypeType.h"
 #include "TypeDef.h"
 #include "TypeBT.h"
 
@@ -50,6 +51,7 @@ Vm::Vm( SI32 sizeof_ptr, bool reverse_endianness ) : main_scope( Scope::ScopeTyp
     type_Lambda           = new TypeLambda;
     type_Error            = new TypeError;
     type_Class            = new TypeClass;
+    type_Type             = new TypeType;
     type_Def              = new TypeDef;
 
     // feed not initialized type_...
@@ -179,7 +181,7 @@ ErrorList::Error &Vm::prep_Error( int nb_calls_to_skip, const String &msg ) {
                 continue;
             }
             error.ac( s->pos.src_name(), s->pos.cur_off );
-            disp = false;
+            // disp = false;
         }
 
         if ( s->type == Scope::ScopeType::CALL )
@@ -215,10 +217,14 @@ Variable Vm::make_inst( Type *type, const Vec<Variable> &ctor_args, const Vec<Rc
     Variable res( new RefLeaf( make_Cst( type ), apply_flags & ApplyFlags::DONT_CALL_CTOR ? RefLeaf::Flags::NOT_CONSTRUCTED : RefLeaf::Flags::NONE ), type );
 
     // call constructor if necessary
-          if ( ! ( apply_flags & ApplyFlags::DONT_CALL_CTOR ) )
+    if ( ! ( apply_flags & ApplyFlags::DONT_CALL_CTOR ) )
         type->construct( res, ctor_args, ctor_names );
 
     return res;
+}
+
+bool Vm::little_endian() const {
+    return ( __BYTE_ORDER ==__LITTLE_ENDIAN ) ^ reverse_endianness;
 }
 
 Type *Vm::type_ptr_for( const RcString &name, const Vec<Variable> &args ) {

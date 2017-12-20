@@ -1,4 +1,5 @@
 #include "System/BoolVec.h"
+#include "RefGetsetter.h"
 #include "Variable.h"
 #include "RefLeaf.h"
 #include "Type.h"
@@ -77,15 +78,8 @@ Variable Variable::find_attribute( const RcString &name, bool ret_err, bool msg_
         Variable s = find_attribute( "set_" + name, false );
         Variable m = find_attribute( "mod_" + name, false );
         if ( g || s || m ) {
-            TODO;
-            //            Variable type_of = find_attribute( scope, "typeof_" + name, false );
-            //            Variable res( scope->vm, scope->vm->type_GetSetter );
-            //            GetSetter *gs = rcast( res.ptr() );
-            //            gs->type_of = type_of;
-            //            gs->get = g;
-            //            gs->set = s;
-            //            gs->mod = m;
-            //            return res;
+            RefGetsetter *rf = new RefGetsetter( g, s, m, find_attribute( "typeof_" + name, false ) );
+            return { rf, rf->type };
         }
 
         if ( Variable op = find_attribute( "operator .", false ) ) {

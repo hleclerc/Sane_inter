@@ -310,7 +310,6 @@ Variable TypeDef::use_sl_trial( bool want_ret, const Variable &func, const Varia
     if ( def->return_type )
         return_type = gvm->visit( def->return_type, true ).apply( true, {}, {}, ApplyFlags::DONT_CALL_CTOR ).type;
 
-
     // execution
     Variable ret = gvm->visit( def->block, want_ret );
     if ( want_ret && gvm->nb_breaks && new_scope.ret )

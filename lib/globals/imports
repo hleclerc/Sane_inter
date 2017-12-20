@@ -29,6 +29,7 @@ Ast_code.met
 UntypedArray.met
 Array.met
 Vec.met
+Cpu.met
 StringAncestor.met
 String.met
 Def.met
@@ -48,7 +49,6 @@ FunctionPtr.met
 Import.met
 Stream.met
 Codegen.met
-Cpu.met
 CtVec.met
 CtMap.met
 InterpScope.met

@@ -106,6 +106,7 @@ Variable Type::use_sl_trial( bool want_ret, const Variable &func, const Variable
 }
 
 Variable Type::apply( Variable &self, bool want_ret, const Vec<Variable> &args, const Vec<RcString> &names, const Variable &with_self, ApplyFlags apply_flags ) {
+    PE( content.data.name );
     TODO; return {};
 }
 
