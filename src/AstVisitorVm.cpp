@@ -537,10 +537,8 @@ Variable AstVisitorVm::on_class( RcString name, RcString cname, PI8 nb_scopes_re
     reg_cv( avcv, def->catched_variables );
 
     // if it's a base class, make a tmp instance to complete the type information
-    if ( gvm->init_mode && gvm->base_types.count( name ) ) {
-        P( name );
+    if ( gvm->init_mode && gvm->base_types.count( name ) )
         sl_var.apply( false, {}, {}, ApplyFlags::DONT_CALL_CTOR );
-    }
 
     // return
     return sl_var;
@@ -551,6 +549,8 @@ Variable AstVisitorVm::on_if( RcString cond, const Vec<RcString> &ok ) {
 }
 
 Variable AstVisitorVm::on_if_else( RcString cond, const Vec<RcString> &ok, const Vec<RcString> &ko ) {
+    Variable cond_var = gvm->visit( names, cond, true );
+    P( cond_var );
     TODO; return {};
 //    Scope cond_scope( Scope::Scope_type::BLOCK, scope );
 

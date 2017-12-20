@@ -10,12 +10,13 @@
 //#include "System/rcast.h"
 //#include "System/Math.h"
 #include "AnonymousRoom.h"
+#include "System/Math.h"
 #include "Inst/BinOp.h"
 #include "Inst/Cst.h"
 #include "Primitives.h"
 #include "Variable.h"
 //#include "SurdefList.h"
-//#include "Type_Union.h"
+#include "TypeUnion.h"
 //#include "Varargs.h"
 //#include "Import.h"
 //#include "String.h"
@@ -481,21 +482,21 @@ REG_PRIMITIVE_TYPE( add_room_in_type ) {
     return gvm->ref_void;
 }
 
-//REG_PRIMITIVE_TYPE( _union ) {
-//    if ( args.size() != names.size() )
-//        return scope->add_error( "union expects only named arguments" ), scope->vm->ref_error;
-//    Vec<Type *> types;
-//    SI32 max_size = 0, max_alig = 1;
-//    for( size_t i = 0; i < args.size(); ++i ) {
-//        types << const_cast<Variable &>( args[ i ] ).apply( scope, true, {}, {}, false ).type;
-//        max_size = std::max( max_size, types.back()->size );
-//        max_alig = lcm( max_alig, types.back()->alig );
-//    }
-//    Type *res = scope->vm->types.push_back_val( new Type_Union( max_size, max_alig ) );
-//    for( size_t i = 0; i < args.size(); ++i )
-//        res->add_attribute( names[ i ], 0, types[ i ] );
-//    return { scope->vm, scope->vm->type_Type, &res };
-//}
+REG_PRIMITIVE_TYPE( _union ) {
+    if ( args.size() != names.size() )
+        return gvm->add_error( "union expects only named arguments" );
+    Vec<Type *> types;
+    SI32 max_size = 0, max_alig = 1;
+    for( size_t i = 0; i < args.size(); ++i ) {
+        types << const_cast<Variable &>( args[ i ] ).apply( true, {}, {}, ApplyFlags::DONT_CALL_CTOR ).type;
+        max_size = std::max( max_size, types.back()->content.data.size );
+        max_alig = lcm( max_alig, types.back()->content.data.alig );
+    }
+    Type *res = gvm->types.push_back_val( new TypeUnion( max_size, max_alig ) );
+    for( size_t i = 0; i < args.size(); ++i )
+        res->add_attribute( names[ i ], 0, types[ i ] );
+    return { new KnownRef<Type *>( res ), gvm->type_Type };
+}
 
 //REG_PRIMITIVE_TYPE( load ) {
 //    if ( args.size() != 1 )

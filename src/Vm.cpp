@@ -15,6 +15,8 @@
 #include "TypeSlTrialClass.h"
 #include "TypeSlTrialDef.h"
 #include "TypeSurdefList.h"
+#include "TypeVarargs.h"
+#include "TypeLambda.h"
 #include "TypeError.h"
 #include "TypeClass.h"
 #include "TypeDef.h"
@@ -44,6 +46,8 @@ Vm::Vm( SI32 sizeof_ptr, bool reverse_endianness ) : main_scope( Scope::ScopeTyp
     type_SlTrialClass     = new TypeSlTrialClass;
     type_SlTrialDef       = new TypeSlTrialDef;
     type_SurdefList       = new TypeSurdefList;
+    type_Varargs          = new TypeVarargs;
+    type_Lambda           = new TypeLambda;
     type_Error            = new TypeError;
     type_Class            = new TypeClass;
     type_Def              = new TypeDef;

@@ -51,6 +51,7 @@ void Type::destroy( const Variable &self, bool use_virtual ) {
 }
 
 void Type::spread_in( const Variable &self, Vec<Variable> &res, Vec<RcString> &names ) {
+    PE( content.data.name );
     TODO;
 }
 
