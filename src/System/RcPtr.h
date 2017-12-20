@@ -89,30 +89,30 @@ struct RcPtr {
 
     operator bool() const { return data; }
 
-    void clear() { if ( data ) { if ( --data->cpt_use == 0 ) _free(); data = nullptr; } }
+    void clear() { if ( data ) { if ( --data->cpt_use == 0 ) _free( data ); data = nullptr; } }
 
     bool operator==( const T            *p ) const { return data == p;      }
-    bool operator==( const RcPtr<T>    &p ) const { return data == p.data; }
+    bool operator==( const RcPtr<T>     &p ) const { return data == p.data; }
     // bool operator==( const ConstPtr<T> &p ) const { return data == p.data; }
 
     bool operator!=( const T            *p ) const { return data != p;      }
-    bool operator!=( const RcPtr<T>    &p ) const { return data != p.data; }
+    bool operator!=( const RcPtr<T>     &p ) const { return data != p.data; }
     // bool operator!=( const ConstPtr<T> &p ) const { return data != p.data; }
 
     bool operator< ( const T            *p ) const { return data <  p;      }
-    bool operator< ( const RcPtr<T>    &p ) const { return data <  p.data; }
+    bool operator< ( const RcPtr<T>     &p ) const { return data <  p.data; }
     // bool operator< ( const ConstPtr<T> &p ) const { return data <  p.data; }
 
     bool operator<=( const T            *p ) const { return data <= p;      }
-    bool operator<=( const RcPtr<T>    &p ) const { return data <= p.data; }
+    bool operator<=( const RcPtr<T>     &p ) const { return data <= p.data; }
     // bool operator<=( const ConstPtr<T> &p ) const { return data <= p.data; }
 
     bool operator> ( const T            *p ) const { return data >  p;      }
-    bool operator> ( const RcPtr<T>    &p ) const { return data >  p.data; }
+    bool operator> ( const RcPtr<T>     &p ) const { return data >  p.data; }
     // bool operator> ( const ConstPtr<T> &p ) const { return data >  p.data; }
 
     bool operator>=( const T            *p ) const { return data >= p;      }
-    bool operator>=( const RcPtr<T>    &p ) const { return data >= p.data; }
+    bool operator>=( const RcPtr<T>     &p ) const { return data >= p.data; }
     // bool operator>=( const ConstPtr<T> &p ) const { return data >= p.data; }
 
     T *ptr() const { return data; }

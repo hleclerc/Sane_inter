@@ -15,8 +15,9 @@ int main( int argc, char **argv ) {
 
     // base variables
     if ( want_graph_only == false ) {
-        std::ifstream imports( ( INSTALL_DIR / "lib" / "globals" / "imports" ).string() );
         std::string line;
+        gvm->init_mode = true;
+        std::ifstream imports( ( INSTALL_DIR / "lib" / "globals" / "imports" ).string() );
         while ( std::getline( imports, line ) )
             if ( line.empty() == false && line[ 0 ] != '#' )
                 gvm->import( ( INSTALL_DIR / "lib" / "globals" / line ).string() );

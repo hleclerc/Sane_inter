@@ -81,8 +81,8 @@ Variable TypeDef::make_sl_trial( bool want_ret, const Variable &func, const Vari
 
     // function to be called if fail
     auto fail = [&]( const RcString &reason ) {
-        tr->condition = false;
-        tr->msg       = reason;
+        tr->condition.kv = -1;
+        tr->msg          = reason;
         return tr_var;
     };
 
@@ -195,32 +195,21 @@ Variable TypeDef::make_sl_trial( bool want_ret, const Variable &func, const Vari
 
         // compute the condition
         Variable cond_ref = gvm->visit( cond, true );
-
-        // convert to bool
-        if ( cond_ref.type != gvm->type_Bool ) {
-            Variable cond_func = new_new_scope.find_variable( "Bool" );
-            if ( cond_func.error() )
-                return gvm->add_error( "Impossible to find class 'Bool'" ), fail( "internal error" );
-            Variable res = cond_func.apply( true, cond_ref );
-            cond_ref = res;
-        }
-        Bool *cond_val = cond_ref.rcast<Bool>();
-        if ( ! *cond_val )
+        if ( cond_ref.is_false() )
             return fail( "condition not met" );
-    }
+        if ( cond_ref.is_true() )
+            tr->condition.kv = 1;
+        else {
+            tr->condition.kv = 0;
+            tr->condition.val = cond_ref.get();
+        }
+    } else
+        tr->condition.kv = 1;
 
-    //
-    tr->condition = true;
     return tr_var;
 }
 
 Variable TypeDef::use_sl_trial( bool want_ret, const Variable &func, const Variable &sl_var, const Vec<Variable> &sl_args, const Vec<RcString> &sl_names, const Vec<Variable> &args, const Vec<RcString> &names, const Variable &with_self, ApplyFlags apply_flags, const Variable &trial ) const {
-    auto rs = raii_save( gvm->nb_calls );
-    if ( ++gvm->nb_calls > 1000 ) {
-        gvm->add_error( "too much calls" );
-        ERROR( "..." );
-    }
-
     // SurdefList *sd = sl_var.rcast<SurdefList>();
     SlTrialDef *st = trial.rcast<SlTrialDef>();
     Def *def = func.rcast<Def>();

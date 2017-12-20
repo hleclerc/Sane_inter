@@ -7,12 +7,21 @@
 template<class T>
 class KnownRef : public Ref {
 public:
+    template<class ...Args>
+    KnownRef( Args &&...args ) : data( std::forward<Args>( args )... ) {
+    }
+
     virtual void write_to_stream( std::ostream &os ) const {
         os << data;
     }
 
     virtual void *rcast() {
         return &data;
+    }
+
+    virtual Value get() const override {
+        TODO;
+        return {};
     }
 
     T data;

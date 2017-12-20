@@ -12,5 +12,5 @@ struct SlTrialClass {
     Variable      def;
     RcString      msg;
     TCI           tci;
-    Bool          condition;
+    Type::CondVal condition;
 };

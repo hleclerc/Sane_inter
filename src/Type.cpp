@@ -35,6 +35,10 @@ unsigned Type::get_nb_conversions( const Variable &self ) const {
     return 0;
 }
 
+bool Type::has_a_constructor() const {
+    return true;
+}
+
 void Type::write_to_stream( std::ostream &os ) const {
     os << content;
 }
@@ -67,10 +71,10 @@ double Type::get_pertinence( const Variable &self ) const {
     return 0;
 }
 
-bool Type::get_condition( const Variable &self ) const {
+Type::CondVal Type::get_condition( const Variable &self ) const {
     PE( content.data.name );
     TODO;
-    return 0;
+    return Type::CondVal{ 0, {} };
 }
 
 void Type::get_fail_info( const Variable &self, size_t &offset, RcString &source, RcString &msg ) const {

@@ -230,8 +230,8 @@ Variable TypeClass::make_sl_trial( bool want_ret, const Variable &func, const Va
 
     // function to be called if fail
     auto fail = [&]( const RcString &reason ) {
-        tr->condition = false;
-        tr->msg       = reason;
+        tr->condition.kv = -1;
+        tr->msg          = reason;
         return tr_var;
     };
 
@@ -336,22 +336,17 @@ Variable TypeClass::make_sl_trial( bool want_ret, const Variable &func, const Va
 
         // compute the condition
         Variable cond_ref = gvm->visit( cond, true );
-
-        // convert to bool
-        if ( cond_ref.type != gvm->type_Bool ) {
-            Variable cond_func = new_new_scope.find_variable( "Bool" );
-            if ( cond_func.error() )
-                return gvm->add_error( "Impossible to find class 'Bool'" ), fail( "internal error" );
-            Variable res = cond_func.apply( true, cond_ref );
-            cond_ref = res;
-        }
-        Bool *cond_val = cond_ref.rcast<Bool>();
-        if ( ! *cond_val )
+        if ( cond_ref.is_false() )
             return fail( "condition not met" );
-    }
+        if ( cond_ref.is_true() )
+            tr->condition.kv = 1;
+        else {
+            tr->condition.kv = 0;
+            tr->condition.val = cond_ref.get();
+        }
+    } else
+        tr->condition.kv = 1;
 
-    //
-    tr->condition = true;
     return tr_var;
 }
 

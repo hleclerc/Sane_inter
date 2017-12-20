@@ -18,13 +18,16 @@ public:
 
     operator    bool                () const { return ref; }
     bool        error               () const;
-    bool        is_shared           () const { return ref->is_shared(); }
+    bool        is_true             () const;
+    bool        is_false            () const;
+    bool        is_shared           () const;
 
     void        write_to_stream     ( std::ostream &os ) const;
 
     RcString    valid_constraint_for( const Variable &tested_var, TCI &tci ) const;
     Variable    find_attribute      ( const RcString &name, bool ret_err = true, bool msg_if_err = false ) const;
     void        setup_vtables       ();
+    Variable    to_Bool             () const;
     Variable    chbeba              ( bool want_ret, const Vec<Variable> &args = {}, const Vec<RcString> &names = {} );
     Variable    select              ( bool want_ret, const Vec<Variable> &args = {}, const Vec<RcString> &names = {} );
     void        clear               () { ref = 0; type = 0; }
@@ -32,6 +35,14 @@ public:
 
     String      as_String           () const;
     SI32        as_SI32             () const;
+
+    Value       get                 () const;
+    bool        get_bytes           ( void *dst, PI32 beg_dst, PI32 beg_src, PI32 len ) const;
+    void        get_bytes           ( void *dst, PI32 beg_dst, PI32 beg_src, PI32 len, void *msk ) const;
+
+    bool        get_value           ( SI32 &val ) const;
+
+    Variable    sub_part            ( Type *new_type, SI32 add_off ) const;
 
     template<class T>
     T          *rcast               () const { return (T *)ref->rcast(); }

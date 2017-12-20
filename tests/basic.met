@@ -1,1 +1,6 @@
-ct_info 987
+# ct_info 987
+class Pouetox
+    a := 10
+
+p := Pouetox()
+ct_info p.a

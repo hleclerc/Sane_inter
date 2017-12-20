@@ -5,18 +5,16 @@
 TypeSlTrialClass::TypeSlTrialClass() : Type( "SlTrialClass" ) {
 }
 
-bool TypeSlTrialClass::get_condition( const Variable &self ) const {
-    return true;
-    // return reinterpret_cast<SlTrialClass *>( self.ptr() )->condition;
+Type::CondVal TypeSlTrialClass::get_condition( const Variable &self ) const {
+    return self.rcast<SlTrialClass>()->condition;
 }
 
 void TypeSlTrialClass::get_fail_info( const Variable &self, size_t &offset, RcString &source, RcString &msg ) const {
-    TODO;
-    //    SlTrialClass *tr = rcast( self.ptr() );
-    //    Class *def = rcast( tr->def.ptr() );
-    //    offset = def->offset;
-    //    source = def->source;
-    //    msg = tr->msg;
+    SlTrialClass *tr = self.rcast<SlTrialClass>();
+    Class *def = tr->def.rcast<Class>();
+    offset = def->offset;
+    source = def->source;
+    msg = tr->msg;
 }
 
 unsigned TypeSlTrialClass::get_nb_conversions( const Variable &self ) const {

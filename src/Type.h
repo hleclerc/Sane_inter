@@ -10,15 +10,17 @@ class Class;
 */
 class Type {
 public:
+    struct CondVal { int kv; Value val; }; ///< val is defined only if kv == 0. if kv < 0 => cond is false. if kv > 0 => cond is true
     Type( const LString &name );
 
     virtual bool          has_vtable_at_the_beginning() const;
     virtual RcString      checks_type_constraint     ( const Variable &self, const Variable &tested_var, TCI &tci ) const;
     virtual unsigned      get_nb_conversions         ( const Variable &self ) const;
+    virtual bool          has_a_constructor          () const; ///< false for types like Union, ...
     virtual void          write_to_stream            ( std::ostream &os ) const;
     virtual double        get_pertinence             ( const Variable &self ) const;
     virtual Variable      find_attribute             ( const RcString &name, const Variable &self, Variable::Flags flags, SI32 off ) const;
-    virtual bool          get_condition              ( const Variable &self ) const;
+    virtual CondVal       get_condition              ( const Variable &self ) const;
     virtual void          get_fail_info              ( const Variable &self, size_t &offset, RcString &source, RcString &msg ) const;
     virtual bool          destroy_attrs              () const;
     void                  add_attribute              ( const RcString &name, SI32 off, Type *type, Variable::Flags flags = Variable::Flags::NONE );

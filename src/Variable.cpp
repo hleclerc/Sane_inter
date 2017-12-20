@@ -1,3 +1,4 @@
+#include "System/BoolVec.h"
 #include "Variable.h"
 #include "RefLeaf.h"
 #include "Type.h"
@@ -18,6 +19,33 @@ Variable &Variable::operator=( const Variable &value ) {
 
 bool Variable::error() const {
     return type == 0 || type->error();
+}
+
+bool Variable::is_shared() const { return ref->is_shared(); }
+
+Variable Variable::to_Bool() const {
+    if ( type != gvm->type_Bool ) {
+        Variable cond_func = gvm->scope->find_variable( "Bool" );
+        Variable cond_res = cond_func.apply( true, *this );
+        ASSERT( cond_res.type == gvm->type_Bool, "..." );
+        return cond_res;
+    }
+
+    return *this;
+}
+
+bool Variable::is_false() const {
+    if ( type != gvm->type_Bool )
+        return to_Bool().is_false();
+    Bool data;
+    return get_bytes( &data, 0, 0, 1 ) && data == false;
+}
+
+bool Variable::is_true() const {
+    if ( type != gvm->type_Bool )
+        return to_Bool().is_false();
+    Bool data;
+    return get_bytes( &data, 0, 0, 1 ) && data == true;
 }
 
 void Variable::write_to_stream( std::ostream &os ) const {
@@ -119,5 +147,42 @@ String Variable::as_String() const {
 SI32 Variable::as_SI32() const {
     TODO;
     return {};
+}
+
+Value Variable::get() const {
+    Value res = ref->get();
+    return { res.inst, res.nout, type, res.offset + offset };
+}
+
+bool Variable::get_bytes( void *dst, PI32 beg_dst, PI32 beg_src, PI32 len ) const {
+    BoolVec msk( len, true );
+    get_bytes( dst, beg_dst, beg_src, len, msk.data );
+    return msk.all_false();
+}
+
+void Variable::get_bytes( void *dst, PI32 beg_dst, PI32 beg_src, PI32 len, void *msk ) const {
+    return get().get_bytes( dst, beg_dst, beg_src, len, msk );
+}
+
+bool Variable::get_value( SI32 &val ) const {
+    #define TPT( BA, SI ) if ( type == gvm->type_##BA##SI ) { BA##SI v; if ( ! get_bytes( &v, 0, 0, SI ) ) return false; if ( gvm->reverse_endianness ) TODO; val = v; return true; }
+    TPT( PI,  8 )
+    TPT( SI,  8 )
+    TPT( PI, 16 )
+    TPT( SI, 16 )
+    TPT( PI, 32 )
+    TPT( SI, 32 )
+    TPT( PI, 64 )
+    TPT( SI, 64 )
+    #undef TPT
+
+    if ( type == gvm->type_PT ) { TODO; return true; }
+    if ( type == gvm->type_ST ) { TODO; return true; }
+
+    return gvm->scope->find_variable( "SI32" ).get_value( val );
+}
+
+Variable Variable::sub_part( Type *new_type, SI32 add_off ) const {
+    return { ref, new_type, offset + add_off, flags };
 }
 

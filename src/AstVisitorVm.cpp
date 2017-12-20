@@ -24,9 +24,9 @@ AstVisitorVm::AstVisitorVm( const RcString &names, bool want_ret ) : names( name
 
 
 void AstVisitorVm::set_src( size_t src, size_t off ) {
-    gvm->pos.cur_names = names;
-    gvm->pos.cur_src   = src;
-    gvm->pos.cur_off   = off;
+    gvm->scope->pos.cur_names = names;
+    gvm->scope->pos.cur_src   = src;
+    gvm->scope->pos.cur_off   = off;
 }
 
 Variable AstVisitorVm::on_variable( RcString name ) {
@@ -77,13 +77,11 @@ Variable AstVisitorVm::on_pass() {
 }
 
 Variable AstVisitorVm::on_false() {
-    TODO; return {};
-//    ret_or_dec_ref( vm->new_Bool( false ) );
+    return make_Cst_Bool( false );
 }
 
 Variable AstVisitorVm::on_true() {
-    TODO; return {};
-//    ret_or_dec_ref( vm->new_Bool( true ) );
+    return make_Cst_Bool( true );
 }
 
 Variable AstVisitorVm::on_number( RcString value ) {
@@ -93,7 +91,7 @@ Variable AstVisitorVm::on_number( RcString value ) {
 
 Variable AstVisitorVm::on_string( RcString value ) {
     TODO; return {};
-    //    Variable res( scope->vm, scope->vm->type_String );
+    //    Variable res( gvm, gvm->type_String );
     //    reinterpret_cast<String *>( res.ptr() )->init( value );
     //    ret_or_dec_ref( res );
 }
@@ -385,8 +383,8 @@ Variable AstVisitorVm::on_def( RcString name, RcString cname, PI8 nb_scopes_rec,
     def->self_constraint      = ms( self_constraint );
     def->return_type          = ms( return_type );
     def->wpc_code             = wpc.map( ms );
-    def->source               = gvm->src_name( gvm->pos.cur_src );
-    def->offset               = gvm->pos.cur_off;
+    def->source               = gvm->scope->pos.src_name();
+    def->offset               = gvm->scope->pos.cur_off;
     def->self_as_arg_flag     = flags & CALLABLE_FLAG_self_as_arg;
     def->static_flag          = flags & CALLABLE_FLAG_static;
     def->abstract_flag        = flags & CALLABLE_FLAG_abstract;
@@ -493,8 +491,8 @@ Variable AstVisitorVm::on_class( RcString name, RcString cname, PI8 nb_scopes_re
     def->def_pert_num      = def_pert_num;
     def->def_pert_exp      = def_pert_exp;
     def->block             = block.map( ms );
-    def->source            = gvm->src_name( gvm->pos.cur_src );
-    def->offset            = gvm->pos.cur_off;
+    def->source            = gvm->scope->pos.src_name();
+    def->offset            = gvm->scope->pos.cur_off;
     def->inheritance       = inheritance.map( ms );
     def->inheritance_names = inheritance_names;
     def->export_flag       = flags & CALLABLE_FLAG_export;
@@ -542,8 +540,10 @@ Variable AstVisitorVm::on_class( RcString name, RcString cname, PI8 nb_scopes_re
     reg_cv( avcv, def->catched_variables );
 
     // if it's a base class, make a tmp instance to complete the type information
-    if ( gvm->init_mode && gvm->base_types.count( name ) )
+    if ( gvm->init_mode && gvm->base_types.count( name ) ) {
+        P( name );
         sl_var.apply( false, {}, {}, ApplyFlags::DONT_CALL_CTOR );
+    }
 
     // return
     return sl_var;
@@ -637,21 +637,15 @@ Variable AstVisitorVm::on_for( RcString name, RcString container, const Vec<RcSt
 }
 
 Variable AstVisitorVm::on_typeof( RcString value ) {
-    TODO; return {};
-//    if ( want_ret )
-//        ret = xxxxof( value, 0 );
+    return want_ret ? xxxxof( value, 0, true ) : Variable{};
 }
 
 Variable AstVisitorVm::on_sizeof( RcString value ) {
-    TODO; return {};
-//    if ( want_ret )
-//        ret = xxxxof( value, 1, true );
+    return want_ret ? xxxxof( value, 1, true ) : Variable{};
 }
 
 Variable AstVisitorVm::on_aligof( RcString value ) {
-    TODO; return {};
-//    if ( want_ret )
-//        ret = xxxxof( value, 2, true );
+    return want_ret ? xxxxof( value, 2, true ) : Variable{};
 }
 
 Variable AstVisitorVm::on_sizeof_bits( RcString value ) {
@@ -704,10 +698,10 @@ Variable AstVisitorVm::on_and( RcString v0, RcString v1 ) {
     TODO; return {};
 //    Variable va0 = scope->visit( names, v0, true ), b0 = va0.ugs( scope );
 
-//    if ( b0.type != scope->vm->type_Bool ) {
+//    if ( b0.type != gvm->type_Bool ) {
 //        Variable res = scope->find_variable( "Bool" ).apply( scope, true, b0 ).ugs( scope );
 //        b0 = res;
-//        if ( b0.type != scope->vm->type_Bool ) {
+//        if ( b0.type != gvm->type_Bool ) {
 //            if ( ! b0.error() )
 //                scope->add_error( "conv to Bool should give a Bool" );
 //            return ret_or_dec_ref( vm->ref_error );
@@ -721,10 +715,10 @@ Variable AstVisitorVm::on_or( RcString v0, RcString v1 ) {
     TODO; return {};
 //    Variable va0 = scope->visit( names, v0, true ), b0 = va0.ugs( scope );
 
-//    if ( b0.type != scope->vm->type_Bool ) {
+//    if ( b0.type != gvm->type_Bool ) {
 //        Variable res = scope->find_variable( "Bool" ).apply( scope, true, b0 ).ugs( scope );
 //        b0 = res;
-//        if ( b0.type != scope->vm->type_Bool ) {
+//        if ( b0.type != gvm->type_Bool ) {
 //            if ( ! b0.error() )
 //                scope->add_error( "conv to Bool should give a Bool" );
 //            return ret_or_dec_ref( vm->ref_error );
@@ -787,10 +781,10 @@ Variable AstVisitorVm::on_info( const Vec<RcString> &str, const Vec<RcString> &c
 Variable AstVisitorVm::on_assert( RcString str, RcString code ) {
     TODO; return {};
 //    Variable cond_var = scope->visit( names, code, true ).ugs( scope );
-//    if ( cond_var.type != scope->vm->type_Bool ) {
+//    if ( cond_var.type != gvm->type_Bool ) {
 //        Variable res = scope->find_variable( "Bool" ).apply( scope, true, cond_var ).ugs( scope );
 //        cond_var = res;
-//        if ( cond_var.type != scope->vm->type_Bool ) {
+//        if ( cond_var.type != gvm->type_Bool ) {
 //            if ( ! cond_var.error() )
 //                scope->add_error( "conv to Bool should give a Bool" );
 //            return ret_or_dec_ref( vm->ref_error );
@@ -861,7 +855,7 @@ Variable AstVisitorVm::on_enum( RcString name, const Vec<RcString> &items ) {
 //    //    ret_or_dec_ref( res );
 //    if ( scope->ctor_self ) {
 //        ASSERT( want_ret == false, "..." );
-//        return ret_or_dec_ref( scope->vm->ref_void );
+//        return ret_or_dec_ref( gvm->ref_void );
 //    }
 
 //    Variable lst_names = scope->find_variable( "Vec" ).select( scope, true, vm->new_Type( vm->type_String ) ).apply( scope, true );
@@ -948,38 +942,37 @@ Variable AstVisitorVm::xxxxof( RcString value, int w, bool in_bytes ) {
 
 Variable AstVisitorVm::assign( Scope *scope, RcString name, std::function<Variable()> rhs_func, PI8 flags ) {
     if ( scope->ctor_self ) {
-        TODO;
-        //        if ( flags & ASSIGN_FLAG_static )
-        //            return scope->vm->ref_void;
+        if ( flags & ASSIGN_FLAG_static )
+            return gvm->ref_void;
 
-        //        if ( scope->wpc && scope->wpc->count( name ) )
-        //            return scope->vm->ref_void;
+        if ( scope->wpc && scope->wpc->count( name ) )
+            return gvm->ref_void;
 
-        //        // find attribute references
-        //        auto iter_attr = scope->ctor_self.type->attributes.find( name );
-        //        if ( iter_attr == scope->ctor_self.type->attributes.end() )
-        //            return scope->add_error( "Attribute '{}' not registered in type", name ), scope->vm->ref_void;
+        // find attribute references
+        auto iter_attr = scope->ctor_self.type->content.data.attributes.find( name );
+        if ( iter_attr == scope->ctor_self.type->content.data.attributes.end() )
+            return gvm->add_error( "Attribute '{}' not registered in type", name );
 
-        //        // call ctor recursively
-        //        if ( iter_attr->second.type->has_a_constructor() ) {
-        //            Variable attr = scope->ctor_self.sub_part( iter_attr->second.type, iter_attr->second.off_in_bits / 8 );
-        //            Variable ctor = attr.find_attribute( scope, "construct" );
+        // call ctor recursively
+        if ( iter_attr->second.type->has_a_constructor() ) {
+            Variable attr = scope->ctor_self.sub_part( iter_attr->second.type, iter_attr->second.off );
+            Variable ctor = attr.find_attribute( "construct" );
 
-        //            if ( flags & ASSIGN_FLAG_type ) // ~=
-        //                ctor.apply( scope, false );
-        //            else // :=
-        //                ctor.apply( scope, false, rhs_func() );
+            if ( flags & ASSIGN_FLAG_type ) // ~=
+                ctor.apply( false );
+            else // :=
+                ctor.apply( false, rhs_func() );
 
-        //            return attr;
-        //        }
+            return attr;
+        }
 
-        //        // complete size information
-        //        // Value size = scope->ctor_room_inst->children[ 0 ];
-        //        // Value alig = scope->ctor_room_inst->children[ 1 ];
-        //        // Value va = attr.p_get( scope );
-        //        // scope->ctor_room_inst->mod_child( 1, make_Lcm( alig, va.alig() ) );                         // alig = lcm ( alig, attr.alig );
-        //        // scope->ctor_room_inst->mod_child( 0, make_Add( make_Ceil( size, va.alig() ), va.size() ) ); // size = ceil( size, attr.alig ) + attr.size;
-        //        return scope->vm->ref_void;
+        // complete size information
+        // Value size = scope->ctor_room_inst->children[ 0 ];
+        // Value alig = scope->ctor_room_inst->children[ 1 ];
+        // Value va = attr.p_get( scope );
+        // scope->ctor_room_inst->mod_child( 1, make_Lcm( alig, va.alig() ) );                         // alig = lcm ( alig, attr.alig );
+        // scope->ctor_room_inst->mod_child( 0, make_Add( make_Ceil( size, va.alig() ), va.size() ) ); // size = ceil( size, attr.alig ) + attr.size;
+        return gvm->ref_void;
     }
 
 

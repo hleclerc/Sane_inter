@@ -40,7 +40,7 @@ Variable TypeSurdefList::apply( Variable &self, bool want_ret, const Vec<Variabl
         return pertinence[ a ] > pertinence[ b ];
     } );
 
-    // get valid surdefinitions
+    // get (potentially) valid surdefinitions (using what we know during compile time)
     constexpr double bwp = - std::numeric_limits<double>::max();
     double working_pertinence = bwp;
     Vec<Variable> sl_trials( Size(), possibilities.size() );
@@ -51,7 +51,7 @@ Variable TypeSurdefList::apply( Variable &self, bool want_ret, const Vec<Variabl
         Variable vr = sl->lst[ tr ].type->make_sl_trial( want_ret, sl->lst[ tr ], with_self, sl->args, sl->names, args, names, with_self, apply_flags );
         sl_trials[ tr ] = vr;
 
-        if ( vr.type->get_condition( vr ) ) {
+        if ( vr.type->get_condition( vr ).kv >= 0 ) {
             working_pertinence = pertinence[ tr ];
             valid << tr;
         }
@@ -85,7 +85,7 @@ Variable TypeSurdefList::apply( Variable &self, bool want_ret, const Vec<Variabl
         std::ostringstream ss;
         ss << "no valid surdefinition for "; // arg type" << ( args.size() > 1 ? "s" : "" ) << " [";
 
-        if ( with_self.type )
+        if ( with_self )
             ss << *with_self.type << ".";
         ss << sl->possible_names();
         ss << "(" << ( args.size() ? " " : "" );

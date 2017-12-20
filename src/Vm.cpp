@@ -24,7 +24,7 @@
 
 Vm::Vm( SI32 sizeof_ptr, bool reverse_endianness ) : main_scope( Scope::ScopeType::ROOT ), sizeof_ptr( sizeof_ptr ), reverse_endianness( reverse_endianness ) {
     nb_breaks    = 0;
-    init_mode    = false;
+    init_mode    = true;
     error_stream = &std::cerr;
     nb_calls     = 0;
 
@@ -167,32 +167,25 @@ String Vm::path( const String &filename, const String &import_dir ) {
 
 ErrorList::Error &Vm::prep_Error( int nb_calls_to_skip, const String &msg ) {
     ErrorList::Error &error = error_list.add( msg );
-    //    bool disp = true;
-    //    for( const Scope *s = this; s; s = s->parent ) {
-    //        if ( s->pos.cur_names && disp ) {
-    //            error.ac( s->src_name( s->pos.cur_src ), s->pos.cur_off );
-    //            // disp = false;
-    //        }
+    bool disp = true;
+    for( const Scope *s = scope; s; s = s->parent ) {
+        if ( s->pos.cur_names && disp ) {
+            if ( nb_calls_to_skip ) {
+                --nb_calls_to_skip;
+                continue;
+            }
+            error.ac( s->pos.src_name(), s->pos.cur_off );
+            disp = false;
+        }
 
-    //        if ( s->type == Scope::Scope_type::CALL )
-    //            disp = true;
-    //    }
+        if ( s->type == Scope::ScopeType::CALL )
+            disp = true;
+    }
     return error;
 }
 
 void Vm::disp_Error( const Error &error ) const {
     *error_stream << error;
-}
-
-RcString Vm::src_name( size_t index ) const {
-    RcString cp_cn = pos.cur_names;
-    Hpipe::BinStream<RcString> bs( &cp_cn );
-    size_t size = bs.read_unsigned();
-    if ( index >= size )
-        return {};
-    for( ; index; --index )
-        bs.skip_string();
-    return bs.read_String();
 }
 
 
@@ -237,7 +230,7 @@ Type *Vm::type_ptr_for( const RcString &name, const Vec<Variable> &args ) {
 }
 
 Variable Vm::visit( const RcString &names, const RcString &code, bool want_ret ) {
-    auto _ = raii_save( pos );
+    auto _ = raii_save( scope->pos );
 
     AstVisitorVm av( names, want_ret );
     ast_visit( av, code );

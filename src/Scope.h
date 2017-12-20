@@ -13,6 +13,14 @@ class Import;
 */
 class Scope {
 public:
+    struct Position {
+        RcString src_name( size_t  index ) const;
+        RcString src_name() const;
+
+        RcString cur_names;
+        size_t   cur_src;
+        size_t   cur_off;
+    };
     enum class VariableFlags : int { NONE = 0, CALLABLE = 1, STATIC = 2, EXPORT = 4, GLOBAL = 8, TEMPLATE = 16, CATCHED = 32, NO_DEC_REF = 64, SELF_AS_ARG = 128, SUPER = 256 }; ///< for each stored variable
     enum class ScopeType : int { ROOT, CALL, BLOCK, WHILE, TYPE_CTOR, FOR_BEG, FOR_EXE, WPC, TRY, CATCH, IF_EXE };
     struct NV { RcString name; Variable var; VariableFlags flags; NV *prev; };
@@ -50,6 +58,7 @@ public:
     Variable            self;
     Scope              *root;
     ScopeType           type;
+    Position            pos;
     Variable            ret;
     std::set<RcString> *wpc;
 };

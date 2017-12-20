@@ -13,10 +13,7 @@ class Type;
 */
 class Vm {
 public:
-    struct Position { RcString cur_names; size_t cur_src; size_t cur_off; };
-    struct CallStackItem {};
     using MSV   = std::map<String,Variable>;
-    using CS    = Deque<CallStackItem>;
     using Error = ErrorList::Error;
     using SFM   = std::map<RcString,std::function<Variable()>>;
     using SVM   = std::map<RcString,Variable>;
@@ -36,7 +33,6 @@ public:
     Error        &prep_Error   ( int nb_calls_to_skip, const String &msg, const Args &...args ) { return prep_Error( 0, va_string( msg, args... ) ); }
     Error        &prep_Error   ( int nb_calls_to_skip, const String &msg );
     void          disp_Error   ( const Error &error ) const;
-    RcString      src_name     ( size_t index ) const;
 
     Variable      visit        ( const RcString &names, const Vec<RcString> &code, bool want_ret );
     Variable      visit        ( const RcString &names, const RcString &code, bool want_ret );
@@ -58,7 +54,6 @@ public:
 
     int           nb_breaks; ///<
 
-    Position      pos;
     Scope        *scope;
     Deque<Type *> types;
     SVM           predefs;
@@ -70,7 +65,6 @@ public:
     ErrorList     error_list;
     Scope         main_scope;
     SVT           base_types;
-    CS            call_stack;
     SI32          sizeof_ptr;
     SI32          aligof_ptr;
     std::ostream *error_stream;

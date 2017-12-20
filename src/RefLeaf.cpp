@@ -10,3 +10,7 @@ void RefLeaf::write_to_stream( std::ostream &os ) const {
 bool RefLeaf::is_shared() const {
     return cpt_use > 1;
 }
+
+Value RefLeaf::get() const {
+    return value;
+}

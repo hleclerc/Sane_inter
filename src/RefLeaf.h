@@ -11,10 +11,11 @@ public:
 
     RefLeaf( const Value &value, Flags flags = Flags::NONE );
 
-    virtual void write_to_stream( std::ostream &os ) const;
-    virtual bool is_shared      () const;
+    virtual void  write_to_stream( std::ostream &os ) const override;
+    virtual bool  is_shared      () const override;
+    virtual Value get            () const override;
 
-    Value        value;
-    Flags        flags;
+    Value         value;
+    Flags         flags;
 };
 ENUM_FLAGS( RefLeaf::Flags )

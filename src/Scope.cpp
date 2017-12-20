@@ -1,5 +1,6 @@
 #include "DelayedVarInScope.h"
 #include "System/RaiiSave.h"
+#include <Hpipe/BinStream.h>
 #include "Import.h"
 #include "Scope.h"
 #include "gvm.h"
@@ -221,4 +222,19 @@ Variable *Scope::add_static_variable(const Variable &var) {
     last_var = nv;
 
     return &nv->var;
+}
+
+RcString Scope::Position::src_name( size_t index ) const {
+    RcString cp_cn = cur_names;
+    Hpipe::BinStream<RcString> bs( &cp_cn );
+    size_t size = bs.read_unsigned();
+    if ( index >= size )
+        return {};
+    for( ; index; --index )
+        bs.skip_string();
+    return bs.read_String();
+}
+
+RcString Scope::Position::src_name() const {
+    return src_name( cur_src );
 }

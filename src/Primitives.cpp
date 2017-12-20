@@ -9,6 +9,9 @@
 //#include "Ast/Ast_maker.h"
 //#include "System/rcast.h"
 //#include "System/Math.h"
+#include "AnonymousRoom.h"
+#include "Inst/BinOp.h"
+#include "Inst/Cst.h"
 #include "Primitives.h"
 #include "Variable.h"
 //#include "SurdefList.h"
@@ -81,45 +84,39 @@ REG_PRIMITIVE_TYPE( ct_info ) {
     return gvm->ref_void;
 }
 
-#define REG_PRIMITIVE_TYPE_UNA_OP( NAME, OP ) \
+#define REG_PRIMITIVE_TYPE_UNA_OP( NAME ) \
     REG_PRIMITIVE_TYPE( NAME ) { \
         if ( args.size() != 1 ) \
-            return scope->add_error( "__primitive_" #NAME " expects exactly 1 argument" ), scope->vm->ref_error; \
-        Variable a = args[ 0 ].ugs( scope ); \
-        if ( Variable res = test_known( scope->vm, a, [scope]( auto a ) { return make_Variable( scope->vm, OP ); }, Variable{} ) ) \
-            return res; \
-        return scope->add_error( "type '{}' not managed by __primitive_" #NAME, *args[ 0 ].type ), scope->vm->ref_error; \
+            return gvm->add_error( "__primitive_" #NAME " expects exactly 1 argument" ); \
+        return make_##NAME( args[ 0 ].get() ); \
     }
 //REG_PRIMITIVE_TYPE_UNA_OP( neg, - a )
 //REG_PRIMITIVE_TYPE_UNA_OP( not_boolean, ! a )
 //REG_PRIMITIVE_TYPE_UNA_OP( not_bitwise, ! a )
 
-#define REG_PRIMITIVE_TYPE_BIN_OP( NAME, OP ) \
+#define REG_PRIMITIVE_TYPE_BIN_OP( NAME ) \
     REG_PRIMITIVE_TYPE( NAME ) { \
         if ( args.size() != 2 ) \
-            return scope->add_error( "__primitive_" #NAME " expects exactly 2 argument" ), scope->vm->ref_error; \
-        Variable a = args[ 0 ].ugs( scope ), b = args[ 1 ].ugs( scope ); \
-        if ( Variable res = test_known( scope->vm, a, b, [scope]( auto a, auto b ) { return make_Variable( scope->vm, OP ); }, Variable{} ) ) \
-            return res; \
-        return scope->add_error( "arg types '{}' and '{}' not managed by __primitive_" #NAME, *a.type, *b.type ), scope->vm->ref_error; \
+            return gvm->add_error( "__primitive_" #NAME " expects exactly 2 argument" ); \
+        return make_##NAME( args[ 0 ].get(), args[ 1 ].get() ); \
     }
-//REG_PRIMITIVE_TYPE_BIN_OP( add        , a + b )
-//REG_PRIMITIVE_TYPE_BIN_OP( sub        , a - b )
-//REG_PRIMITIVE_TYPE_BIN_OP( mul        , a * b )
-//REG_PRIMITIVE_TYPE_BIN_OP( mod        , a % b )
-//REG_PRIMITIVE_TYPE_BIN_OP( div        , a / b )
-//REG_PRIMITIVE_TYPE_BIN_OP( div_int    , a / b )
-//REG_PRIMITIVE_TYPE_BIN_OP( or_bitwise , a | b )
-//REG_PRIMITIVE_TYPE_BIN_OP( xor_bitwise, a ^ b )
-//REG_PRIMITIVE_TYPE_BIN_OP( and_bitwise, a & b )
-//REG_PRIMITIVE_TYPE_BIN_OP( shift_right, a >> b )
-//REG_PRIMITIVE_TYPE_BIN_OP( shift_left , a << b )
-//REG_PRIMITIVE_TYPE_BIN_OP( inf        , (Cmp<Signed<typeof(a)>::val,Signed<typeof(b)>::val>::my_inf    ( a, b )) )
-//REG_PRIMITIVE_TYPE_BIN_OP( sup        , (Cmp<Signed<typeof(a)>::val,Signed<typeof(b)>::val>::my_sup    ( a, b )) )
-//REG_PRIMITIVE_TYPE_BIN_OP( inf_equ    , (Cmp<Signed<typeof(a)>::val,Signed<typeof(b)>::val>::my_inf_equ( a, b )) )
-//REG_PRIMITIVE_TYPE_BIN_OP( sup_equ    , (Cmp<Signed<typeof(a)>::val,Signed<typeof(b)>::val>::my_sup_equ( a, b )) )
-//REG_PRIMITIVE_TYPE_BIN_OP( not_equ    , (Cmp<Signed<typeof(a)>::val,Signed<typeof(b)>::val>::my_not_equ( a, b )) )
-//REG_PRIMITIVE_TYPE_BIN_OP( equ        , (Cmp<Signed<typeof(a)>::val,Signed<typeof(b)>::val>::my_equ    ( a, b )) )
+REG_PRIMITIVE_TYPE_BIN_OP( add         )
+REG_PRIMITIVE_TYPE_BIN_OP( sub         )
+REG_PRIMITIVE_TYPE_BIN_OP( mul         )
+REG_PRIMITIVE_TYPE_BIN_OP( mod         )
+REG_PRIMITIVE_TYPE_BIN_OP( div         )
+REG_PRIMITIVE_TYPE_BIN_OP( div_int     )
+REG_PRIMITIVE_TYPE_BIN_OP( or_bitwise  )
+REG_PRIMITIVE_TYPE_BIN_OP( xor_bitwise )
+REG_PRIMITIVE_TYPE_BIN_OP( and_bitwise )
+REG_PRIMITIVE_TYPE_BIN_OP( shift_right )
+REG_PRIMITIVE_TYPE_BIN_OP( shift_left  )
+REG_PRIMITIVE_TYPE_BIN_OP( inf         )
+REG_PRIMITIVE_TYPE_BIN_OP( sup         )
+REG_PRIMITIVE_TYPE_BIN_OP( inf_equ     )
+REG_PRIMITIVE_TYPE_BIN_OP( sup_equ     )
+REG_PRIMITIVE_TYPE_BIN_OP( not_equ     )
+REG_PRIMITIVE_TYPE_BIN_OP( equ         )
 
 
 //REG_PRIMITIVE_TYPE( add_AT ) {
@@ -302,13 +299,13 @@ REG_PRIMITIVE_TYPE( ct_info ) {
 //    return args[ 0 ];
 //}
 
-//REG_PRIMITIVE_TYPE( sizeof_ptr_in_bits ) {
-//    return scope->vm->new_PT( 8 * sizeof( void * ) );
-//}
+REG_PRIMITIVE_TYPE( sizeof_ptr_in_bits ) {
+    return make_Cst_SI32( gvm->sizeof_ptr );
+}
 
-//REG_PRIMITIVE_TYPE( aligof_ptr_in_bits ) {
-//    return scope->vm->new_PT( 8 * sizeof( void * ) );
-//}
+REG_PRIMITIVE_TYPE( aligof_ptr_in_bits ) {
+    return make_Cst_SI32( gvm->aligof_ptr );
+}
 
 //REG_PRIMITIVE_TYPE( is_little_endian ) {
 //    return scope->vm->new_Bool( __BYTE_ORDER ==__LITTLE_ENDIAN );
@@ -471,19 +468,18 @@ REG_PRIMITIVE_TYPE( ct_info ) {
 //    return res;
 //}
 
-//REG_PRIMITIVE_TYPE( add_room_in_type ) {
-//    if ( args.size() != 2 )
-//        return scope->add_error( "__primitive_add_room_in_type expects exactly 2 arguments" ), scope->vm->ref_error;
-//    PT size, alig;
-//    if ( ! args[ 0 ].get_PT_value( scope, size ) || ! args[ 1 ].get_PT_value( scope, alig ) )
-//        return scope->add_error( "__primitive_add_room_in_type expexts arguments convertible to PT" ), scope->vm->ref_error;
+REG_PRIMITIVE_TYPE( add_room_in_type ) {
+    if ( args.size() != 2 )
+        return gvm->add_error( "__primitive_add_room_in_type expects exactly 2 arguments" );
+    SI32 size, alig;
+    if ( ! args[ 0 ].get_value( size ) || ! args[ 1 ].get_value( alig ) )
+        return gvm->add_error( "__primitive_add_room_in_type expexts arguments convertible to PT" );
 
-//    // add an AnonymousRoom variable in the scope
-//    Variable ar_var( scope->vm, scope->vm->type_AnonymousRoom );
-//    new ( ar_var.ptr() ) AnonymousRoom{ size, alig };
-//    scope->reg_var( to_string( scope->variables.size() ), ar_var );
-//    return scope->vm->ref_void;
-//}
+    // add an AnonymousRoom variable in the scope
+    Variable ar_var( new KnownRef<AnonymousRoom>( size, alig ), gvm->type_AnonymousRoom );
+    gvm->scope->reg_var( to_string( gvm->scope->variables.size() ), ar_var );
+    return gvm->ref_void;
+}
 
 //REG_PRIMITIVE_TYPE( _union ) {
 //    if ( args.size() != names.size() )
