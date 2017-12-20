@@ -34,6 +34,7 @@ public:
     Variable    apply               ( bool want_ret, const Vec<Variable> &args = {}, const Vec<RcString> &names = {}, ApplyFlags apply_flags = ApplyFlags::NONE, const Vec<size_t> &spreads = {} );
 
     String      as_String           () const;
+    FP64        as_FP64             () const;
     SI32        as_SI32             () const;
 
     Value       get                 () const;

@@ -1,11 +1,80 @@
 #include "CallableWithSelf.h"
 #include "TypeSurdefList.h"
 #include "SurdefList.h"
+#include "Wildcard.h"
 #include "Varargs.h"
+#include "Class.h"
+#include "equal.h"
+#include "TCI.h"
 #include "gvm.h"
 #include <algorithm>
 
 TypeSurdefList::TypeSurdefList() : Type( "SurdefList" ){
+}
+
+RcString TypeSurdefList::checks_type_constraint( const Variable &self, const Variable &tested_var, TCI &tci ) const {
+    SurdefList *se = self.rcast<SurdefList>();
+    auto stst = [&]() -> RcString {
+        if ( ! tested_var.type->orig_class() ) {
+            if ( ! tested_var.error() )
+                gvm->add_error( "no orig_class for type {}", tested_var.type->content.data.name );
+            return false;
+        }
+
+        // look in surdefs for a class == type->orig_class
+        for( const Variable &vc : se->lst ) {
+            if ( vc.type != gvm->type_Class )
+                return gvm->add_error( "Surdef contains item(s) that are not Class(es)" ), "error";
+            Class *cl = vc.rcast<Class>();
+            if ( tested_var.type->orig_class() == cl ) {
+                // if no argument, test only the class
+                if( se->args.empty() )
+                    return {};
+
+                // get a linear list for the arguments
+                if ( se->args.size() != tested_var.type->content.data.parameters.size() )
+                    return gvm->add_error( "not the same number of parameters" ), "error";
+                if ( se->names.size() )
+                    TODO;
+                Vec<Variable> se_args = se->args; // TODO: use named arguments and default values
+
+                // check that args are the same
+                for( size_t i = 0; i < se_args.size(); ++i ) {
+                    if ( se_args[ i ].type == gvm->type_Wildcard ) {
+                        tci.proposals[ se_args[ i ].rcast<Wildcard>()->name ] = *tested_var.type->content.data.parameters[ i ];
+                        continue;
+                    }
+                    bool equ = equal( *tested_var.type->content.data.parameters[ i ], se_args[ i ] );
+                    if ( ! equ )
+                        return "has not equal template parameter";
+                }
+
+                // seems to be fine :)
+                return {};
+            }
+        }
+
+        return "is not of the same type";
+    };
+
+    RcString res = stst();
+    if ( res ) {
+        // try recursively inheritance of tested_var
+        if ( Class *cl = tested_var.type->orig_class() )
+            for( const RcString &inh_name : cl->inheritance_names )
+                if ( checks_type_constraint( self, tested_var.find_attribute( inh_name ), tci ).empty() )
+                    return ++tci.nb_conversions, RcString{};
+
+        // try operator "is_also_a"
+        if ( ! se->has_wildcards() )
+            if ( Variable op = tested_var.find_attribute( "operator is_also_a", false, false ) )
+                if ( double score = op.apply( true, self ).as_FP64() )
+                    return tci.nb_conversions += score, RcString{};
+
+        // -> fail
+        return "not equal nor inherited";
+    }
+    return res;
 }
 
 Variable TypeSurdefList::with_self( Variable &orig, const Variable &new_self ) const {
@@ -15,6 +84,31 @@ Variable TypeSurdefList::with_self( Variable &orig, const Variable &new_self ) c
     cs->self = new_self;
 
     return res;
+}
+
+Variable TypeSurdefList::select( Variable &self, bool want_ret, const Vec<Variable> &args, const Vec<RcString> &names ) {
+    if ( ! want_ret )
+        return {};
+    SurdefList *se = self.rcast<SurdefList>();
+
+    Variable sl_var( new KnownRef<SurdefList>, gvm->type_SurdefList );
+    SurdefList *sl = sl_var.rcast<SurdefList>();
+    sl->lst  = se->lst;
+
+    for( size_t i = 0; i < se->args.size() - se->names.size(); ++i )
+        sl->args << se->args[ i ];
+    for( size_t i = 0; i < args.size() - names.size(); ++i )
+        sl->args << args[ i ];
+    for( size_t i = 0; i < se->names.size(); ++i ) {
+        sl->args  << se->args [ se->args.size() - se->names.size() + i ];
+        sl->names << se->names[ i ];
+    }
+    for( size_t i = 0; i < names.size(); ++i ) {
+        sl->args  << args [ args.size() - names.size() + i ];
+        sl->names << names[ i ];
+    }
+
+    return sl_var;
 }
 
 Variable TypeSurdefList::apply( Variable &self, bool want_ret, const Vec<Variable> &args, const Vec<RcString> &names, const Variable &with_self, ApplyFlags apply_flags ) {

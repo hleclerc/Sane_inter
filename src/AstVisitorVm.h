@@ -66,7 +66,7 @@ public:
 
     virtual void     default_enter           ( const char *name );
 
-    static void      init_of                 ( Scope *scope, RcString name, const Vec<Variable> &args, const Vec<RcString> &names = {}, const Vec<size_t> &spreads = {} );
+    static void      init_of                 ( RcString name, const Vec<Variable> &args, const Vec<RcString> &names = {}, const Vec<size_t> &spreads = {} );
 
     Variable         xxxxof                  ( RcString value, int w, bool in_bytes = false ); ///< 0 -> typeof, 1 -> sizeof, 2 -> aligof
     static Variable  assign                  ( Scope *scope, RcString name, std::function<Variable()> rhs_func, PI8 flags );

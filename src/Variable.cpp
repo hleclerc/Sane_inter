@@ -106,11 +106,11 @@ void Variable::setup_vtables() {
 }
 
 Variable Variable::chbeba( bool want_ret, const Vec<Variable> &args, const Vec<RcString> &names ) {
-    TODO; return {};
+    return type->chbeba( *this, want_ret, args, names );
 }
 
 Variable Variable::select( bool want_ret, const Vec<Variable> &args, const Vec<RcString> &names ) {
-    TODO; return {};
+    return type->select( *this, want_ret, args, names );
 }
 
 Variable Variable::apply( bool want_ret, const Vec<Variable> &args, const Vec<RcString> &names, ApplyFlags apply_flags, const Vec<size_t> &spreads ) {
@@ -140,6 +140,11 @@ Variable Variable::apply( bool want_ret, const Vec<Variable> &args, const Vec<Rc
 }
 
 String Variable::as_String() const {
+    TODO;
+    return {};
+}
+
+FP64 Variable::as_FP64() const {
     TODO;
     return {};
 }

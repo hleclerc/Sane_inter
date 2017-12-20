@@ -1,11 +1,11 @@
-#ifndef INTERCEPTOR_H
-#define INTERCEPTOR_H
+#pragma once
 
+#include "Variable.h"
 
-class Interceptor
-{
+/**
+*/
+class Interceptor {
 public:
-    Interceptor();
+    Interceptor( const std::function<void()> &func );
 };
 
-#endif // INTERCEPTOR_H

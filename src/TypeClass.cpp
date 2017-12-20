@@ -193,7 +193,7 @@ double TypeClass::get_pertinence( const Variable &self ) const {
     return cl->def_pert_num * std::pow( 10.0, cl->def_pert_exp );
 }
 
-Variable TypeClass::make_sl_trial( bool want_ret, const Variable &func, const Variable &self, const Vec<Variable> &sl_args, const Vec<RcString> &sl_names, const Vec<Variable> &args, const Vec<RcString> &names, const Variable &with_self, ApplyFlags apply_flags ) const {
+Variable TypeClass::make_sl_trial( bool want_ret, const Variable &func, const Variable &self, const Vec<Variable> &args, const Vec<RcString> &names, const Vec<Variable> &ctor_args, const Vec<RcString> &ctor_names, const Variable &with_self, ApplyFlags apply_flags ) const {
     Class *def = func.rcast<Class>();
 
     //

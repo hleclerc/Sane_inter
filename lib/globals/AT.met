@@ -10,7 +10,7 @@ class AT
         __primitive_construct self, val
 
     def construct
-        __primitive_construct self
+        pass # __primitive_construct self
 
     def destroy
         __primitive_destroy self

@@ -112,6 +112,20 @@ bool Type::error() const {
     return false;
 }
 
+Variable Type::chbeba( Variable &self, bool want_ret, const Vec<Variable> &args, const Vec<RcString> &names ) {
+    Variable op = self.find_attribute( "operator {}", false );
+    if ( ! op )
+        return gvm->add_error( "class {} has no 'operator {}'", *self.type, "{}" );
+    return op.apply( want_ret, args, names );
+}
+
+Variable Type::select( Variable &self, bool want_ret, const Vec<Variable> &args, const Vec<RcString> &names ) {
+    Variable op = self.find_attribute( "operator []", false );
+    if ( ! op )
+        return gvm->add_error( "class {} has no 'operator []'", *self.type );
+    return op.apply( want_ret, args, names );
+}
+
 Variable Type::find_attribute( const RcString &name, const Variable &self, Variable::Flags flags, SI32 off ) const {
     // instance attributes
     auto iter_attr = content.data.attributes.find( name );

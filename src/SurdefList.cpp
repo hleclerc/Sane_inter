@@ -33,3 +33,17 @@ RcString SurdefList::possible_names() const {
         res = res + ( res.empty() ? "" : "|" ) + n;
     return res;
 }
+
+bool SurdefList::has_wildcards() const {
+    for( const Variable &v : args ) {
+        if ( v.type == gvm->type_Wildcard )
+            return true;
+        if ( v.type == gvm->type_SurdefList ) {
+            SurdefList *sl = v.rcast<SurdefList>();
+            if ( sl->has_wildcards() )
+                return true;
+        }
+        // TODO: maybe no enough...
+    }
+    return false;
+}

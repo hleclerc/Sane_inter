@@ -1,5 +1,6 @@
 #include "AstVisitorCatchedVariables.h"
 #include "AstVisitorVm.h"
+#include "Interceptor.h"
 #include "Inst/Cst.h"
 //#include "System/rcast.h"
 //#include "System/LVec.h"
@@ -205,72 +206,68 @@ Variable AstVisitorVm::on_apply( RcString f, const Vec<RcString> &args, const Ve
 }
 
 Variable AstVisitorVm::on_select( RcString f, const Vec<RcString> &args, const Vec<RcString> &names, const Vec<size_t> &spreads ) {
-    TODO; return {};
-//    // make lhs + arguments
-//    Variable func = scope->visit( this->names, f, true );
-//    Vec<RcString> v_names( Rese(), names.size() );
-//    Vec<Variable> v_args( Rese(), args.size() );
-//    bool has_err = false;
-//    for( size_t i = 0, n = args.size() - names.size(); i < args.size(); ++i ) {
-//        Variable ref = scope->visit( this->names, args[ i ], true );
-//        if ( spreads.contains( i ) ) {
-//            if ( ref.error() )
-//                has_err = true;
-//            else
-//                ref.type->spread_in( scope, ref, v_args, v_names );
-//        } else {
-//            if ( i < n )
-//                v_args.insert( v_args.size() - v_names.size(), ref );
-//            else {
-//                v_names << names[ i - n ];
-//                v_args << ref;
-//            }
-//        }
-//    }
-//    // launch
-//    ret = has_err ? vm->ref_error : func.select( scope, want_ret, v_args, names );
+    // make lhs + arguments
+    Variable func = gvm->visit( this->names, f, true );
+    Vec<RcString> v_names( Rese(), names.size() );
+    Vec<Variable> v_args( Rese(), args.size() );
+    bool has_err = false;
+    for( size_t i = 0, n = args.size() - names.size(); i < args.size(); ++i ) {
+        Variable ref = gvm->visit( this->names, args[ i ], true );
+        if ( spreads.contains( i ) ) {
+            if ( ref.error() )
+                has_err = true;
+            else
+                ref.type->spread_in( ref, v_args, v_names );
+        } else {
+            if ( i < n )
+                v_args.insert( v_args.size() - v_names.size(), ref );
+            else {
+                v_names << names[ i - n ];
+                v_args << ref;
+            }
+        }
+    }
+    // launch
+    return has_err ? gvm->ref_error : func.select( want_ret, v_args, names );
 }
 
 Variable AstVisitorVm::on_chbeba( RcString f, const Vec<RcString> &args, const Vec<RcString> &names, const Vec<size_t> &spreads ) {
-    TODO; return {};
-//    // make lhs + arguments
-//    Variable func = scope->visit( this->names, f, true );
-//    Vec<RcString> v_names( Rese(), names.size() );
-//    Vec<Variable> v_args( Rese(), args.size() );
-//    bool has_err = false;
-//    for( size_t i = 0, n = args.size() - names.size(); i < args.size(); ++i ) {
-//        Variable ref = scope->visit( this->names, args[ i ], true );
-//        if ( spreads.contains( i ) ) {
-//            if ( ref.error() )
-//                has_err = true;
-//            else
-//                ref.type->spread_in( scope, ref, v_args, v_names );
-//        } else {
-//            if ( i < n )
-//                v_args.insert( v_args.size() - v_names.size(), ref );
-//            else {
-//                v_names << names[ i - n ];
-//                v_args << ref;
-//            }
-//        }
-//    }
-//    // launch
-//    ret = has_err ? vm->ref_error : func.chbeba( scope, want_ret, v_args, names );
+    // make lhs + arguments
+    Variable func = gvm->visit( this->names, f, true );
+    Vec<RcString> v_names( Rese(), names.size() );
+    Vec<Variable> v_args( Rese(), args.size() );
+    bool has_err = false;
+    for( size_t i = 0, n = args.size() - names.size(); i < args.size(); ++i ) {
+        Variable ref = gvm->visit( this->names, args[ i ], true );
+        if ( spreads.contains( i ) ) {
+            if ( ref.error() )
+                has_err = true;
+            else
+                ref.type->spread_in( ref, v_args, v_names );
+        } else {
+            if ( i < n )
+                v_args.insert( v_args.size() - v_names.size(), ref );
+            else {
+                v_names << names[ i - n ];
+                v_args << ref;
+            }
+        }
+    }
+    // launch
+    return has_err ? gvm->ref_error : func.chbeba( want_ret, v_args, names );
 }
 
 
 Variable AstVisitorVm::on_init_of( RcString name, const Vec<RcString> &args, const Vec<RcString> &names, const Vec<size_t> &spreads ) {
-    TODO; return {};
-//    // get arg values
-//    Vec<Variable> v_args( Rese(), args.size() );
-//    for( const RcString &arg : args )
-//        v_args << scope->visit( this->names, arg, true );
+    // get arg values
+    Vec<Variable> v_args( Rese(), args.size() );
+    for( const RcString &arg : args )
+        v_args << gvm->visit( this->names, arg, true );
 
-//    // call the helper
-//    init_of( scope, name, v_args, names, spreads );
+    // call the helper
+    init_of( name, v_args, names, spreads );
 
-
-//    ret_or_dec_ref( vm->ref_void );
+    return gvm->ref_void;
 }
 
 Variable AstVisitorVm::on_assign( RcString name, RcString cname, PI8 nb_scopes_rec, RcString value, PI8 flags ) {
@@ -870,74 +867,66 @@ void AstVisitorVm::default_enter( const char *name ) {
     gvm->add_error( "TODO: {}", name );
 }
 
-void AstVisitorVm::init_of( Scope *scope, RcString name, const Vec<Variable> &args, const Vec<RcString> &names, const Vec<size_t> &spreads ) {
-    TODO;
-//    // find the scope used for class construction
-//    for( Scope *s = scope; s; s = s->parent ) {
-//        if ( s->wpc ) {
-//            // if we have a wpc, we have a self
-//            Variable self = s->self.ugs( scope );
+void AstVisitorVm::init_of( RcString name, const Vec<Variable> &args, const Vec<RcString> &names, const Vec<size_t> &spreads ) {
+    // find the scope used for class construction
+    for( Scope *s = gvm->scope; s; s = s->parent ) {
+        if ( s->wpc ) {
+            // if we have a wpc, we have a self
+            Variable self = s->self;
 
-//            // special case (init_of self, ...)
-//            if ( name == "self" ) {
-//                // call the other constructor
-//                self.find_attribute( scope, "construct" ).apply( scope, false, args, names, false, spreads );
+            // special case (init_of self, ...)
+            if ( name == "self" ) {
+                // call the other constructor
+                self.find_attribute( "construct" ).apply( false, args, names, ApplyFlags::DONT_CALL_CTOR, spreads );
 
-//                // say that we have initialized everything
-//                for( auto p : self.type->attributes  )
-//                    s->wpc->insert( p.second.name );
+                // say that we have initialized everything
+                for( auto p : self.type->content.data.attributes  )
+                    s->wpc->insert( p.second.name );
 
-//                return;
-//            }
+                return;
+            }
 
-//            // say that attribute $name is already initialized
-//            if ( s->wpc->count( name ) )
-//                return scope->add_error( "attribute {} is already initialised", name );
-//            s->wpc->insert( name );
+            // say that attribute $name is already initialized
+            if ( s->wpc->count( name ) ) {
+                gvm->add_error( "attribute '{}' is already initialised", name );
+                return;
+            }
+            s->wpc->insert( name );
 
-//            // instance attribute
-//            auto iter_attr = self.type->attributes.find( name );
-//            if ( iter_attr == self.type->attributes.end() )
-//                return scope->add_error( "there's no attribute {} in a {}", name, *self.type );
-//            Variable attr( self.content, self.flags, iter_attr->second.type, self.offB + iter_attr->second.off_in_bits / 8 );
-//            attr.find_attribute( scope, "construct" ).apply( scope, false, args, names, false, spreads );
+            // instance attribute
+            auto iter_attr = self.type->content.data.attributes.find( name );
+            if ( iter_attr == self.type->content.data.attributes.end() ) {
+                gvm->add_error( "there's no attribute '{}' in a {}", name, *self.type );
+                return;
+            }
+            Variable attr = self.sub_part( iter_attr->second.type, iter_attr->second.off );
+            attr.find_attribute( "construct" ).apply( false, args, names, ApplyFlags::DONT_CALL_CTOR, spreads );
 
-//            return;
-//        }
-//    }
-//    scope->add_error( "'init_of' instruction must be defined inside 'wpc' sequences" );
+            return;
+        }
+    }
+
+    gvm->add_error( "'init_of' instruction must be defined inside 'wpc' sequences" );
 }
 
 Variable AstVisitorVm::xxxxof( RcString value, int w, bool in_bytes ) {
-    TODO; return {};
-//    Variable res = scope->visit( names, value, true );
+    Type *type = 0;
+    Interceptor inter( [&]() {
+        Variable res = gvm->visit( names, value, true );
+        type = res.type;
 
-//    //    Value res;
-//    //    Ref::MapInter mod;
-//    //    Vec<Ref::Break> breaks;
-//    //    Ref::intercept( mod, breaks, [&]() {
-//    //        Scope inter( scope );
-//    //        res = scope->visit( &inter, source_vec, value, true ).p_get( scope );
-//    //    }, true );
+        // sizeof of aligof with a type
+        if ( w && ( type == gvm->type_SurdefList || type == gvm->type_Type ) )
+            type = res.apply( true, {}, {}, ApplyFlags::DONT_CALL_CTOR ).type;
+    } );
 
-//    // getsetter
-//    Type *type = res.type;
-//    if ( type->getsetter() )
-//        type = reinterpret_cast<GetSetter *>( res.ptr() )->get_type( scope );
+    // typeof
+    if ( w == 0 )
+        return Variable{ new KnownRef<Type *>( type ), gvm->type_Type };
 
-//    // typeof
-//    if ( w == 0 )
-//        return { vm, vm->type_Type, &type };
-
-//    // sizeof of aligof with a type
-//    if ( type == vm->type_SurdefList || type == vm->type_Type )
-//        type = res.apply( scope, true, {}, {}, false ).type;
-
-//    // sizeof of aligof with an instance
-//    SI32 vres = w == 1 ? type->size : type->alig;
-//    if ( in_bytes )
-//        vres = ( vres + 7 ) / 8;
-//    return { vm, vm->type_SI32, &vres };
+    // sizeof of aligof
+    SI32 vres = w == 1 ? type->content.data.size : type->content.data.alig;
+    return make_Cst_SI32( in_bytes ? ( vres + 7 ) / 8 : vres );
 }
 
 Variable AstVisitorVm::assign( Scope *scope, RcString name, std::function<Variable()> rhs_func, PI8 flags ) {
