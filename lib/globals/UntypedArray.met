@@ -1,0 +1,155 @@
+
+# 
+global
+class UntypedArray[ dim? 1 ]
+    def write_to_stream stream
+        for i in 0 .. size
+            stream << ( i ? " " : "" ) << operator[]( i )
+
+    def operator+++ fles: UntypedArray
+        RefUntypedConcatenation self, fles
+
+    def operator for block
+        for i in 0 .. size
+            block operator[] i
+
+    def operator== selg: UntypedArray[ dim ]
+        if self.size != selg.size 
+            return false
+        for i in 0 .. self.size
+            if self[ i ] != selg[ i ]
+                return false
+        return true
+
+    # T must support operator<<
+    mixin
+    def join sep: T with T
+        res ~= T
+        s := get_size()
+        if s 
+            res << self[ 0 ]
+            for i in 1 .. s
+                res << sep << self[ i ]
+        res
+
+    mixin
+    def has val 
+        for i in self 
+            if val == i
+                return true
+        false
+
+    mixin
+    def get_all_true
+        for i in self 
+            if ! i
+                return false
+        true
+
+    mixin
+    def get_all_false
+        for i in self 
+            if i
+                return false
+        true
+
+    mixin
+    def get_some_true
+        not all_false
+
+    mixin
+    def get_some_false
+        not all_true
+
+    mixin
+    def push_back_unique ...val
+        if not self.has ...val
+            push_back ...val
+
+    # TODO: find a good default base_out
+    mixin
+    def map func, base_out? Vec
+        # # find the subtypes of the new array
+        # os := self.sub_types
+        # if os.size == 0
+        #     return VoidArray
+        # ss ~= Vec[ Type ]
+        # for T in os
+        #     ss.push_back_unique typeof func partial_instantiation T
+        # if ss.size != 1
+        #     TODO
+        # make the new array
+        res ~= CtVec # base_out[ ss[ 0 ] ]
+        for i in self
+            res << func i
+        res
+
+    # return a copy
+    mixin
+    def filter func 
+        res ~= typeof self
+        for val in self
+            if func val 
+                res << val
+        res
+        
+# # 
+# global
+# class RefMapArray extends UntypedArray
+#     def construct l: UntypedArray, f
+#         init_of l, UntypedRef::make l
+#         init_of f, UntypedRef::make f
+
+#     def get_size
+#         l->size
+
+#     def operator[] index
+#         (@f) l->operator[]( index )
+
+#     l ~= UntypedRef # orig list
+#     f ~= UntypedRef # function
+
+#
+global
+class RefUnaOpArrays[ op ] extends UntypedArray
+    def construct a: UntypedArray
+        init_of a, UntypedRef::make a
+
+    def get_size
+        a->size
+
+    def operator[] index: Number
+        op a->operator[]( index )
+
+    a ~= UntypedRef
+    
+#
+global
+class RefBinOpArrays[ op ] extends UntypedArray
+    def construct a: UntypedArray, b: UntypedArray
+        init_of a, UntypedRef::make a
+        init_of b, UntypedRef::make b
+
+    def get_size
+        a->size
+
+    def operator[] index: Number
+        op a->operator[]( index ), b->operator[]( index )
+
+    a ~= UntypedRef
+    b ~= UntypedRef
+    
+#
+global
+def operator~ self: UntypedArray
+    RefUnaOpArrays[ v1 => ~ v1 ] self
+    
+#
+global
+def operator| self: UntypedArray, fles: UntypedArray
+    RefBinOpArrays[ ( v1, v2 ) => v1 | v2 ] self, fles
+
+global
+def operator& self: UntypedArray, fles: UntypedArray
+    RefBinOpArrays[ ( v1, v2 ) => v1 & v2 ] self, fles
+

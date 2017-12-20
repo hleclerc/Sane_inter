@@ -1,0 +1,21 @@
+
+global
+class Codegen
+    static def is_targeting code_type: String
+       __primitive_code_type code_type
+
+    static def add code: String, ...varargs
+        __primitive_add_code code, ...varargs
+
+    static def add_include include: String
+        __primitive_add_include include
+    
+    static def room_in_static_data len: Number
+        __primitive_room_in_static_data len
+
+# def foo a
+#     #if Codegen::is_targeting "C++"
+#     Codegen::add_include "<iostream>"
+#     Codegen::add_code "%R = 17 + %0;", a, ret_type: SI32, mod_sys: false
+
+# print foo 15

@@ -1,0 +1,28 @@
+# compile time information
+global
+def ct_info ...args
+    __primitive_ct_info ...args
+
+# graphviz representation of args
+global
+def ct_graph ...args
+    __primitive_ct_graph args, false
+
+# graphviz representation of args and sys
+global
+def ct_graph_sys ...args
+    __primitive_ct_graph args, true
+
+# true if value (binary content) is known at compile time
+global
+def ct_known value
+    __primitive_ct_known value
+
+# true if binary content in [ ptr, ptr + len ] is known at compile time. len is expressed in bits
+global
+def ct_known_pointed ptr: AT, len: Number
+    __primitive_ct_known_pointed ptr, len
+
+# global
+# def ct_known_pointed ptr: Ptr, len: Number
+#     __primitive_ct_known_pointed ptr, len

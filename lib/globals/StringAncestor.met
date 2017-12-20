@@ -1,0 +1,51 @@
+# 
+global
+class StringAncestor
+    # 
+    mixin
+    def copy_in dst: Ptr[ Char ] 
+        ptr := dst
+        apply_on_chunks ( data, size ) =>
+            memcpy ptr, data, size
+            ptr += size
+
+    #
+    mixin
+    def write_to_stream stream
+        apply_on_chunks ( data, size ) =>
+            stream.write data, size
+
+    # append stuff
+    mixin
+    def operator<< fles
+        fles.write_to_stream self
+        self
+
+    # char by char
+    mixin
+    def operator for block
+        for i in 0 .. size
+            block self[ i ]
+            
+    mixin
+    def has val: StringAncestor
+        if val.size != 1
+            TODO
+        for i in self 
+            if i == val
+                return true
+        false
+
+    mixin
+    def has val: Char
+        for i in self 
+            if i == val
+                return true
+        false
+        
+    mixin
+    def map func 
+        res ~= typeof self 
+        for i in self 
+            res += func i 
+        res

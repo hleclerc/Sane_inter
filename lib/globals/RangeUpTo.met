@@ -1,0 +1,4 @@
+#
+global
+class RangeUpTo[ T ]
+    end ~= T

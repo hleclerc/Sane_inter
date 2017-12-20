@@ -3,6 +3,7 @@
 #include "SurdefList.h"
 #include "Varargs.h"
 #include "gvm.h"
+#include <algorithm>
 
 TypeSurdefList::TypeSurdefList() : Type( "SurdefList" ){
 }

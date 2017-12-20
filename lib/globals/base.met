@@ -1,0 +1,137 @@
+global
+def load file
+    __primitive_load file
+
+global
+def constified val
+    __primitive_constified val
+
+# 
+global
+def construct self pertinence -100
+    pass
+
+# try a copy constructor or a convert
+global
+def construct self, arg pertinence -101
+    wpc
+        __primitive_default_construct self, arg
+
+# try a default constructor
+global
+def construct self, ...args pertinence -102
+    wpc
+        __primitive_default_construct self, ...args
+
+global
+def destroy self pertinence -100
+    pass
+
+global
+def typeof_return_of fun, ...varargs
+    __primitive_typeof_return_of fun, varargs
+
+global
+def union ...varargs
+    __primitive__union ...varargs
+
+# true if type T has an intangible size, known at compile time
+global
+def has_fixed_size T
+    __primitive_has_fixed_size T
+
+# <=> reinterpret_cast<T &>( arg ) in C++
+global
+def rcast T, val
+    __primitive_rcast T, val
+
+# TODO: check     
+global
+def static_cast T, val
+    rcast T, val
+
+global
+def imm_call cb
+    __primitive_imm_call cb
+    
+global
+def rand num? 0
+    __primitive_rand num
+
+global
+def move val
+    val
+    
+global
+def max a, b
+    a >= b ? a : b
+    
+global
+def min a, b
+    a <= b ? a : b    
+    
+global
+def post_add a, b
+    res := a 
+    a += b
+    res
+
+global
+def post_sub a, b
+    res := a 
+    a -= b
+    res
+    
+global
+def post_inc a
+    res := a 
+    ++a
+    res
+
+global
+def post_dec a
+    res := a 
+    --a
+    res
+
+global
+def throw expr
+    __primitive_throw expr
+
+global
+def write_to_stream self, os
+    T := typeof self
+    os << T << "("
+    cpt := -1
+    for a in T.attributes
+        if ++cpt
+            os << ","
+        os << a.name << "=" << self.$( a.name )
+    os << ")"
+
+global
+def partial_instantiation T 
+    v ~= T # TODO: real partial instantiation
+
+# Used in ctor of Arrays or similar containers to define size at the beginning
+global
+class Size
+    def construct size: Number
+        val = size
+    val ~= PT
+
+# Used in ctor of Arrays or similar containers to define reservation (capacity) at the beginning
+global
+class Rese
+    def construct rese: Number
+        val = rese
+    val ~= PT
+
+global
+def conv OutType, value: OutType pertinence 2
+    value
+    
+global
+def conv OutType, value
+    OutType value
+    

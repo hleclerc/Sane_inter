@@ -1,0 +1,64 @@
+
+# Vec of reference on variables. Used for compile time (including '[...]')
+global
+class CtVec extends UntypedArray
+    def construct cv: CtVec
+        init_of _data, cv._data
+
+    def construct
+        pass
+
+    def get_size 
+        _data.size
+
+    def operator[] index: Number
+        @_data[ index ]
+
+    def operator for block
+        for i in 0 .. size
+            block operator[] i
+
+    def write_to_stream stream
+        for i in 0 .. size
+            stream << ( i ? " " : "" ) << operator[]( i )
+
+    # def map func 
+    #     res := CtVec()
+    #     for i in _data
+    #         res.push_back func @i
+    #     res
+
+    def push_back val
+        _data.push_back UntypedRef::make val
+
+    def operator<< val
+        push_back val
+        self
+
+    # get common type, or Void
+    def get_T
+        # if all the items are of the same type, we have a (typed) Array
+        if size
+            res := typeof self[ 0 ]
+            for i in 1 .. size
+                if res != typeof self[ i ]
+                    return Void
+            return res
+        return Void
+
+    # get used types
+    def get_sub_types
+        res ~= Vec[ Type ]
+        for i in 0 .. size
+            res.push_back_unique typeof self[ i ]
+        res
+
+    def operator is_also_a P
+        if P.has_base_class Array
+            for v in self
+                if v is_not_a P::T
+                    return false
+            return true
+        false
+
+    _data ~= Vec[ UntypedRef ]

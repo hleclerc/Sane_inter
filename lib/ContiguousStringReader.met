@@ -1,0 +1,21 @@
+import ReaderAncestor
+
+#
+export
+class ContiguousStringReader[ StrType? String ] extends ReaderAncestor
+    def construct b: Ptr[ StrType ]
+        init_of str, b
+        init_of off, 0
+    
+    #
+    def get_error
+        off > str->size
+
+    # read some data. len is in bytes. callable may be called several times 
+    def read_some len: Number, callback
+        o_off := off
+        if ( off += len ) <= str->size
+            str->apply_on_chunks callback, o_off, len
+
+    str ~= Ptr[ StrType ]
+    off ~= PT

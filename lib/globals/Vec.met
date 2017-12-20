@@ -1,0 +1,157 @@
+
+# Dynamic size. If _rese == 0, data is not owned (data is not going to be freed).
+global
+class Vec[ T ] extends Array[ T, 1 ]
+    def construct lst: UntypedArray
+        _data = null_ptr
+        _size = 0
+        _rese = 0
+        for i in lst
+            push_back i
+
+    # with initial reservation (capacity)
+    def construct s: Rese
+        # reserve room
+        rlen := ceil sizeof( T ), aligof( T )
+        rese := s.val ? ( s.val - 1 ) * rlen + sizeof( T ) : 0
+        _data = heap_alloc rese, aligof T
+        _rese = rese ? 1 + ( rese - sizeof( T ) ) // rlen : 0
+        _size = 0
+
+    # with initial size, and arguments for the constructor
+    def construct s: Size, ...ctor_args
+        init_of self, Rese s.val
+        _size = s.val
+        # initialize arguments
+        for i in 0 .. size
+            _data[ i ].construct ...ctor_args
+
+    # void vec
+    def construct
+        _data = null_ptr
+        _rese = 0
+        _size = 0
+
+    def destroy
+        rlen := ceil sizeof( T ), aligof( T )
+        approx_size := _rese ? ( _rese - 1 ) * rlen + sizeof( T ) : 0
+        heap_free_approx _data.val, approx_size, aligof( T )
+
+    def operator[] index: Number
+        assert index >= 0 && index < size
+        _data[ index ]
+
+    def operator[] sub: UntypedArray
+        RefSubArray self, sub
+
+    def operator[] r: RangeFrom
+        if r.beg < size
+            res := Vec[ T ] Rese size - r.beg
+            for i in r.beg .. size
+                res << self[ i ]
+            res
+        else
+            Vec[ T ]()
+
+    def operator for block
+        for i in 0 .. _size
+            block operator[]( i )
+
+    def operator<< item
+        reserve size + 1
+        _data[ size ].construct item
+        ++size
+        self
+
+    def convert Bool
+        size
+
+    def push_back ...args
+        reserve size + 1
+        _data[ size ].construct ...args
+        res := _data + size
+        ++size
+        res.as_Ptr_unchecked
+
+    def get_ptr
+        constified _data
+
+    def get_size ~> PT
+        constified _size
+
+    def get_rese ~> PT
+        constified _rese
+
+    def reserve rese: Number
+        if rese > _rese
+            # wanted reservation
+            _rese = max rese, 2 * _rese
+            # reserve room
+            old_data := _data
+            rlen := ceil sizeof( T ), aligof( T )
+            rese_in_bytes := _rese ? ( _rese - 1 ) * rlen + sizeof( T ) : 0
+            _data = heap_alloc rese_in_bytes, aligof T
+            _rese = rese_in_bytes ? 1 + ( rese_in_bytes - sizeof( T ) ) // rlen : 0
+            # move data
+            for i in 0 .. size
+                _data[ i ].construct move old_data[ i ]
+            for i in reversed 0 .. size
+                old_data[ i ].destroy()
+
+    _data ~= NullablePtr[ T ]
+    _size ~= PT                # nb items
+    _rese ~= PT                # 
+
+# When nb items is known during compile time
+# The definition is recursive because T may not have a fixed size
+global
+class Vec[ T, static_size: Number ] when static_size > 0 extends Array[ T, 1 ]
+    # __primitive_add_room_in_type( ( static_size - 1 ) * sizeof_successive( T ) + sizeof_in_bits( T ), aligof_in_bits( T ) )
+    def construct ...args
+        if args.size
+            init_of val, args.values[ 0 ]
+            init_of nxt, ...args.values[ 1.... ]
+
+    def operator[] index: Number when has_fixed_size( T )
+        assert index >= 0 && index < size
+        rlen := ceil sizeof( T ), aligof( T )
+        __primitive_get_ref T, this.val + index * rlen
+
+    def operator for block
+        block val
+        nxt.operator for block
+
+    def get_ptr
+        \val
+
+    def get_size 
+        static_size
+
+    val ~= T
+    nxt ~= Vec[ T, static_size - 1 ]
+
+# When nb items == 0
+global
+class Vec[ T, static_size: Number ] when static_size == 0 extends Array[ T, 1 ]
+    def get_size
+        0
+
+    def write_to_stream stream
+        pass
+
+    def operator for block
+        pass
+
+    def get_ptr
+        Ptr[ T ] this.val
+
+    def get_size 
+        0
+
+# construct a dynamic Vec[ ... ] from a list
+global
+def vec lst
+    res := Vec[ lst.T ] Size lst.size
+    for i in lst 
+        res << i
+    res

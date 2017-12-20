@@ -1,0 +1,22 @@
+#
+class ReversedRange[ TR ]
+    def construct range: TR
+        init_of range, range
+
+    def operator for block
+        if range.T_end::is_signed || range.end > range.beg
+            cpt := range.end - 1
+            while true
+                block cpt
+                if cpt == range.beg
+                    break
+                --cpt
+
+    def operator[] index
+        range.end - 1 - index
+
+    range ~= TR
+
+global
+def reversed range: Range
+    ReversedRange[ typeof range ] range

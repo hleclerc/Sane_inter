@@ -1,0 +1,22 @@
+#
+global
+class RefUntypedConcatenation extends UntypedArray
+    def construct va: UntypedArray, vb: UntypedArray
+        init_of a, UntypedRef::make va
+        init_of b, UntypedRef::make vb
+
+    def get_size
+        a->size + b->size
+
+    def operator[] index: Number
+        index < a->size ? a->operator[]( index ) : b->operator[]( index - a->size )
+
+    def operator for block
+        for i in @a
+            block i
+        for i in @b
+            block i
+
+    a ~= UntypedRef
+    b ~= UntypedRef
+    

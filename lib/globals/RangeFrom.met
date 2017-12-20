@@ -1,0 +1,11 @@
+#
+global
+class RangeFrom[ T ]
+    def construct val
+        init_of beg, val
+
+    beg ~= T
+
+global
+def operator.... self
+    RangeFrom[ typeof self ] self

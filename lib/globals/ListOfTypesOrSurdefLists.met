@@ -1,0 +1,22 @@
+
+#
+global
+class ListOfTypesOrSurdefLists
+    # to be filled
+    
+global
+def operator| self: SurdefList              , b: SurdefList
+    __primitive_make_lotosl self, b
+    
+global
+def operator| self: ListOfTypesOrSurdefLists, b: SurdefList
+    __primitive_make_lotosl self, b
+
+global
+def operator| self: SurdefList              , b: ListOfTypesOrSurdefLists
+    __primitive_make_lotosl self, b
+    
+global
+def operator| self: ListOfTypesOrSurdefLists, b: ListOfTypesOrSurdefLists
+    __primitive_make_lotosl self, b
+    

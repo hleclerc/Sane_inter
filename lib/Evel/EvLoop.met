@@ -1,0 +1,36 @@
+{ Event } := import "./Event.met"
+
+export
+class EvLoop
+    def construct
+        # init epoll
+        event_fd = Codegen::add "%R = epoll_create1( 0 );", ret_type = SI32, include = "<sys/epoll.h>"
+        if event_fd < 0
+            Codegen::add "perror( \"epoll_create1\" );", include: "<stdio.h>"
+
+    def destroy
+        if event_fd >= 0
+            Codegen::add "close( %0 );", event_fd, include: "<unistd.h>"
+
+    def add_event ev: Ptr[ Event ]
+        if ev->ev_loop == nullptr && event_fd >= 0
+            ev->ev_loop = this
+
+            if ev->need_wait
+                ++nb_waiting_events
+
+            code := "epoll_event ee;%-"
+            code += "ee.events = EPOLLIN | EPOLLOUT | EPOLLRDHUP | EPOLLET;%-"
+            code += "ee.data.u64 = 0;%-"
+            code += "ee.data.ptr = (void *)%2;%-"
+            code += "%R = epoll_ctl( %0, EPOLL_CTL_ADD, %1, &ee );"
+
+            ret := Codegen::add code, event_fd, ev->fd, ev.val, ret_type = SI32
+            # if ret < 0
+            #     err( "epoll_ctl add: ", strerror( errno ) );
+            ev->_on_inp = make_FunctionPtr ev->on_inp, false
+            ev->on_install()
+        self
+
+    event_fd          := -1
+    nb_waiting_events := 0

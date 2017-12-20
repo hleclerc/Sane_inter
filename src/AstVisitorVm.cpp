@@ -50,13 +50,9 @@ Variable AstVisitorVm::on_continue() {
 }
 
 Variable AstVisitorVm::on_self() {
-    TODO; return {};
-//    if ( Variable self = scope->find_self( false ) ) {
-//        ret_or_dec_ref( self );
-//    } else {
-//        scope->add_error( "'self' works only inside methods" );
-//        ret = vm->ref_error;
-//    }
+    if ( Variable self = gvm->scope->find_self( false ) )
+        return self;
+    return gvm->add_error( "'self' works only inside methods" );
 }
 
 Variable AstVisitorVm::on_this() {
@@ -168,21 +164,20 @@ Variable AstVisitorVm::on_block( const Vec<RcString> &items ) {
 }
 
 Variable AstVisitorVm::on_apply_op( RcString f, const Vec<RcString> &args ) {
-    TODO; return {};
-//    // make arguments
-//    Vec<Variable> v_args( Rese(), args.size() );
-//    for( const RcString &arg : args )
-//        v_args << scope->visit( names, arg, true );
+    // make arguments
+    Vec<Variable> v_args( Rese(), args.size() );
+    for( const RcString &arg : args )
+        v_args << gvm->visit( names, arg, true );
 
-//    for( const Variable &v : v_args )
-//        if ( v.error() )
-//            return ret_or_dec_ref( vm->ref_error );
+    for( const Variable &v : v_args )
+        if ( v.error() )
+            return gvm->ref_error;
 
-//    // find lhs
-//    Variable func = v_args[ 0 ].find_attribute( scope, f, false );
-//    if ( ! func )
-//        return scope->add_error( "Operator '{}' is not defined (for type {})", f, *v_args[ 0 ].type ), ret_or_dec_ref( vm->ref_error );
-//    ret_or_dec_ref( func.apply( scope, want_ret, v_args.from( 1 ) ) );
+    // find lhs
+    Variable func = v_args[ 0 ].find_attribute( f, false );
+    if ( ! func )
+        return gvm->add_error( "Operator '{}' is not defined (for type {})", f, *v_args[ 0 ].type );
+    return func.apply( want_ret, v_args.from( 1 ) );
 }
 
 Variable AstVisitorVm::on_apply( RcString f, const Vec<RcString> &args, const Vec<RcString> &names, const Vec<size_t> &spreads ) {

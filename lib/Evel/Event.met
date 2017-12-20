@@ -1,0 +1,21 @@
+{ EvLoop } := import "./EvLoop.met"
+
+export
+class Event
+    def construct fd: SI32, need_wait? true
+        init_of need_wait, need_wait
+        init_of ev_loop  , nullptr
+        init_of fd       , fd
+    
+    def destroy
+        if fd >= 0
+            Codegen::add "close( %0 );", fd, include: "<unistd.h>"
+
+    def on_install
+        pass
+
+    fd        ~= SI32
+    ev_loop   ~= NullablePtr[ EvLoop ]
+    _on_inp   ~= FunctionPtr[ Void, make_Varargs() ]
+    need_wait ~= Bool
+    

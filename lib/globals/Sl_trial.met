@@ -1,0 +1,16 @@
+# 
+global
+class Sl_trial
+    source           ~= String #
+    offset           ~= PT     #
+
+    msg              ~= String #
+
+    # Vec<Value>           inheritance_insts; ///<
+    # Vec<std::string>     inheritance_names; ///<
+
+    # Value                condition;         ///<
+    # int                  valid;             ///< 0 means no, 2 means yes, 1 means don't know
+    # std::string          msg;               ///<
+
+    # bool                 call_ctor;         ///<

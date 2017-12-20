@@ -1,0 +1,7 @@
+global
+class Cpu
+    def get_is_little_endian
+        __primitive_is_little_endian()
+
+global
+cpu := Cpu()

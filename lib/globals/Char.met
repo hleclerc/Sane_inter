@@ -1,0 +1,61 @@
+
+global
+class Char
+    __primitive_add_room_in_type 8, 8
+
+    def construct val: Char
+        __primitive_reassign self, val
+
+    def construct val: PrimitiveNumber
+        __primitive_reassign self, val
+
+    def construct
+        pass
+
+    def convert val: PrimitiveNumber
+        __primitive_reassign val, self
+        
+    def operator= b: Char
+        __primitive_reassign self, b
+        
+    def operator= b: PrimitiveNumber
+        __primitive_reassign self, b
+        
+    def write_to_stream s
+        s.write self
+
+    def operator- b: Char ~> PI8
+        __primitive_sub self, b
+
+    def operator- b: StringAncestor when b.size == 1 ~> PI8
+        operator- b[ 0 ]
+
+    def operator> b: Char ~> PI8
+        __primitive_inf self, b
+
+    def operator> b: StringAncestor when b.size == 1 ~> PI8
+        operator> b[ 0 ]
+
+    def operator< b: Char ~> PI8
+        __primitive_sup self, b
+
+    def operator< b: StringAncestor when b.size == 1 ~> PI8
+        operator< b[ 0 ]
+
+    def operator>= b: Char ~> PI8
+        __primitive_sup_equ self, b
+
+    def operator>= b: StringAncestor when b.size == 1 ~> PI8
+        operator>= b[ 0 ]
+
+    def operator<= b: Char ~> PI8
+        __primitive_inf_equ self, b
+
+    def operator<= b: StringAncestor when b.size == 1 ~> PI8
+        operator<= b[ 0 ]
+
+    def operator== b: Char ~> PI8
+        __primitive_equ self, b
+
+    def operator== b: StringAncestor when b.size == 1 ~> PI8
+        operator== b[ 0 ]

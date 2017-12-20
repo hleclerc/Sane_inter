@@ -1,0 +1,3 @@
+# TODO: the atual SpVec (like a Deque in std C++)
+export
+class SpVec[ T ] extends Vec[ T ]

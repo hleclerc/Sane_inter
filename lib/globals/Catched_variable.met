@@ -1,0 +1,5 @@
+#
+global
+class Catched_variable
+    name ~= String
+    val  ~= UntypedRef

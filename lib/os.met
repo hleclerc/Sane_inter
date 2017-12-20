@@ -1,0 +1,19 @@
+#
+class Os
+    # 
+    def system command: StringAncestor
+        if command is_not_a String
+            return system String command
+        __primitive_system command
+
+    #
+    def get_argv
+        __primitive_get_argv()
+
+    #
+    def get_cwd
+        __primitive_get_cwd()
+
+export
+os ~= Os 
+

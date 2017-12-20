@@ -1,0 +1,166 @@
+# string made by (potentially shared) subparts i.e. contiguous by chunks
+# far better good performances for writing (appending, inserting) than String or RcString for instance, since it does not have to copy the buffers during the growth
+export
+class SpString[ buffer_size? 64 - 4 + sizeof( PT ) ] extends StringAncestor
+    # chunk
+    class Buffer
+        def get_rem ~> PI32 
+            buffer_size - used
+            
+        next ~= NullablePtr[ Buffer ]
+        refc ~= PI32                     # ref count
+        used ~= PI32                     # nb chars actually used in data
+        data ~= Vec[ Char, buffer_size ]
+
+    def construct str: StringAncestor
+        init_of self
+
+        str.apply_on_chunks ( str_data, str_size ) =>
+            write str_data, str_size
+
+    # here for compatibility
+    def construct rese: Rese
+        init_of self
+
+    def construct 
+        init_of first_buf, null_ptr
+        init_of last_buf , null_ptr
+        init_of used_last, 0
+        init_of tot_size , 0
+
+    def get_size ~> PT
+        tot_size
+
+    # return value of last called callback. Args for the callback: ( data, size )
+    def apply_on_chunks callback, start? 0, length? size - start
+        if buf := first_buf
+            # find the first buf to read
+            ofi := off_first + start
+            rem := length
+            while ofi >= buf->used
+                ofi -= buf->used
+                buf = buf->next
+
+            # first buf (with ofi)
+            first_size := buf->used - ofi
+            if rem <= first_size
+                return callback buf->data.ptr + ofi, rem
+            callback buf->data.ptr + ofi, first_size
+            rem -= first_size
+            # following ones
+            while buf = buf->next
+                if rem <= buf->used
+                    return callback buf->data.ptr, rem
+                if buf->used
+                    callback buf->data.ptr, buf->used
+                    rem -= buf->used
+
+    # append some data
+    def write src_data: Ptr[ U ], src_size: Number with U pertinence 1
+        if src_size
+            write Ptr[ Char ]( src_data.val ), sizeof( U ) + ( src_size - 1 ) * ceil( sizeof( U ), aligof( U ) )
+
+    # append some data
+    def write str_data: Ptr[ Char ], str_size: Number pertinence 2
+        if s := str_size
+            p := str_data
+            tot_size += s
+
+            # check the right to write something in the last buf
+            if last_buf
+                if last_buf->next || last_buf->used != used_last
+                    TODO # -> make a copy
+            # else, need an initialisation
+            else
+                buf := new Buffer
+                buf->next = null_ptr
+                buf->refc = 1
+                buf->used = 0
+
+                first_buf = buf
+                last_buf  = buf
+                off_first = 0
+                used_last = 0
+
+            # on the first buf, we have to take off_first into account
+            if last_buf == first_buf
+                # write data in last buf
+                rem := last_buf->rem - off_first
+                if s <= rem
+                    memcpy last_buf->data.ptr + last_buf->used + off_first, p, s
+                    used_last = ( last_buf->used += s )
+                    return 0
+                memcpy last_buf->data.ptr + last_buf->used + off_first, p, rem
+                last_buf->used = buffer_size
+                p += rem
+                s -= rem
+
+                # append a new buffer
+                _app_buf_nf()
+                
+            # append data in (a potentially new) last_buf
+            while true
+                # write data in last buf
+                rem := last_buf->rem
+                if s <= rem
+                    memcpy last_buf->data.ptr + last_buf->used, p, s
+                    used_last = ( last_buf->used += s )
+                    return
+                memcpy last_buf->data.ptr + last_buf->used, p, rem
+                last_buf->used = buffer_size
+                p += rem
+                s -= rem
+
+                # append a new buffer
+                _app_buf_nf()
+
+    # append some data
+    def write str: StringAncestor
+        str.apply_on_chunks ( data, size ) =>
+            write data, size
+
+    # append representation of an obj (temporary. TODO: replace)
+    def write obj
+        write String obj
+
+    #
+    def get_error
+        used_last > buffer_size
+
+    # read a (binary) value of type T
+    def read_byte ~> PI8
+        # handling of tot_size
+        if ! tot_size
+            used_last = buffer_size + 1 # error code
+            return 0
+        --tot_size
+        #
+        res := T first_buf->data[ off_first ]
+        if ++off_first >= buffer_size
+            first_buf = first_buf->next
+            if first_buf
+                off_first = 0
+            else
+                last_buf = null_ptr
+        res
+
+    # read a (binary) value of type T
+    def read_some len, callback ~> Void
+        TODO
+
+    # append a new buffer that won't be the first
+    private
+        def _app_buf_nf
+            buf := new Buffer
+            buf->next = null_ptr
+            buf->refc = 1
+            buf->used = 0
+
+            last_buf->next = buf
+            last_buf = buf
+
+        first_buf ~= NullablePtr[ Buffer ]
+        last_buf  ~= NullablePtr[ Buffer ]
+        off_first ~= PI32                  # offset from the first buffer
+        used_last ~= PI32                  # used data in last buffer for this string (buffer may be shared with other SpString(s))
+        tot_size  ~= PT                    # total size (could be computed using buffers, off_first and used_last but it would be slow...)

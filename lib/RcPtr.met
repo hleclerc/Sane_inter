@@ -1,0 +1,60 @@
+import ./NullableRcPtr
+
+#
+export
+class RcObj
+    cpt_use := 0
+    
+#
+export
+class RcPtr[ T ]
+    def construct p: NullablePtr[ T ]
+        init_of self, p.as_Ptr
+
+    def construct p: RcPtr[ T ]
+        ++p->cpt_use
+        ptr = p.ptr
+
+    def construct p: Ptr[ T ]
+        ++p->cpt_use
+        ptr = p
+
+    def operator= p: RcPtr[ T ]
+        if p
+            ++p->cpt_use
+        if ptr && --ptr->cpt_use == 0
+            delete ptr
+        ptr = p.ptr
+
+    def operator= p: Ptr[ T ]
+        if p
+            ++p->cpt_use
+        if ptr && --ptr->cpt_use == 0
+            delete ptr
+        ptr = p
+
+    def destroy
+        if ptr && --ptr->cpt_use == 0
+            delete ptr
+
+    def convert Bool
+        ptr
+
+    def operator@
+        @ptr
+
+    def operator is_also_a P 
+        if P.has_base_class RcPtr | NullableRcPtr
+            return T.inherits P::T
+        false
+
+    def write_to_stream os
+        os << ptr
+
+    ptr ~= NullablePtr[ T ]
+    
+    
+#
+export
+def rc_new T, ...args
+    RcPtr[ T ] new T, ...args

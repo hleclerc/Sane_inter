@@ -1,0 +1,14 @@
+# 
+export
+class Set[ T ]
+    def insert val
+        if val in values
+            return false
+        values << val
+        true
+
+    def has val
+        val in values
+
+    values ~= Vec[ T ]
+

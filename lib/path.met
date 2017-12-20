@@ -1,0 +1,8 @@
+#
+class Path
+    def canonical filename: StringAncestor, cur_dir: StringAncestor? os.cwd, check? true
+        __primitive_canonical
+
+export
+path ~= Path
+

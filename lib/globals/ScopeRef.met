@@ -1,0 +1,5 @@
+
+# attributes <=> content of the scope
+global
+class ScopeRef
+    pass

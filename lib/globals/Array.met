@@ -1,0 +1,20 @@
+
+# 
+global
+class Array[ T, dim? 1 ] extends UntypedArray[ dim ]
+    pass 
+
+# global
+# class LinkedList
+#     def construct start, cont_cb
+#         init_of start  , UntypedRef::make start
+#         init_of cont_cb, UntypedRef::make cont_cb
+
+#     def operator for block
+#         v := ( @start ).as_nullable
+#         while v
+#             block @v
+#             v = cont_cb v
+
+#     start   ~= UntypedRef
+#     cont_cb ~= UntypedRef

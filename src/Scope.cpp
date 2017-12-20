@@ -110,8 +110,15 @@ Variable Scope::find_variable( const RcString &name, bool ret_err, bool allow_am
     return ret_err ? gvm->ref_error : Variable{};
 }
 
-void Scope::reg_var( const RcString &name, const Variable &var, Scope::VariableFlags flags, bool check ) {
-    //
+Variable Scope::find_self( bool ret_err ) {
+    // from the current scope to the deeper ones
+    for( Scope *s = this; s; s = s->parent_for_vars() )
+        if ( s->self )
+            return s->self;
+    return ret_err ? gvm->ref_error : Variable{};
+}
+
+void Scope::reg_var( const RcString &name, const Variable &var, Scope::VariableFlags flags, bool check ) { //
     if ( import && flags & VariableFlags::EXPORT )
         import->exports << Import::Export{ name, var };
     // global

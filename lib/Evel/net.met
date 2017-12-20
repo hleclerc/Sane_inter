@@ -1,0 +1,13 @@
+{ Event } := import "./Event.met"
+
+export
+class Listener extends Event
+    def construct port: SI32? 45
+        init_of super, 46
+        init_of port , port
+
+    def on_inp
+        ct_info 31
+        print port
+
+    port := 0

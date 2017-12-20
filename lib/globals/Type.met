@@ -1,0 +1,63 @@
+#
+global
+class Type
+    def construct type: Type 
+        __primitive_construct self, type
+
+    def construct surdef: SurdefList
+        __primitive_construct self, surdef
+
+    def operator:= 
+        __primitive_copy self
+
+    def operator== that: SurdefList | Type
+        __primitive_gen_equ self, that
+
+    def inherits U: SurdefList | Type
+        __primitive_inherits self, U
+
+    def convert String
+        __primitive_convert_String self
+
+    def get_inheritance_rec
+        __primitive_inheritance_rec self
+
+    def get_attributes
+        __primitive_get_attributes self
+
+    def has_base_class T
+        __primitive_has_base_class self, T
+
+    def get_base_class_name
+        __primitive_base_class_name self
+
+    def get_template_attributes
+        __primitive_template_attributes self
+            
+    def write_to_stream s
+        s.write self
+
+    # instance_of       ~= UntypedRef                  # Class -> TODO: use a Ref[ Class ]
+    # parameters        ~= Vec[ UntypedRef ]
+    # attributes        ~= Vec[ Type_attribute ]
+    # static_attributes ~= Vec[ Type_static_attribute ]
+    # methods           ~= Vec[ Type_static_attribute ] #
+    kv_size          ~= SI32                         # in bits
+    kv_alig          ~= SI32                         # in bits
+    name             ~= String
+    prev             ~= NullablePtr[ Type ]          # prev in class instances
+
+#
+global
+class TypeAttribute
+    name   ~= String
+    type   ~= Type
+    off    ~= SI32
+    alig   ~= SI32
+    
+#
+# #
+# global
+# class Type_static_attribute
+#     name   ~= String
+#     var    ~= UntypedRef

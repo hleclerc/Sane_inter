@@ -1,0 +1,66 @@
+#
+global
+class Ptr[ T ]
+    def construct ptr: Ptr[ T ] # with U when U.inherits( T )
+        init_of val, ptr.val
+
+    def construct val: AT
+        if val == null_ptr
+            info val
+            assigning_a_null_ptr_to_a_ptr
+        init_of val, val
+
+    def operator= ptr: Ptr[ T ] # with U when U.inherits( T )
+        val = ptr.val
+        self
+
+    def operator@
+        __primitive_get_ref T, val
+
+    def operator[] index
+        __primitive_get_ref T, val + index * ceil( sizeof( T ), aligof( T ) )
+        
+    def write_to_stream s
+        s.write self.val
+
+    def convert Bool
+        true
+
+    def get_as_nullable
+        NullablePtr[ T ] self
+
+    def operator== ptr: Ptr[ U ] with U
+        __primitive_gen_equ self.val, ptr.val
+
+    def operator== val: AT
+        __primitive_gen_equ self.val, val
+
+    def operator< ptr: Ptr[ U ] with U
+        __primitive_gen_inf self.val, ptr.val
+
+    def operator<= ptr: Ptr[ U ] with U
+        __primitive_gen_inf_equ self.val, ptr.val
+
+    def operator> ptr: Ptr[ U ] with U
+        __primitive_gen_sup self.val, ptr.val
+
+    def operator>= ptr: Ptr[ U ] with U
+        __primitive_gen_sup_equ self.val, ptr.val
+
+    def operator+ n: PrimitiveNumber
+        Ptr[ T ] self.val + n * ceil( sizeof( T ), aligof( T ) )
+
+    def operator is_also_a P 
+        if P.has_base_class Ptr
+            return T.inherits( P::T ) ? 10 : 0
+        if P.has_base_class NullablePtr
+            return T.inherits( P::T ) ? 20 : 0
+        0
+
+    val ~= AT
+
+# returns a Ptr on self
+global
+def operator\ self
+    __primitive_pointer_on self
+    

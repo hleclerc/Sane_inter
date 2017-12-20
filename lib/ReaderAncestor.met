@@ -1,0 +1,11 @@
+
+#
+export
+class ReaderAncestor
+    # read a single byte
+    mixin
+    def read_byte ~> PI8
+        res ~= PI8
+        read_some 1, ( data, size ) =>
+            memcpy \res, data, size
+        res

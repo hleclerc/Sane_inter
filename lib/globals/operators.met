@@ -1,0 +1,90 @@
+# generic stuff
+global
+def operator+= self, b
+    self = self + b
+    self
+
+global
+def operator-= self, b
+    self = self - b
+    self
+
+global
+def operator*= self, b
+    self = self * b
+    self
+
+global
+def operator%= self, b
+    self = self % b
+    self
+
+global
+def operator/= self, b
+    self = self / b
+    self
+
+global
+def operator//= self, b
+    self = self // b
+    self
+
+global
+def operator>>= self, b
+    self = self >> b
+    self
+
+global
+def operator<<= self, b
+    self = self << b
+    self
+
+global
+def operator++ self
+    self = self + 1
+    self
+
+global
+def operator-- self
+    self = self - 1
+    self
+
+global
+def operator:= self
+    T := typeof( self )
+    T self
+
+global
+def operator!= self, b
+    ! self.operator==( b )
+
+global
+def operator ! self
+    ! Bool self
+
+global
+def operator not self
+    ! self
+
+global
+def operator in self, lst
+    lst.has self
+
+global
+def operator not_in self, lst
+    not lst.has self
+
+global
+def operator __string_assembly__ self, b
+    res := self
+    res << b
+    res
+    
+global
+def operator is_a self, b
+    __primitive_is_a self, b
+    
+global
+def operator is_not_a self, b
+    not __primitive_is_a self, b
+

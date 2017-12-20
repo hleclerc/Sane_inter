@@ -1,0 +1,24 @@
+#
+global
+class RefSubArray extends UntypedArray
+    def construct vec: UntypedArray, sub: UntypedArray
+        init_of vec, UntypedRef::make vec
+        init_of sub, UntypedRef::make sub
+
+    def get_size
+        sub->size
+
+    def operator[] index: Number
+        vec->operator[] sub->operator[] index
+
+    def operator for block
+        for i in @sub
+            block vec->operator[] i
+
+    def operator= lst: UntypedArray
+        for i in 0 .. sub->size
+            vec->operator[]( i ) = lst[ i ]
+
+    vec ~= UntypedRef
+    sub ~= UntypedRef
+    

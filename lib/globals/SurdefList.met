@@ -1,0 +1,46 @@
+global
+class SurdefList
+    def operator:=
+        __primitive_copy self
+
+    # beware: due to cross reference problems, this method is actually catched as a primitive
+    def operator[] ...args
+        __primitive_select self, args
+
+    def convert String
+        __primitive_convert_String self
+
+    # beware: due to cross reference problems, this method is (also) actually catched as a primitive
+    def operator== selg
+        __primitive_gen_equ self, selg
+
+    # true if there's a catched variable
+    def has_self
+        __primitive_has_self self
+
+    # return the reference on the self catched variable if there's any
+    def ref_self
+        __primitive_ref_self self
+
+    def nb_arguments
+        __primitive_nb_arguments self
+        
+    def write_to_stream s
+        s.write self
+
+    def inherits U: SurdefList | Type
+        __primitive_inherits self, U
+
+    def get_inheritance_rec
+        __primitive_inheritance_rec self
+
+    def get_attributes
+        __primitive_get_attributes self
+    
+    def has_base_class T
+        __primitive_has_base_class self, T
+    
+    lst   ~= Vec[ UntypedRef ] # list of definitions (class, def, ...). sorted by (known) decreasing pertinence
+    obj   ~= UntypedRef        # self
+    args  ~= Vec[ UntypedRef ] # as in Foo[ arg1, arg2, ... ]
+    names ~= Vec[ String ]     #

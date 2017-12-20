@@ -1,0 +1,46 @@
+# 
+export
+class Map[ K, V ]
+    class Item
+        def construct key, ...val_ctor_args
+            init_of key, key
+            init_of val, ...val_ctor_args
+
+        def construct item: Item
+            init_of key, item.key
+            init_of val, item.val
+
+        key ~= K
+        val ~= V
+
+    class NotFound
+        pass
+
+    def construct 
+        pass
+
+    def insert key, ncb? ( => V() ), ocb? ( res => res )
+        for item in items 
+            if item.key == key
+                return ocb item.val
+        res := items.push_back key, ncb()
+        res->val
+
+    def set key, ...val_ctor_args
+        for item in items 
+            if item.key == key
+                item.val.operator= ...val_ctor_args
+                return item.val
+        res := items.push_back key, ...val_ctor_args
+        res->val
+
+    # by default, return a pointer on the value or null_ptr if not found. 
+    # this behavior can be changed using fail_cb and found_cb
+    def find key, found_cb? ( item => \item.val ), fail_cb? ( => NullablePtr[ V ] null_ptr )
+        for item in items 
+            if item.key == key
+                return found_cb item
+        fail_cb()
+
+    items ~= Vec[ Item ]
+

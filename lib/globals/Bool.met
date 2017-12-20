@@ -1,0 +1,10 @@
+global
+class Bool extends PrimitiveNumber
+    # 8 for the interpreter
+    __primitive_add_room_in_type 8, 8
+    
+    def construct val: PrimitiveNumber
+        __primitive_reassign self, val
+
+    def construct
+        pass

@@ -1,0 +1,47 @@
+#
+global
+class Varargs
+    class Item
+        value ~= UntypedRef
+        name  ~= String
+
+    def operator== b: Varargs
+        __primitive_gen_equ self, b
+
+    def operator[] index: PrimitiveNumber
+        # __primitive_select self, index
+        @values[ index ]
+
+    def operator[] index: RangeFrom[ SI32 ]
+        __primitive_select self, index
+
+    def operator for block
+        o := values.size - names.size
+        for i in 0 .. o
+            block Item{ "", values[ i ] }
+        for i in o .. values.size
+            block Item{ names[ i - o ], values[ i ] }
+
+    def get_size
+        __primitive_get_size self
+
+    def write_to_stream os
+        c := -1
+        o := values.size - names.size
+        for i in 0 .. o
+            if ++c
+                os << " "
+            os << @values[ i ]
+        for i in o .. values.size
+            if ++c
+                os << " "
+            os << names[ i - o ] << ":" << @values[ i ]
+
+    values ~= Vec[ UntypedRef ]
+    names  ~= Vec[ String ]
+
+# function to make a Varargs instance
+global
+def va ...varargs
+    varargs
+    

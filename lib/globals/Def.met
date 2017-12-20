@@ -1,0 +1,38 @@
+
+# content of a "def foo( ... ) ..."
+global
+class Def
+    name                   ~= String                  #
+    arg_names              ~= Vec[ String ]           #
+    arg_constraints        ~= Vec[ Ast_code ]         #
+    arg_def_vals           ~= Vec[ Ast_code ]         #
+    condition              ~= Ast_code                #
+    pert_code              ~= Ast_code                #
+    def_pert_num           ~= SI32                    # default pertinence     
+    def_pert_exp           ~= SI32                    # default pertinence, exp part
+    spreads                ~= Vec[ PT ]               # arguments with ...
+    block                  ~= Vec[ Ast_code ]         #     
+     
+    catched_variables      ~= Vec[ Catched_variable ] #
+    catched_variables_cond ~= Vec[ Catched_variable ] #
+
+    source                 ~= String                  #
+    offset                 ~= PT                      #
+     
+    self_constraint        ~= Ast_code                #
+    return_type            ~= Ast_code                #
+    wpc_code               ~= Ast_code                #
+     
+    export_flag            ~= Bool                    #
+    global_flag            ~= Bool                    #
+
+    static_flag            ~= Bool                    # 
+    self_as_arg_flag       ~= Bool                    #
+    abstract_flag          ~= Bool                    #
+     
+global
+class Sl_trial_Def
+    args                   ~= Vec[ UntypedRef ]
+    def_ref                ~= UntypedRef
+    msg                    ~= String
+    condition              ~= Bool

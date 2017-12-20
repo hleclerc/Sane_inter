@@ -1,0 +1,14 @@
+
+#
+global
+class SI64 extends PrimitiveNumber
+    __primitive_add_room_in_type 64, 64
+
+    static is_signed := true
+
+    def construct val: PrimitiveNumber
+        __primitive_reassign self, val
+
+    def construct
+        pass
+        

@@ -1,0 +1,17 @@
+import os
+
+#
+class Fs
+    class Error
+        msg ~= String
+
+    # blocks program execution until whole file is obtained
+    def read_sync filename: StringAncestor, fail_cb? ( () => throw Error msg: "Failed to read $( filename )" ), OutType? String
+        conv OutType, __primitive_read_sync conv( String, filename ), fail_cb
+
+    def canonical filename: StringAncestor, cur_dir: StringAncestor? os.cwd, check? true
+        __primitive_canonical conv( String, filename ), conv( String, cur_dir ), conv( Bool, check )
+
+export
+fs ~= Fs
+

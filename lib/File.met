@@ -1,0 +1,11 @@
+
+export
+def open filename: StringAncestor
+    __primitive_open filename
+
+# 
+export
+class File extends Stream
+    def construct filename: StringAncestor
+        init_of super, open filename
+

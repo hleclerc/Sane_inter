@@ -1,0 +1,28 @@
+
+# Vec of reference on variables. Used for compile time (including '[...]')
+global
+class CtMap
+    def get_size 
+        keys.size
+
+    # if key is found (using operator==), return a pointer on value 
+    # else, return a null_ptr
+    def find key
+        for i in 0 .. keys.size
+            if @keys[ i ] == key
+                return \@vals[ i ]
+        null_ptr
+
+    def operator for block
+        for i in 0 .. size
+            block { key: keys[ i ], val: vals[ i ] }
+
+    def write_to_stream stream
+        for i in 0 .. size
+            stream << ( i ? " " : "" ) << @keys[ i ] << ":" << @vals[ i ]
+
+    def get_values
+        vals
+
+    keys ~= Vec[ UntypedRef ]
+    vals ~= Vec[ UntypedRef ]

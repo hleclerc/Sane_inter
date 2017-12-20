@@ -1,0 +1,70 @@
+import SpString
+
+#
+export
+class CompactBinStreamWriter[ BufType? SpString ] extends StringAncestor
+    def construct b: Ptr[ BufType ]
+        init_of buf, b
+
+    def write_unsigned val: Number
+        assert val >= 0
+        if val < 128
+            b := PI8 val
+            buf->write \b, 1
+            return self
+
+        b := PI8 128 + val % 128
+        buf->write \b, 1
+        val >>= 7;
+
+        while val >= 128
+            b = PI8 128 + val % 128
+            buf->write \b, 1
+            val >>= 7
+        b = val
+        buf->write \b, 1
+
+        self
+
+    # to comply with StringAncestor
+    def apply_on_chunks callback
+        buf->apply_on_chunks callback
+
+    # to comply with StringAncestor
+    def get_size
+        buf->size
+
+    buf ~= Ptr[ BufType ]
+
+
+def test
+    import CompactBinStreamWriter
+    import CompactBinStreamReader
+    import ContiguousStringReader
+    import RcString              
+
+    b := ""
+    w := CompactBinStreamWriter[ String ] \b
+    w.write_unsigned 2200
+    w.write_unsigned 2201
+
+    c := ContiguousStringReader \b
+    r := CompactBinStreamReader[ ContiguousStringReader ] \c
+    info r.read_unsigned PT
+    info r.read_unsigned PT
+
+def test_2
+    import CompactBinStreamWriter
+    import CompactBinStreamReader
+    import ContiguousStringReader
+    import RcString              
+
+    b := RcString()
+    w := CompactBinStreamWriter[ RcString ] \b
+    w.write_unsigned 2200
+    w.write_unsigned 2201
+
+    r := CompactBinStreamReader[ RcString ] \b
+    info r.read_unsigned PT
+    info r.read_unsigned PT
+

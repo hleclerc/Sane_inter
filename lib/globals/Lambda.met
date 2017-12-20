@@ -1,0 +1,10 @@
+global
+class Lambda
+    def operator:=
+        __primitive_copy self
+
+    def operator== that
+        __primitive_gen_equ self, that
+
+    def nb_arguments
+        __primitive_nb_arguments self

@@ -1,0 +1,18 @@
+
+# 
+global
+class InterpScope
+    def declare name: String, type
+        __primitive_scope_declare self, name, type
+
+    def add name: String, func, static_var? false # func() must give the value
+        __primitive_scope_add self, name, func, static_var
+
+    def get_parent
+        __primitive_scope_get_parent self
+
+    def disp_info
+        __primitive_scope_disp_info self
+
+    def disp_pos
+        __primitive_scope_disp_pos self

@@ -1,0 +1,110 @@
+
+#
+global
+class PrimitiveNumber extends Number
+    #def operator:=
+    #    __primitive_copy self
+
+    #def operator= b: PrimitiveNumber
+    #    __primitive_reassign self, b
+    #    
+    #def operator== b: PrimitiveNumber
+    #    __primitive_equ self, b
+
+    #def operator+ b: PrimitiveNumber
+    #    __primitive_add self, b
+
+    #def operator< b: PrimitiveNumber
+    #    __primitive_inf self, b
+
+    #def operator-
+    #    __primitive_neg self
+
+    #def operator% b: PrimitiveNumber
+    #    __primitive_mod self, b
+
+    def convert String
+        __primitive_convert_String self
+        
+    def write_to_stream s
+        s.write self
+
+    def operator= val: PrimitiveNumber
+        __primitive_reassign self, val
+
+    def operator!
+        __primitive_not_boolean self
+
+    def operator~
+        __primitive_not_bitwise self
+
+# operators, defined in global space to ease surdefs with (currently) unknown types
+global
+def operator| self: PrimitiveNumber, b: PrimitiveNumber
+    __primitive_or_bitwise self, b
+
+global
+def operator^ self: PrimitiveNumber, b: PrimitiveNumber
+    __primitive_xor_bitwise self, b
+
+global
+def operator& self: PrimitiveNumber, b: PrimitiveNumber
+    __primitive_and_bitwise self, b
+
+global
+def operator>> self: PrimitiveNumber, b: PrimitiveNumber
+    __primitive_shift_right self, b
+
+global
+def operator<< self: PrimitiveNumber, b: PrimitiveNumber
+    __primitive_shift_left self, b
+
+global
+def operator+ self: PrimitiveNumber, b: PrimitiveNumber
+    __primitive_add self, b
+
+global
+def operator- self: PrimitiveNumber
+    __primitive_neg self
+
+global
+def operator- self: PrimitiveNumber, b: PrimitiveNumber
+    __primitive_sub self, b
+
+global
+def operator* self: PrimitiveNumber, b: PrimitiveNumber
+    __primitive_mul self, b
+
+global
+def operator% self: PrimitiveNumber, b: PrimitiveNumber
+    __primitive_mod self, b
+
+global
+def operator/ self: PrimitiveNumber, b: PrimitiveNumber
+    assert b
+    __primitive_div self, b
+
+global
+def operator// self: PrimitiveNumber, b: PrimitiveNumber
+    assert b
+    __primitive_div_int self, b
+
+global
+def operator< self: PrimitiveNumber, b: PrimitiveNumber
+    __primitive_inf self, b
+
+global
+def operator> self: PrimitiveNumber, b: PrimitiveNumber
+    __primitive_sup self, b
+
+global
+def operator<= self: PrimitiveNumber, b: PrimitiveNumber
+    __primitive_inf_equ self, b
+
+global
+def operator>= self: PrimitiveNumber, b: PrimitiveNumber
+    __primitive_sup_equ self, b
+
+global
+def operator== self: PrimitiveNumber, b: PrimitiveNumber
+    __primitive_equ self, b

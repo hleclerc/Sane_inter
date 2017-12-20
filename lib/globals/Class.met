@@ -1,0 +1,48 @@
+# #
+# global
+# class Class_inst
+#     args                   ~= Vec[ UntypedRef ]
+#     type                   ~= UntypedRef
+
+# #
+# global
+# class Sl_trial_Class
+#     args                   ~= Vec[ UntypedRef ]
+#     def_ref                ~= UntypedRef
+#     msg                    ~= String
+#     condition              ~= Bool
+
+# content of a "class foo[ ... ] ..."
+global
+class Class
+    def operator== that: Class
+        __primitive_gen_equ self, that
+
+    # name                   ~= String                         #
+    # arg_names              ~= Vec[ String ]                  #
+    # arg_constraints        ~= Vec[ Ast_code ]                #
+    # arg_def_vals           ~= Vec[ Ast_code ]                #
+    # condition              ~= Ast_code                       #
+    # catched_variables_cond ~= Vec[ Catched_variable ]        #
+    # pert_code              ~= Ast_code                       #
+    # def_pert_num           ~= SI32                           # default pertinence     
+    # def_pert_exp           ~= SI32                           # default pertinence, exp part
+    # spreads                ~= Vec[ PT ]                      # arguments with ...
+            
+    # block                  ~= Vec[ Ast_code ]                #     
+    # catched_variables      ~= Vec[ Catched_variable ]        #
+       
+    # source                 ~= String                         #
+    # offset                 ~= PT                             #
+     
+    # inheritance            ~= Vec[ Ast_code ]
+    # inheritance_names      ~= Vec[ String ]
+    # catched_variables_inh  ~= Vec[ Vec[ Catched_variable ] ] #
+    
+    # futur_attrs            ~= Vec[ String ]
+               
+    instances              ~= NullablePtr[ Type ]              #
+       
+    # export_flag            ~= Bool                           #
+    # global_flag           ~= Bool                           #
+

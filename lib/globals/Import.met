@@ -1,0 +1,20 @@
+
+# 
+global
+class Import
+    # stuff exported from a module
+    class Export
+        name ~= String 
+        var  ~= UntypedRef
+
+    def operator. name
+        __primitive_get_attr self, name
+
+    def write_to_stream os
+        cpt := -1
+        for e in exports
+            os << ( ++cpt ? " " : "" ) << e.name
+
+    exports   ~= Vec[ Export ]
+    # filename  ~= String 
+    # completed ~= Bool

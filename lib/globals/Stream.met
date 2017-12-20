@@ -1,0 +1,47 @@
+
+global
+class Stream
+    def construct fd: PrimitiveNumber
+        init_of fd, fd
+
+    def operator<< val
+        val.write_to_stream self
+        self
+
+    def write data, size
+        __primitive_write_fd fd, data, size
+
+    def write data
+        __primitive_write_fd fd, data
+
+    fd := -1
+
+# Used in ctor of object that can be constructed from a stream
+# MyClass Read my_stream ->
+global
+class Read
+    def construct stream
+        init_of stream, UntypedRef::make stream
+
+    def convert T with T
+        stream->read T
+
+    stream ~= UntypedRef
+
+# standard output file
+global
+stdout := Stream 0
+
+# error output file
+global
+stderr := Stream 1
+
+global
+def print ...args
+    c := -1
+    o := args.values.size - args.names.size
+    for i in 0 .. o
+        stdout << ( ++c ? " " : "" ) << @args.values[ i ]
+    for i in o .. args.values.size
+        stdout << ( ++c ? " " : "" ) << args.names[ i - o ] << "=" << @args.values[ i ]
+    stdout << "\n"

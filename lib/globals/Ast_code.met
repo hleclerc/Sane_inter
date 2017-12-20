@@ -1,0 +1,5 @@
+# 
+global
+class Ast_code
+    names ~= String
+    code  ~= String

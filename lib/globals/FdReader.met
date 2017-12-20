@@ -1,0 +1,12 @@
+
+global
+class FdReader
+    __primitive_add_room_in_type __primitive_sizeof_ptr_in_bits(), __primitive_aligof_ptr_in_bits()
+
+    def construct fd
+        __primitive_new_FdReader self, fd
+
+    def read
+        __primitive_read_FdReader self
+
+# stdin  := FdReader 2

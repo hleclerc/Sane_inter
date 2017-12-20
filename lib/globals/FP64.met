@@ -1,0 +1,12 @@
+
+#
+global
+class FP64 extends PrimitiveNumber
+    __primitive_add_room_in_type 64, 64
+
+    def construct val: PrimitiveNumber
+        __primitive_reassign self, val
+
+    def construct
+        pass
+        

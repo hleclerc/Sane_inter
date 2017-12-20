@@ -1,0 +1,123 @@
+import SpString
+
+#
+export
+class CompactBinStreamReader[ BufType? SpString ]
+    private
+        class UnsignedReader
+            def convert T
+                cbs->read_unsigned T
+            cbs ~= Ptr[ CompactBinStreamReader ]
+
+
+    def construct b: Ptr[ BufType ]
+        init_of buf, b
+
+    # read_unsigned data, return i a type T
+    def read_unsigned T ~> T
+        res := T buf->read_byte()
+        if res < 128 || buf->error
+            return res
+        # "big" number
+        res -= 128
+        shift := 7
+        while true
+            v := T buf->read_byte()
+            if v < 128 || buf->error
+                return res + ( v << shift )
+            res += ( v - 128 ) << shift
+            shift += 7
+
+    # signed data, return i a type T
+    def read_signed T ~> T
+        res := T buf->read_byte()
+
+        # negative ?
+        if res >= 128
+            res -= 128
+            if res < 64
+                return - res
+            res = 64 - res
+            shift := 6
+            while true
+                v := T buf->read_byte() 
+                if v < 128 || buf->error
+                    return res - v << shift
+                res -= ( v - 128 ) << shift
+                shift += 7
+
+        # -> positive
+        if res < 64
+            return res
+        res -= 64
+        shift := 6
+        while true
+            v := T buf->read_byte()  
+            if v < 128 || buf->error
+                return res + ( v << shift )
+            res += ( v - 128 ) << shift
+            shift += 7
+        
+    # return an UnsignedReader, waiting for conversion to a given type
+    def read_unsigned ~> UnsignedReader
+        UnsignedReader cbs: this
+
+    # read content for a given type. "read" function are here to avoid adding specific ctors.
+    def read T when T == PI8 pertinence 3
+        buf->read_byte()
+
+    def skip T when T == PI8 pertinence 3
+        buf->skip_byte()
+
+    def read T when T.inherits( PrimitiveNumber ) && T::is_signed == false
+        read_unsigned T
+
+    def skip T when T.inherits( PrimitiveNumber ) && T::is_signed == false
+        skip_unsigned T
+
+    def read T when T.inherits( PrimitiveNumber ) && T::is_signed
+        read_signed T
+
+    def skip T when T.inherits( PrimitiveNumber ) && T::is_signed
+        skip_signed T
+
+    def read T when T.has_base_class StringAncestor
+        size := read_unsigned PT
+        res := T Rese size
+        if ! error
+            buf->read_some size, ( data, size ) =>
+                res.write data, size
+        res
+
+    def skip T when T.has_base_class StringAncestor
+        buf->skip_some read_unsigned PT
+
+    def read A when A.has_base_class Array
+        size := read_unsigned( PT )
+        res := A Rese size
+        while ! error && post_dec size
+            res.push_back Read self
+        res
+
+    def skip A when A.has_base_class Array
+        size := read_unsigned( PT )
+        while post_dec size
+            skip A.T
+
+    def read T
+        info T 
+        TODO
+
+    # read and reassign to content
+    def read_in content
+        content = read typeof content
+
+
+    # true if an error occured during the read
+    def get_error
+        buf->error
+
+    def skip_some len: Number
+        buf->skip_some len
+
+    buf ~= Ptr[ BufType ]

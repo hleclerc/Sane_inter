@@ -1,0 +1,15 @@
+#
+global
+class Void
+    def construct v: Void
+        pass
+        
+    def construct
+        pass
+
+    def write_to_stream s
+        s << "void"
+
+#
+global
+void := Void()

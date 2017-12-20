@@ -1,0 +1,30 @@
+# class for enum types
+global
+class Enum[ id, name, item_names ]
+    # def get_...
+    static __nb_items := 0
+    if __nb_items == 0
+        for item_name in item_names 
+            num := post_inc __nb_items
+            static
+            def \\get_$item_name
+                Enum[ id, name, item_names ] num
+
+
+    def construct value: Enum[ id, name, item_names ]
+        init_of __value, value.__value
+
+    def construct value: Number
+        init_of __value, value
+
+    def operator== that: Enum[ id, name, item_names ]
+        __value == that.__value
+        
+    def operator== that: Number
+        __value == that
+
+    def write_to_stream os 
+        os << item_names[ __value ]
+
+    __value ~= SI32
+      

@@ -1,0 +1,93 @@
+global
+class NullablePtr[ T ]
+    def construct ptr: NullablePtr[ T ]
+        init_of val, ptr.val
+
+    def construct ptr: Ptr[ T ]
+        init_of val, ptr.val
+
+    def construct ptr: NullPtr
+        init_of val, ptr
+
+    def construct ptr: AT
+        init_of val, ptr
+
+    def construct
+        init_of val
+
+    def convert Bool
+        val
+
+    def get_as_Ptr
+        val ? Ptr[ T ]( val ) : throw NullablePtrException()
+
+    def get_as_Ptr_unchecked
+        Ptr[ T ] val
+
+    def get_as_nullable
+        self
+
+    def operator@
+        __primitive_get_ref T, val
+
+    def operator= b: NullablePtr[ T ]
+        __primitive_reassign val, b.val
+        self
+
+    def operator= b: NullPtr
+        __primitive_reassign val, b
+        self
+
+    def operator= b: Ptr[ T ]
+        __primitive_reassign val, b.val
+        self
+
+    def operator= b: AT
+        __primitive_reassign val, b
+        self
+
+    def operator[] index: Number
+        __primitive_get_ref T, val + index * ceil( sizeof( T ), aligof( T ) )
+        
+    def write_to_stream s
+        s.write val
+
+    def operator== ptr: NullablePtr[ U ] | Ptr[ U ] with U
+        val == ptr.val
+
+    def operator== val: NullPtr
+        __primitive_gen_equ self.val, 0
+
+    def operator== val: AT
+        __primitive_gen_equ self.val, val
+
+    def operator< ptr: NullablePtr[ U ] with U
+        __primitive_gen_inf self.val, ptr.val
+
+    def operator<= ptr: NullablePtr[ U ] with U
+        __primitive_gen_inf_equ self.val, ptr.val
+
+    def operator> ptr: NullablePtr[ U ] with U
+        __primitive_gen_sup self.val, ptr.val
+
+    def operator>= ptr: NullablePtr[ U ] with U
+        __primitive_gen_sup_equ self.val, ptr.val
+
+    def operator+ n: PrimitiveNumber
+        NullablePtr[ T ] self.val + n * ceil( sizeof( T ), aligof( T ) )
+
+    def operator- selg: NullablePtr[ T ]
+        self.val - self.val
+
+    def operator is_also_a P 
+        if P.has_base_class NullablePtr
+            return T.inherits P::T
+        0
+
+    val ~= AT
+
+#
+global
+class NullablePtrException
+    pass
+    

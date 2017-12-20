@@ -1,0 +1,21 @@
+# Actually a Variable
+global
+class UntypedRef
+    # 
+    static def make val
+        __primitive_make_UntypedRef val
+
+    def construct val: UntypedRef
+        __primitive_construct self, val
+
+    def construct
+        pass
+
+    def operator@
+        __primitive_get_ref self
+
+    # def operator= val
+    #     __primitive_equ self.val, val
+
+    # val ~= AT
+

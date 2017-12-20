@@ -1,1 +1,205 @@
- 
+# A generic string, like std::string in C++.
+# Data is owned (not shared) and can be contained (without indirection) is size < 23 on 64 bits machine
+global
+class String extends StringAncestor
+    # for a given size
+    def construct size: Size
+        if size.val <= max_in_short
+            _short.size = 2 * size.val + 1
+        else
+            _long.construct()
+            _long.size = 2 * size.val
+            _long.rese = size.val
+            _long.data = heap_alloc _long.rese
+
+    # for a given reservation size
+    def construct rese: Rese
+        if rese.val <= max_in_short
+            _short.size = 1
+        else
+            _long.construct()
+            _long.size = 0
+            _long.rese = rese.val
+            _long.data = heap_alloc _long.rese
+
+    # from an existing String
+    def construct str: StringAncestor
+        init_of self, Size str.size
+        str.copy_in data
+
+    # from a Char
+    def construct str: Char
+        init_of self, Size 1
+        memcpy data, \str, 1
+
+    # 
+    def construct
+        _short.size = 1
+
+    def destroy
+        if _using_long && _long.rese
+            heap_free _long.data.val, _long.rese, 1
+            _long.destroy()
+
+    def operator= str: StringAncestor
+        # new data can fit locally ?
+        if str.size <= max_in_short 
+            old_data := _using_long && _long.rese ? _long.data : null_ptr
+            old_rese := _long.rese
+            str.copy_in _short.data.ptr
+            _short.size = 2 * str.size + 1
+            if old_data
+                heap_free old_data.val, old_rese, 1
+        else if _using_long
+            # is it legitimate to  use the already reserved room ?
+            if str.size <= _long.rese && _long.rese < 4 * str.size
+                str.copy_in _long.data.ptr
+                _long.size = 2 * str.size 
+            # else, we have to delete the reserved room, but after the copy (str can contain a subpart of self)
+            else 
+                new_rese := str.size
+                new_data := Ptr[ Char ] heap_alloc new_rese
+                str.copy_in new_data
+                if _long.data
+                    heap_free _long.data.val, _long.rese, 1
+                _long.size = 2 * str.size
+                _long.rese = new_rese
+                _long.data = new_data
+        # we have nothing to free
+        else
+            new_rese := str.size
+            new_data := Ptr[ Char ] heap_alloc new_rese
+            str.copy_in new_data
+            _long.construct()
+            _long.size = 2 * str.size
+            _long.rese = new_rese
+            _long.data = new_data
+
+    def copy_in dst
+        memcpy dst, data, size
+        
+    def convert Bool 
+        size
+
+    # return value of last called callback. Args for the callback: ( data, size )
+    def apply_on_chunks callback, start? 0, length? size - start
+        if length
+            callback data + start, length
+
+    def get_begin
+        data
+
+    def get_end
+        data + size
+        
+    def get_size
+        _short.size & 1 ? _short.size / 2 : _long.size / 2
+
+    def set_size val: Number
+        set_rese val
+        if _using_short
+            _short.size = 2 * val + 1
+        else
+            _long.size = 2 * val
+
+    def get_rese
+        _using_short ? max_in_short : _long.rese
+
+    def set_rese val: Number
+        if _using_short
+            if val > max_in_short
+                new_rese := val
+                new_size := _short.size - 1
+                new_data := heap_alloc new_rese
+                memcpy new_data, _short.data.ptr, new_size / 2
+
+                _long.construct()
+                _long.rese = new_rese
+                _long.data = new_data
+                _long.size = new_size
+        else
+            if val > _long.rese 
+                new_rese := val
+                new_size := _long.size
+                new_data := heap_alloc new_rese
+                memcpy new_data, _long.data, new_size / 2
+                heap_free _long.data.val, _long.rese, 1
+                _long.rese = new_rese
+                _long.data = new_data
+                _long.size = new_size
+
+    def get_data
+        _using_short ? _short.data.ptr : _long.data
+
+    def operator[] index: Number
+        data[ index ]
+
+    def operator[] range: Range[ B, E ] with B, E
+        len := range.end - range.beg
+        res := String Size len
+        memcpy res.data, data + range.beg, len
+        res
+
+    def operator+ fles: StringAncestor
+        res := String Size self.size + fles.size
+        self.copy_in res.data
+        fles.copy_in res.data + self.size
+        res
+
+    def operator+ fles
+        self + String fles
+
+    def write ptr, len
+        memcpy data + post_add( size, len ), ptr, len
+        
+    def write obj 
+        self += __primitive_convert_String obj
+        
+    def operator== fles: StringAncestor
+        self.size == fles.size ? fles.memequ( self.data ) : false
+
+    def operator== fles
+        self == String fles
+
+    def memequ ptr: Ptr[ Char ]
+        globals.memequ ptr, data, size
+
+    def get__using_short
+        Bool _short.size & 1
+
+    def get__using_long
+        ! _using_short
+
+    def get__short
+        cpu.is_little_endian ? _data.short_LE : _data.short_BE
+
+    def get__long
+        cpu.is_little_endian ? _data.long_LE : _data.long_BE
+
+    class Short_LE
+        size ~= PI8 # = 2 * actual_size + 1
+        data ~= Vec[ Char, 3 * sizeof( PT ) - 1 ]
+
+    class Short_BE
+        data ~= Vec[ Char, 3 * sizeof( PT ) - 1 ]
+        size ~= PI8 # = 2 * actual_size + 1
+
+    class Long_LE
+        size ~= PT # = 2 * actual_size
+        rese ~= PT
+        data ~= NullablePtr[ Char ]
+
+    class Long_BE
+        data ~= NullablePtr[ Char ]
+        rese ~= PT
+        size ~= PT # = 2 * actual_size
+
+    # max nb char we can store in short version
+    static max_in_short := sizeof( Long_LE ) - 1
+
+    _data ~= union
+        short_LE: Short_LE
+        short_BE: Short_BE
+        long_LE : Long_LE
+        long_BE : Long_BE
+   

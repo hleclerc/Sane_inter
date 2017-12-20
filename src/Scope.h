@@ -23,6 +23,7 @@ public:
     ~Scope();
 
     Variable            find_variable            ( const RcString &name, bool ret_err = true, bool allow_ambiant = true, bool ret_z_if_in_self = false );
+    Variable            find_self                ( bool ret_err = true );
     void                reg_var                  ( const RcString &name, const Variable &var, VariableFlags flags = VariableFlags::NONE, bool check = true );
 
     size_t              nb_scopes_to_catch       () const;

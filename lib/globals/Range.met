@@ -1,0 +1,42 @@
+
+# TODO: increment type, ...
+global
+class Range[ T_beg, T_end ] extends Array[ T_end ]
+    def construct fles: Range
+        init_of beg, fles.beg
+        init_of end, fles.end
+
+    def construct beg, end
+        init_of beg, beg
+        init_of end, end
+
+    def operator for block
+        cpt := T_end beg
+        while cpt < end
+            block cpt
+            ++cpt
+
+    def operator[] index
+        beg + index
+
+    def get_size 
+        end - beg
+
+    def get_sub_types
+        [ T_end ]
+    
+    beg ~= T_beg
+    end ~= T_end
+
+global
+def operator.. self, end
+    Range[ typeof( self ), typeof( end ) ] self, end
+
+global
+def range beg, end
+    Range[ typeof( beg ), typeof( end ) ] beg, end
+
+global
+def range end
+    Range[ typeof( end ), typeof( end ) ] 0, end
+

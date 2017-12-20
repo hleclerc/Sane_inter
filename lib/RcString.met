@@ -1,0 +1,194 @@
+import ./ReaderAncestor
+
+# string with shared content
+export
+class RcString extends StringAncestor, ReaderAncestor
+    # for a given size
+    def construct size: Size
+        init_of _content, make_Content size.val
+        init_of _begin  , _content->data.ptr
+        init_of _size   , size.val
+
+    # for a given reservation
+    def construct rese: Rese
+        init_of _content, make_Content rese.val
+        init_of _begin  , _content->data.ptr
+        init_of _size   , 0
+
+    # from an existing String (-> make a copy)
+    def construct str: StringAncestor
+        init_of self, Size str.size
+        str.copy_in _begin
+
+    # from an existing RcString
+    def construct str: RcString
+        init_of _content, str._content
+        init_of _begin  , str._begin  
+        init_of _size   , str._size
+        if _content
+            ++_content->cpt_use
+
+    # empty string
+    def construct
+        init_of _content, null_ptr
+        init_of _begin  , null_ptr
+        init_of _size   , 0
+
+    def destroy
+        if _content
+            unref _content
+
+    def convert Bool 
+        size
+
+    # generic reassign operator
+    def operator= str: StringAncestor
+        rese = str.size
+        str.copy_in data
+        size = str.size # we modify the size after the copy, because str may be a subpart of str, needing str.size
+
+    # reassign operator for RcString => reusz
+    def operator= str: RcString
+        if str._content
+            ++str._content
+        if _content
+            unref _content
+        _content = str._content
+        _begin   = str._begin  
+        _size    = str._size
+
+    def copy_in dst 
+        memcpy dst, data, size
+
+    # return value of last called callback. Args for the callback: ( data, size )
+    def apply_on_chunks callback, start? 0: Number, length? size - start: Number
+        callback data + start, length
+
+    def get_begin ~> NullablePtr[ Char ]
+        constified _begin
+
+    def get_end ~> NullablePtr[ Char ]
+        _begin + _size
+
+    def get_empty ~> Bool 
+        ! _size
+        
+    def get_size
+        constified _size
+
+    def set_size val: Number
+        set_rese val
+        _size = val
+
+    def get_rese
+        _content ? constified( _content->rese ) : 0
+
+    def set_rese val: Number
+        if _content
+            assert _content->cpt_use == 0
+            wasted := _begin - _content->data.ptr 
+            if val > _content->rese - wasted
+                new_content := make_Content val
+                copy_in new_content->data.ptr
+                unref _content
+
+                _content = new_content
+                _begin   = new_content->data.ptr
+        else
+            _content = make_Content val
+            _begin = _content->data.ptr
+            ct_info copy_in
+            copy_in _begin
+            
+
+    def get_data ~> NullablePtr[ Char ]
+        constified _begin
+
+    def operator[] index
+        data[ index ]
+
+    def operator+ fles: StringAncestor
+        res := RcString Size self.size + fles.size
+        self.copy_in res.data
+        fles.copy_in res.data + self.size
+        res
+
+    def operator<< fles
+        fles.write_to_stream self
+        self
+
+    def write ptr, len
+        memcpy data + post_add( size, len ), ptr, len
+        
+    def write obj 
+        self += __primitive_convert_String obj
+        
+    def operator== fles: StringAncestor
+        self.size == fles.size ? fles.memequ( self.data ) : false
+
+    def memequ ptr: NullablePtr[ Char ] ~> Bool
+        ptr ? globals.memequ( ptr, data, size ) : empty
+    
+    #
+    def get_error ~> Bool
+        _begin && ! _content
+
+    def skip_some len: Number 
+        _begin += len
+        _size -= len
+
+    # read some data. len is in bytes. callable may be called several times 
+    def read_some len: Number, callback
+        if len <= _size
+            apply_on_chunks callback, 0, len
+            _begin += len
+            _size -= len
+            if ! _size
+                unref _content 
+                _content = null_ptr
+                _begin = null_ptr
+        else
+            if _content
+                unref _content 
+            _content = null_ptr
+            _size = 0
+            ++_begin # to signal an error
+
+    private
+        class Content
+            rese    ~= PT             # nb usable chars
+            cpt_use ~= SI32
+            data    ~= Vec[ Char, 0 ] # followed by the actual data
+
+        def make_Content size ~> Ptr[ Content ]
+            rese := sizeof( Content ) + size
+            res := Ptr[ Content ] heap_alloc rese
+            res->rese = rese - sizeof( Content )
+            res->cpt_use = 0
+            res
+
+        def unref content: NullablePtr[ Content ]
+            if content->cpt_use
+                --content->cpt_use
+            else
+                heap_free content.val, content->rese + sizeof( Content ), aligof AT
+
+        _size    ~= PT # = 2 * actual_size
+        _begin   ~= NullablePtr[ Char ]
+        _content ~= NullablePtr[ Content ]
+    
+
+
+# def test
+#     a := RcString "0123"
+#     a = "012345678901234567890123456789"
+#     info a
+
+#     b := RcString "012345678901234567890123456789"
+#     b = "0123"
+#     info b
+
+#     c := RcString "012345678901234567890123456789"
+#     c = "abcdefghjklmnopqrstuvwxyz"
+#     info c
+

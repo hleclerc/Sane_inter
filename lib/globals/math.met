@@ -1,0 +1,25 @@
+#
+global
+def ceil a, b
+    ( a + b - 1 ) // b * b
+
+global
+def gcd oa, ob
+    if ob == 1
+        return 1
+
+    old ~= typeof oa
+    a := oa
+    b := ob
+    while b
+        old = b
+        b = a % b
+        a = old
+    
+    return a
+
+
+global
+def lcm a, b
+    return a * b / gcd a, b
+
