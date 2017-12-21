@@ -7,6 +7,8 @@
 #include "(test_known.ts).h"
 
 Value make_add( const Value &a, const Value &b ) {
+    if ( Value r = test_known( a, b, []( auto va, auto vb ) { return make_Cst( va + vb ); }, Value{} ) )
+        return r;
     TODO; return {};
 }
 

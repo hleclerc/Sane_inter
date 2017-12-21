@@ -3,20 +3,29 @@ global
 class NullableAT
     __primitive_add_room_in_type __primitive_sizeof_ptr_in_bits(), __primitive_aligof_ptr_in_bits()
 
-    def construct val: AT
-        __primitive_construct self, val
+    def construct val: PrimitiveNumber
+        __primitive_reassign self, val
 
-    def construct val: NullPtr
-        __primitive_construct self, val
+    def construct val: NullableAT
+        __primitive_reassign self, val
+
+    def construct val: AT
+        __primitive_reassign self, val
 
     def construct
-        pass # __primitive_construct self
+        pass
 
     def destroy
         __primitive_destroy self
 
     def convert res: Bool
-        __primitive_construct res, self
+        __primitive_reassign res, self
+        
+    def operator= val: PrimitiveNumber
+        __primitive_reassign self, val
+        
+    def operator= val: NullableAT
+        __primitive_reassign self, val
         
     def operator= val: AT
         __primitive_reassign self, val
@@ -103,4 +112,4 @@ def memequ dst, src, len: PrimitiveNumber
 
 
 global const
-null_ptr := NullPtr()
+null_ptr := NullableAT 0

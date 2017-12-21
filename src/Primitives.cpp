@@ -12,6 +12,7 @@
 #include "AnonymousRoom.h"
 #include "System/Math.h"
 #include "Inst/BinOp.h"
+#include "Inst/UnaOp.h"
 #include "Inst/Conv.h"
 #include "Inst/Cst.h"
 #include "Primitives.h"
@@ -92,9 +93,9 @@ REG_PRIMITIVE_TYPE( ct_info ) {
             return gvm->add_error( "__primitive_" #NAME " expects exactly 1 argument" ); \
         return make_##NAME( args[ 0 ].get() ); \
     }
-//REG_PRIMITIVE_TYPE_UNA_OP( neg, - a )
-//REG_PRIMITIVE_TYPE_UNA_OP( not_boolean, ! a )
-//REG_PRIMITIVE_TYPE_UNA_OP( not_bitwise, ! a )
+REG_PRIMITIVE_TYPE_UNA_OP( neg         )
+REG_PRIMITIVE_TYPE_UNA_OP( not_boolean )
+REG_PRIMITIVE_TYPE_UNA_OP( not_bitwise )
 
 #define REG_PRIMITIVE_TYPE_BIN_OP( NAME ) \
     REG_PRIMITIVE_TYPE( NAME ) { \
@@ -166,26 +167,15 @@ REG_PRIMITIVE_TYPE( reassign ) {
         TODO;
     }
 
-    gvm->add_error("...");
-    PE( *va.type, *vb.type );
-    TODO;
-    //    if ( test_known( va, vb, [&]( auto &a, auto b ) { a = b; return 1; }, 0 ) )
-    //        return args[ 0 ];
-
     // AT
-    //    if ( va.type == scope->vm->type_AT ) {
-    //        AT *ap = rcast( va.ptr() );
-    //        if ( vb.type == scope->vm->type_AT ) {
-    //            AT *bp = rcast( vb.ptr() );
-    //            ap->ptr->content         = bp->ptr->content;
-    //            ap->ptr->offset_in_bytes = bp->ptr->offset_in_bytes;
-    //        } else if ( vb.type == scope->vm->type_NullPtr ) {
-    //            ap->ptr->content         = 0;
-    //            ap->ptr->offset_in_bytes = 0;
-    //        } else
-    //            TODO;
-    //        return args[ 0 ];
-    //    }
+    if ( va.type == gvm->type_AT || va.type == gvm->type_NullableAT ) {
+        if ( vb.type == gvm->type_AT || vb.type == gvm->type_NullableAT )
+            return va.set( vb.get() ), va;
+        if ( vb.type->primitive_number() )
+            return va.set( make_Conv( vb.get(), gvm->type_PT ) ), va;
+        TODO;
+        return args[ 0 ];
+    }
 
     //    // char = ...
     //    if ( va.type == scope->vm->type_Char ) {
@@ -414,13 +404,13 @@ REG_PRIMITIVE_TYPE( is_little_endian ) {
 //    return scope->find_variable( "Ptr" ).select( scope, true, vty ).apply( scope, true, vat );
 //}
 
-//REG_PRIMITIVE_TYPE( constified ) {
-//    if ( args.size() != 1 )
-//        return scope->add_error( "__primitive_pointer_on expects exactly 1 argument" ), scope->vm->ref_error;
-//    Variable a = args[ 0 ];
-//    a.flags |= Variable::Flags::CONST;
-//    return a;
-//}
+REG_PRIMITIVE_TYPE( constified ) {
+    if ( args.size() != 1 )
+        return gvm->add_error( "__primitive_pointer_on expects exactly 1 argument" );
+    Variable a = args[ 0 ];
+    a.flags |= Variable::Flags::CONST;
+    return a;
+}
 
 //static void _write( int fd, const char *data, size_t size ) {
 //    // TODO: use errno and so on
@@ -476,7 +466,7 @@ REG_PRIMITIVE_TYPE( is_little_endian ) {
 REG_PRIMITIVE_TYPE( add_room_in_type ) {
     if ( args.size() != 2 )
         return gvm->add_error( "__primitive_add_room_in_type expects exactly 2 arguments" );
-    SI32 size, alig;
+    SI32 size = 0, alig = 0;
     if ( ! args[ 0 ].get_value( size ) || ! args[ 1 ].get_value( alig ) )
         return gvm->add_error( "__primitive_add_room_in_type expexts arguments convertible to PT" );
 

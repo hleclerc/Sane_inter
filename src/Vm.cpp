@@ -25,10 +25,10 @@
 
 //// nsmake lib_name boost_filesystem
 
-Vm::Vm( SI32 sizeof_ptr, bool reverse_endianness ) : main_scope( Scope::ScopeType::ROOT ), sizeof_ptr( sizeof_ptr ), reverse_endianness( reverse_endianness ) {
-    nb_breaks    = 0;
-    init_mode    = true;
+Vm::Vm( SI32 sizeof_ptr, bool reverse_endianness ) : main_scope( Scope::ScopeType::ROOT ), sizeof_ptr( sizeof_ptr ), aligof_ptr( sizeof_ptr ), reverse_endianness( reverse_endianness ) {
     error_stream = &std::cerr;
+    init_mode    = true;
+    nb_breaks    = 0;
     nb_calls     = 0;
 
     main_scope.parent = 0;

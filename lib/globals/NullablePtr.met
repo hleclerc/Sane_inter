@@ -6,7 +6,7 @@ class NullablePtr[ T ]
     def construct ptr: Ptr[ T ]
         init_of val, ptr.val
 
-    def construct ptr: NullPtr
+    def construct ptr: NullableAT
         init_of val, ptr
 
     def construct ptr: AT
@@ -34,12 +34,12 @@ class NullablePtr[ T ]
         __primitive_reassign val, b.val
         self
 
-    def operator= b: NullPtr
-        __primitive_reassign val, b
-        self
-
     def operator= b: Ptr[ T ]
         __primitive_reassign val, b.val
+        self
+
+    def operator= b: NullableAT
+        __primitive_reassign val, b
         self
 
     def operator= b: AT
@@ -55,8 +55,8 @@ class NullablePtr[ T ]
     def operator== ptr: NullablePtr[ U ] | Ptr[ U ] with U
         val == ptr.val
 
-    def operator== val: NullPtr
-        __primitive_gen_equ self.val, 0
+    def operator== val: NullableAT
+        __primitive_gen_equ self.val, val
 
     def operator== val: AT
         __primitive_gen_equ self.val, val
@@ -84,7 +84,7 @@ class NullablePtr[ T ]
             return T.inherits P::T
         0
 
-    val ~= AT
+    val ~= NullableAT
 
 #
 global

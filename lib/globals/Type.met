@@ -48,12 +48,12 @@ class Type
     prev             ~= NullablePtr[ Type ]          # prev in class instances
 
 #
-global
-class TypeAttribute
-    name   ~= String
-    type   ~= Type
-    off    ~= SI32
-    alig   ~= SI32
+# global
+# class TypeAttribute
+#     name   ~= String
+#     type   ~= Type
+#     off    ~= SI32
+#     alig   ~= SI32
     
 #
 # #

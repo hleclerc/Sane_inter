@@ -1,6 +1,7 @@
 # ct_info 987
 class Pouetox
     a := 10
+    b := 15
 
 p := Pouetox()
-ct_info p.a
+print p.a

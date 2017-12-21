@@ -7,10 +7,12 @@
 Cst::Cst( int size, void *val, void *kno ) : val( size ), kno( size ) {
     if ( val )
         memcpy( this->val.data, val, ( size + 7 ) / 8 );
+    else
+        this->val.set( false );
     if ( kno )
         memcpy( this->kno.data, kno, ( size + 7 ) / 8 );
     else
-        this->kno.set( val );
+        this->kno.set( bool( val ) );
 }
 
 void Cst::write_dot( std::ostream &os, SI32 nout, Type *type, int offset ) const {

@@ -15,10 +15,15 @@ void memcpy_bit( void *dst, size_t off_dst, const void *src, size_t off_src, siz
 
     // TODO: optimize for large sizes
     if ( msk ) {
-        for( size_t i = 0; i < ( len + 7 ) / 8; ++i )
-            reinterpret_cast<char *>( dst )[ i ] =
-                ( reinterpret_cast<const char *>( dst )[ i ] & ~ reinterpret_cast<const char *>( msk )[ i ] ) |
-                ( reinterpret_cast<const char *>( src )[ i ] &   reinterpret_cast<const char *>( msk )[ i ] );
+        for( size_t i = 0; i < ( len + 7 ) / 8; ++i ) {
+            // for valgrind
+            if ( reinterpret_cast<const PI8 *>( msk )[ i ] == 255 )
+                reinterpret_cast<char *>( dst )[ i ] = reinterpret_cast<const char *>( src )[ i ];
+            else
+                reinterpret_cast<char *>( dst )[ i ] =
+                    ( reinterpret_cast<const char *>( dst )[ i ] & ~ reinterpret_cast<const char *>( msk )[ i ] ) |
+                    ( reinterpret_cast<const char *>( src )[ i ] &   reinterpret_cast<const char *>( msk )[ i ] );
+        }
         return;
     }
 
