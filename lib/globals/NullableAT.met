@@ -1,0 +1,106 @@
+# nullable address type
+global
+class NullableAT
+    __primitive_add_room_in_type __primitive_sizeof_ptr_in_bits(), __primitive_aligof_ptr_in_bits()
+
+    def construct val: AT
+        __primitive_construct self, val
+
+    def construct val: NullPtr
+        __primitive_construct self, val
+
+    def construct
+        pass # __primitive_construct self
+
+    def destroy
+        __primitive_destroy self
+
+    def convert res: Bool
+        __primitive_construct res, self
+        
+    def operator= val: AT
+        __primitive_reassign self, val
+
+    def operator:=
+        __primitive_copy self
+
+    def operator== b: AT
+        __primitive_gen_equ self, b
+
+    def operator== b: NullPtr
+        __primitive_gen_equ self, b
+
+    def operator+ b: PrimitiveNumber
+        __primitive_add_AT self, b
+
+    def operator- b: PrimitiveNumber
+        __primitive_sub_AT self, b
+
+    def operator- b: AT
+        __primitive_sub_AT self, b
+        
+    def operator< b: AT
+        __primitive_inf self, b
+        
+    def write_to_stream s
+        s.write self
+
+
+# in bytes
+# len is modified to be the actual reserved size
+global
+def heap_alloc size: PrimitiveNumber, alignment: PrimitiveNumber? 1
+    __primitive_alloc size, alignment
+
+global
+def heap_free ptr: AT, size: PrimitiveNumber, alignment: PrimitiveNumber
+    __primitive_free ptr, size, alignment
+
+global
+def heap_free_approx ptr: AT, approx_size: PrimitiveNumber, alignment: PrimitiveNumber
+    __primitive_free ptr, approx_size, alignment
+
+global
+def new T, ...varargs when has_fixed_size( T )
+    assert typeof( T ) == Type || 
+           typeof( T ) == SurdefList
+    res := Ptr[ T ] heap_alloc sizeof( T ), aligof( T )
+    res->construct ...varargs
+    res
+
+global
+def delete ptr: Ptr[ T ] with T
+    ptr->destroy()
+    heap_free ptr.val, sizeof( T ), aligof( T )
+
+global
+def delete ptr: NullablePtr[ T ] with T
+    if ptr
+        ptr->destroy()
+        heap_free ptr.val, sizeof( T ), aligof( T )
+
+# len is expressed in bytes
+#def memcpy dst: AT | NullablePtr[ T0 ] | Ptr[ T0 ], src: AT | NullablePtr[ T0 ] | Ptr[ T1 ], len: PrimitiveNumber with T0, T1
+global
+def memcpy dst, src, len: PrimitiveNumber
+    if typeof( dst ) != AT 
+        memcpy dst.val, src, len
+    else if typeof( src ) != AT 
+        memcpy dst, src.val, len
+    else
+        __primitive_memcpy dst, src, len
+
+# len is expressed in bytes
+global
+def memequ dst, src, len: PrimitiveNumber
+    if typeof( dst ) != AT 
+        memequ dst.val, src, len
+    else if typeof( src ) != AT 
+        memequ dst, src.val, len
+    else
+        __primitive_memequ dst, src, len
+
+
+
+global const
+null_ptr := NullPtr()

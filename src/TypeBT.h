@@ -18,4 +18,8 @@ public:
             TODO;
         os << *reinterpret_cast<const T *>( data );
     }
+
+    virtual bool primitive_number() const {
+        return true;
+    }
 };

@@ -12,6 +12,7 @@
 #include "AnonymousRoom.h"
 #include "System/Math.h"
 #include "Inst/BinOp.h"
+#include "Inst/Conv.h"
 #include "Inst/Cst.h"
 #include "Primitives.h"
 #include "Variable.h"
@@ -156,14 +157,20 @@ REG_PRIMITIVE_TYPE( reassign ) {
     Variable va = args[ 0 ];
     Variable vb = args[ 1 ];
 
-    // for valgrind
-    //if ( va.type == scope->vm->type_Bool )
-    //    *reinterpret_cast<Bool *>( va.content->data + va.off / 8 ) = 0;
-
     // primitive numbers
+    if ( va.type->primitive_number() ) {
+        if ( va.type == vb.type )
+            return va.set( vb.get() ), va;
+        if ( vb.type->primitive_number() )
+            return va.set( make_Conv( vb.get(), va.type ) ), va;
+        TODO;
+    }
+
+    gvm->add_error("...");
+    PE( *va.type, *vb.type );
     TODO;
-//    if ( test_known( va, vb, [&]( auto &a, auto b ) { a = b; return 1; }, 0 ) )
-//        return args[ 0 ];
+    //    if ( test_known( va, vb, [&]( auto &a, auto b ) { a = b; return 1; }, 0 ) )
+    //        return args[ 0 ];
 
     // AT
     //    if ( va.type == scope->vm->type_AT ) {

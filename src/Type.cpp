@@ -39,6 +39,10 @@ bool Type::has_a_constructor() const {
     return true;
 }
 
+bool Type::primitive_number() const {
+    return false;
+}
+
 void Type::write_to_stream( std::ostream &os ) const {
     os << content;
 }

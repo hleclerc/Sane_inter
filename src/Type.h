@@ -17,6 +17,7 @@ public:
     virtual RcString      checks_type_constraint     ( const Variable &self, const Variable &tested_var, TCI &tci ) const;
     virtual unsigned      get_nb_conversions         ( const Variable &self ) const;
     virtual bool          has_a_constructor          () const; ///< false for types like Union, ...
+    virtual bool          primitive_number           () const;
     virtual void          write_to_stream            ( std::ostream &os ) const;
     virtual double        get_pertinence             ( const Variable &self ) const;
     virtual Variable      find_attribute             ( const RcString &name, const Variable &self, Variable::Flags flags, SI32 off ) const;

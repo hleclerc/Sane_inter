@@ -1,3 +1,4 @@
+#include "Inst/MemcpyKV.h"
 #include "RefLeaf.h"
 
 RefLeaf::RefLeaf( const Value &value, Flags flags ) : value( value ), flags( flags ) {
@@ -13,4 +14,9 @@ bool RefLeaf::is_shared() const {
 
 Value RefLeaf::get() const {
     return value;
+}
+
+void RefLeaf::set( const Value &src_val, SI32 dst_off ) {
+    // TODO: interception
+    value = make_MemcpyKV( value, src_val, dst_off );
 }

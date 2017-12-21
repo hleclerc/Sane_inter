@@ -16,8 +16,3 @@ void Inst::get_bytes( SI32 nout, void *dst, PI32 beg_dst, PI32 beg_src, PI32 len
     TODO;
 }
 
-SI32 Inst::size() const {
-    write_dot( std::cerr );
-    TODO;
-    return 0;
-}

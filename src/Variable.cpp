@@ -61,6 +61,10 @@ RcString Variable::valid_constraint_for( const Variable &tested_var, TCI &tci ) 
 }
 
 Variable Variable::find_attribute( const RcString &name, bool ret_err, bool msg_if_err ) const {
+    //
+    if ( Variable res = ref->intercept_find_attribute( name, type, bool( flags & Flags::CONST ), offset ) )
+        return res;
+
     // data from the type
     if ( Variable res = type->find_attribute( name, *this, flags, offset )  )
         return res;
@@ -179,6 +183,13 @@ bool Variable::get_value( SI32 &val ) const {
     if ( type == gvm->type_ST ) { TODO; return true; }
 
     return gvm->scope->find_variable( "SI32" ).get_value( val );
+}
+
+void Variable::set( const Value &val, SI32 additionnal_offset ) {
+    if ( flags & Flags::CONST )
+        gvm->add_error( "Const variable, should not be modified" );
+    else
+        ref->set( val, offset + additionnal_offset );
 }
 
 Variable Variable::sub_part( Type *new_type, SI32 add_off ) const {

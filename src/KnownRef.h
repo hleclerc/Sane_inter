@@ -24,5 +24,9 @@ public:
         return {};
     }
 
+    virtual void set( const Value &val, SI32 offset ) override {
+        TODO;
+    }
+
     T data;
 };

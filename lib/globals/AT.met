@@ -34,7 +34,7 @@ class AT
         __primitive_add_AT self, b
 
     def operator- b: PrimitiveNumber
-        __primitive_add_AT self, - b
+        __primitive_sub_AT self, b
 
     def operator- b: AT
         __primitive_sub_AT self, b
@@ -101,3 +101,6 @@ def memequ dst, src, len: PrimitiveNumber
         __primitive_memequ dst, src, len
 
 
+
+global const
+null_ptr := NullPtr()

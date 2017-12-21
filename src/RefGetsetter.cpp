@@ -13,6 +13,12 @@ RefGetsetter::RefGetsetter( const Variable &g, const Variable &s, const Variable
     }
 }
 
+Variable RefGetsetter::intercept_find_attribute( const RcString &name, Type *var_type, bool is_const, SI32 var_offset ) const {
+    if ( s && var_type == type && name == "operator =" )
+        return s;
+    return {};
+}
+
 void RefGetsetter::write_to_stream( std::ostream &os ) const {
     os << "getsetter(" << g << "," << s << "," << m << "," << t << ")";
 }
@@ -21,8 +27,16 @@ bool RefGetsetter::is_shared() const {
     return true;
 }
 
-Value RefGetsetter::get() const {
+Variable RefGetsetter::variable() const {
     if ( ! value )
         value = const_cast<Variable &>( g ).apply( true );
-    return value.get();
+    return value;
+}
+
+Value RefGetsetter::get() const {
+    return variable().get();
+}
+
+void RefGetsetter::set( const Value &val, SI32 offset ) {
+    variable().set( val, offset );
 }
