@@ -471,7 +471,7 @@ REG_PRIMITIVE_TYPE( add_room_in_type ) {
         return gvm->add_error( "__primitive_add_room_in_type expexts arguments convertible to PT" );
 
     // add an AnonymousRoom variable in the scope
-    Variable ar_var( new KnownRef<AnonymousRoom>( size, alig ), gvm->type_AnonymousRoom );
+    Variable ar_var( MAKE_KV( AnonymousRoom, size, alig ) );
     gvm->scope->reg_var( to_string( gvm->scope->variables.size() ), ar_var );
     return gvm->ref_void;
 }
@@ -489,7 +489,7 @@ REG_PRIMITIVE_TYPE( _union ) {
     Type *res = gvm->types.push_back_val( new TypeUnion( max_size, max_alig ) );
     for( size_t i = 0; i < args.size(); ++i )
         res->add_attribute( names[ i ], 0, types[ i ] );
-    return { new KnownRef<Type *>( res ), gvm->type_Type };
+    return make_KnownVal<Type *>( gvm->type_Type, res );
 }
 
 //REG_PRIMITIVE_TYPE( load ) {

@@ -186,6 +186,7 @@ bool Variable::get_value( SI32 &val ) const {
 }
 
 void Variable::set( const Value &val, SI32 additionnal_offset ) {
+    ASSERT( ref, "..." );
     if ( flags & Flags::CONST )
         gvm->add_error( "Const variable, should not be modified" );
     else

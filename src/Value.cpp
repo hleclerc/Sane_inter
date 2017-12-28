@@ -32,3 +32,7 @@ void Value::get_bytes( void *dst, PI32 beg_dst, PI32 beg_src, PI32 len, void *ms
     return inst->get_bytes( nout, dst, beg_dst, beg_src + offset, len, msk );
 }
 
+
+void *Value::rcast() {
+    return inst->rcast( nout, type, offset );
+}

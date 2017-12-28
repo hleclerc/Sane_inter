@@ -78,7 +78,7 @@ RcString TypeSurdefList::checks_type_constraint( const Variable &self, const Var
 }
 
 Variable TypeSurdefList::with_self( Variable &orig, const Variable &new_self ) const {
-    Variable res( new KnownRef<CallableWithSelf>, gvm->type_CallableWithSelf );
+    Variable res( MAKE_KV( CallableWithSelf ) );
     CallableWithSelf *cs = res.rcast<CallableWithSelf>();
     cs->callable = orig;
     cs->self = new_self;
@@ -91,7 +91,7 @@ Variable TypeSurdefList::select( Variable &self, bool want_ret, const Vec<Variab
         return {};
     SurdefList *se = self.rcast<SurdefList>();
 
-    Variable sl_var( new KnownRef<SurdefList>, gvm->type_SurdefList );
+    Variable sl_var( MAKE_KV( SurdefList ) );
     SurdefList *sl = sl_var.rcast<SurdefList>();
     sl->lst  = se->lst;
 

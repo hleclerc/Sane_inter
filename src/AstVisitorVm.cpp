@@ -353,13 +353,13 @@ Variable AstVisitorVm::on_def( RcString name, RcString cname, PI8 nb_scopes_rec,
         if ( flags & CALLABLE_FLAG_static      ) vf |= Scope::VariableFlags::STATIC;
 
         //
-        sl_var = Variable( new KnownRef<SurdefList>, gvm->type_SurdefList );
+        sl_var = Variable( MAKE_KV( SurdefList ) );
         l_scope->reg_var( name, sl_var, vf );
     }
     SurdefList *sl = sl_var.rcast<SurdefList>();
 
     // store a new Reference in the surdef list
-    Variable var_def( new KnownRef<Def>, gvm->type_Def );
+    Variable var_def( MAKE_KV( Def ) );
     sl->lst << var_def;
 
     Def *def = var_def.rcast<Def>();
@@ -463,13 +463,13 @@ Variable AstVisitorVm::on_class( RcString name, RcString cname, PI8 nb_scopes_re
         if ( flags & CALLABLE_FLAG_export      ) vf |= Scope::VariableFlags::EXPORT;
 
         //
-        sl_var = Variable( new KnownRef<SurdefList>, gvm->type_SurdefList );
+        sl_var = Variable( MAKE_KV( SurdefList ) );
         l_scope->reg_var( name, sl_var, vf );
     }
     SurdefList *sl = sl_var.rcast<SurdefList>();
 
     // store a new Reference in the surdef list
-    Variable var_def( new KnownRef<Class>, gvm->type_Class );
+    Variable var_def( MAKE_KV( Class ) );
     gvm->main_scope.add_static_variable( var_def );
     sl->lst << var_def;
 
@@ -771,20 +771,21 @@ Variable AstVisitorVm::on_raii( const Vec<RcString> &code ) {
 }
 
 Variable AstVisitorVm::on_info( const Vec<RcString> &str, const Vec<RcString> &code ) {
-    TODO; return {};
-//    for( size_t i = 0; i < str.size(); ++i ) {
-//        Variable value = scope->visit( names, code[ i ], true );
-//        *vm->os << str[ i ] << " => " << std::flush;
-//        if ( Variable ws = value.find_attribute( scope, "write_to_stream", false ) )
-//            ws.apply( scope, false, scope->find_variable( "stderr" ) );
-//        else
-//            scope->add_error( "object {} has no write_to_stream attribute", *value.ugs_type( scope ) );
-//        if ( i + 1 == str.size() )
-//            *vm->os << std::endl;
-//        else
-//            *vm->os << ", " << std::flush;
-//    }
-//    ret_or_dec_ref( vm->ref_void );
+    for( size_t i = 0; i < str.size(); ++i ) {
+        Variable value = gvm->visit( names, code[ i ], true );
+        P( value );
+        TODO;
+        //        *vm->os << str[ i ] << " => " << std::flush;
+        //        if ( Variable ws = value.find_attribute( scope, "write_to_stream", false ) )
+        //            ws.apply( scope, false, scope->find_variable( "stderr" ) );
+        //        else
+        //            scope->add_error( "object {} has no write_to_stream attribute", *value.ugs_type( scope ) );
+        //        if ( i + 1 == str.size() )
+        //            *vm->os << std::endl;
+        //        else
+        //            *vm->os << ", " << std::flush;
+    }
+    return gvm->ref_void;
 }
 
 Variable AstVisitorVm::on_assert( RcString str, RcString code ) {
@@ -934,7 +935,7 @@ Variable AstVisitorVm::xxxxof( RcString value, int w, bool in_bytes ) {
 
     // typeof
     if ( w == 0 )
-        return Variable{ new KnownRef<Type *>( type ), gvm->type_Type };
+        return make_KnownVal<Type *>( gvm->type_Type, type );
 
     // sizeof of aligof
     SI32 vres = w == 1 ? type->content.data.size : type->content.data.alig;

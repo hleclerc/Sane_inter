@@ -7,11 +7,6 @@ Variable Ref::intercept_find_attribute( const RcString &name, Type *var_type, bo
     return {};
 }
 
-void *Ref::rcast() {
-    TODO;
-    return 0;
-}
-
 bool Ref::is_shared() const {
     return true;
 }

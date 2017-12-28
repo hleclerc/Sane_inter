@@ -29,12 +29,12 @@ class Read
     stream ~= UntypedRef
 
 # standard output file
-#global
-#stdout := Stream 0
+global
+stdout := Stream 0
 
 # error output file
-#global
-#stderr := Stream 1
+global
+stderr := Stream 1
 
 global
 def print ...args

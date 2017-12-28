@@ -22,3 +22,9 @@ void Inst::get_bytes( SI32 nout, void *dst, PI32 beg_dst, PI32 beg_src, PI32 len
     TODO;
 }
 
+void *Inst::rcast( SI32 nout, Type *type, SI32 offset ) {
+    write_dot( std::cerr );
+    TODO;
+    return 0;
+}
+

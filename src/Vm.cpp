@@ -1,15 +1,18 @@
 #include <boost/filesystem.hpp>
 #include "System/FileReader.h"
 #include "System/Stream.h"
+
 #include "Ast/AstMaker.h"
 #include "AstVisitorVm.h"
 #include "Primitives.h"
-#include "Inst/Void.h"
-#include "Inst/Cst.h"
-#include "KnownRef.h"
 #include "RefLeaf.h"
 #include "Import.h"
 #include "Vm.h"
+
+#include "Inst/KnownVal.h"
+#include "Inst/Void.h"
+#include "Inst/Cst.h"
+
 
 #include "TypeCallableWithSelf.h"
 #include "TypeSlTrialClass.h"
@@ -64,6 +67,11 @@ Vm::Vm( SI32 sizeof_ptr, bool reverse_endianness ) : main_scope( Scope::ScopeTyp
     #include "BaseTypes.h"
     #undef BT
 
+    // type of type_...->content
+    #define BT( T ) type_##T->content.type = type_Type;
+    #include "BaseTypes.h"
+    #undef BT
+
     for( Primitive_decl *pd = last_Primitive_decl; pd; pd = pd->prev )
         predefs[ RcString( "__primitive_" ) + pd->name ] = make_Void( types.push_back_val( pd->func() ) );
 
@@ -82,9 +90,8 @@ Variable Vm::import( const String &filename, const String &import_dir, bool disp
         return iter->second;
 
     // prepare a result variable
-    KnownRef<Import> *ref_import = new KnownRef<Import>;
-    Variable res( ref_import, type_Import );
-    Import *import = &ref_import->data;
+    Variable res = make_KnownVal<Import>( type_Import );
+    Import *import = res.rcast<Import>();
 
     imported.insert( iter, std::make_pair( abso, res ) );
 

@@ -18,8 +18,10 @@ public:
 
     void        write_to_stream( std::ostream &os ) const;
 
-    bool        get_bytes        ( void *dst, PI32 beg_dst, PI32 beg_src, PI32 len ) const;
-    void        get_bytes        ( void *dst, PI32 beg_dst, PI32 beg_src, PI32 len, void *msk ) const;
+    bool        get_bytes      ( void *dst, PI32 beg_dst, PI32 beg_src, PI32 len ) const;
+    void        get_bytes      ( void *dst, PI32 beg_dst, PI32 beg_src, PI32 len, void *msk ) const;
+
+    void       *rcast          ();
 
     RcPtr<Inst> inst;
     Type       *type;

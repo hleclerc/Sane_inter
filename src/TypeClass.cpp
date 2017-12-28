@@ -200,7 +200,7 @@ Variable TypeClass::make_sl_trial( bool want_ret, const Variable &func, const Va
     BoolVec defined_args( def->arg_names.size(), false );
 
     // make a Sl_trial_Def
-    Variable tr_var( new KnownRef<SlTrialClass>, gvm->type_SlTrialClass );
+    Variable tr_var( MAKE_KV( SlTrialClass ) );
     SlTrialClass *tr = tr_var.rcast<SlTrialClass>();
     tr->args.resize( def->arg_names.size() );
     tr->def = func;
@@ -212,7 +212,7 @@ Variable TypeClass::make_sl_trial( bool want_ret, const Variable &func, const Va
     for( size_t i = 0, s = def->catched_variables_prep.size(); i < s; ++i )
         new_scope.reg_var( def->catched_variables_prep[ i ].name, def->catched_variables_prep[ i ].val, Scope::VariableFlags::CATCHED );
     for( const RcString &name : def->with_names ) {
-        Variable wc( new KnownRef<Wildcard>, gvm->type_Wildcard );
+        Variable wc( MAKE_KV( Wildcard ) );
         wc.rcast<Wildcard>()->name = name;
         new_scope.reg_var( name, wc, Scope::VariableFlags::TEMPLATE );
     }
@@ -221,7 +221,7 @@ Variable TypeClass::make_sl_trial( bool want_ret, const Variable &func, const Va
     // init varargs
     Vec<Varargs *> vpv;
     for( size_t i : def->arg_spreads ) {
-        Variable vav( new KnownRef<Varargs>, gvm->type_Varargs );
+        Variable vav( MAKE_KV( Varargs ) );
         new_scope.reg_var( def->arg_names[ i ], vav );
         defined_args.set( i, true );
         vpv << vav.rcast<Varargs>();

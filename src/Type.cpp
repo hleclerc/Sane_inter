@@ -3,7 +3,7 @@
 #include "Type.h"
 #include "gvm.h"
 
-Type::Type( const LString &name ) {
+Type::Type( const LString &name ) : content( gvm ? gvm->type_Type : 0 ) {
     content.data.name = name;
 }
 

@@ -12,7 +12,7 @@ public:
     enum class Flags: PI32 { NONE = 0, CONST = 1 };
     Variable( const RcPtr<Ref> &ref, Type *type, SI32 offset = 0, Flags flags = Flags::NONE );
     Variable( const Value &value ); // make a RefLeaf from a value
-    Variable() {} // void Variable
+    Variable() : type( 0 ), flags( Flags::NONE ) {} // void Variable
 
     Variable   &operator=           ( const Variable &value );
 
@@ -48,7 +48,7 @@ public:
     Variable    sub_part            ( Type *new_type, SI32 add_off ) const;
 
     template<class T>
-    T          *rcast               () const { return (T *)ref->rcast(); }
+    T          *rcast               () const { return (T *)ref->get().rcast(); }
 
     RcPtr<Ref>  ref;
     Type       *type;

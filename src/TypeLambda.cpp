@@ -42,7 +42,7 @@ Variable TypeLambda::apply( Variable &self, bool want_ret, const Vec<Variable> &
 
     //    gvm->add_error( "pouet" );
     for( size_t i : def->arg_spreads ) {
-        Variable vav( new KnownRef<Varargs>, gvm->type_Varargs );
+        Variable vav( MAKE_KV( Varargs ) );
         new_scope.reg_var( def->arg_names[ i ], vav );
         defined_args.set( i, true );
         vpv << vav.rcast<Varargs>();
@@ -158,7 +158,7 @@ Variable TypeLambda::with_self( Variable &orig, const Variable &new_self ) const
     if ( l->arg_names.empty() || l->arg_names[ 0 ] != "self" )
         return orig;
 
-    Variable res( new KnownRef<CallableWithSelf>, gvm->type_CallableWithSelf );
+    Variable res( MAKE_KV( CallableWithSelf ) );
     CallableWithSelf *c = res.rcast<CallableWithSelf>();
     c->callable = orig;
     c->self = new_self;

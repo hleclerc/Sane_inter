@@ -4,4 +4,4 @@ class Pouetox
     b := 15
 
 p := Pouetox()
-print p.a
+stdout << p.a
