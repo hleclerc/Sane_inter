@@ -7,6 +7,10 @@ void Inst::add_child( const Value &ch ) {
     children << ch;
 }
 
+void Inst::add_dep( const RcPtr<Inst> &inst ) {
+    deps << inst;
+}
+
 void Inst::write_to_stream( std::ostream &os, SI32 nout, Type *type, int offset ) const {
     write_dot( os, nout, type, offset );
     if ( children.size() ) {

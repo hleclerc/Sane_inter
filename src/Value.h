@@ -13,6 +13,7 @@ public:
     Value() {} // void value
 
     Value      &operator=      ( const Value &value );
+    bool        operator<      ( const Value &value ) const;
 
     operator    bool           () const { return inst; }
 

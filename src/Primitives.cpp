@@ -11,6 +11,7 @@
 //#include "System/Math.h"
 #include "AnonymousRoom.h"
 #include "System/Math.h"
+#include "Inst/WriteFd.h"
 #include "Inst/BinOp.h"
 #include "Inst/UnaOp.h"
 #include "Inst/Conv.h"
@@ -423,31 +424,12 @@ REG_PRIMITIVE_TYPE( constified ) {
 //    // }
 //}
 
-//REG_PRIMITIVE_TYPE( write_fd ) {
-//    if ( args.size() < 2 )
-//        return scope->add_error( "__primitive_write_fd expects at least 2 arguments" ), scope->vm->ref_error;
-//    Variable fd = args[ 0 ].ugs( scope );
-//    if ( fd.type != scope->vm->type_SI32 )
-//        return scope->add_error( "__primitive_write_fd expects a SI32 as first argument" ), scope->vm->ref_error;
-//    Variable val = args[ 1 ].ugs( scope );
-
-//    if ( args.size() == 3 ) {
-//        Variable size_var = args[ 2 ].ugs( scope );
-//        AT *at = rcast( val.ptr() );
-//        size_t size = 0;
-//        if ( test_known( scope->vm, size_var, [&size]( auto s ) { size = s; return 0; }, 1 ) )
-//            scope->add_error( "type {} no handled for second argument of write_fd", *size_var.type );
-//        _write( *reinterpret_cast<SI32 *>( args[ 0 ].ptr() ), at->ptr->content->data + at->ptr->offset_in_bytes, size );
-//    } else {
-//        // TODO: something faster
-//       std::ostringstream os;
-//        val.type->write_to_stream( os, val.content->data + val.offB );
-//        std::string str = os.str();
-//        _write( *reinterpret_cast<SI32 *>( fd.ptr() ), str.data(), str.size() );
-//    }
-
-//    return scope->vm->ref_void;
-//}
+REG_PRIMITIVE_TYPE( write_fd ) {
+    if ( args.size() < 2 )
+        return gvm->add_error( "__primitive_write_fd expects at least 2 arguments" );
+    gvm->mod_fd( new WriteFd( args ), args[ 0 ], true, true );
+    return gvm->ref_void;
+}
 
 //REG_PRIMITIVE_TYPE( convert_String ) {
 //    Variable res( scope->vm, scope->vm->type_String );

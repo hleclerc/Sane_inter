@@ -13,11 +13,14 @@ class Type;
 */
 class Vm {
 public:
+    struct ModFd { RcPtr<Inst> mod_inst; bool mod_cursor; bool mod_content; };
+
     using MSV   = std::map<String,Variable>;
     using Error = ErrorList::Error;
     using SFM   = std::map<RcString,std::function<Variable()>>;
     using SVM   = std::map<RcString,Variable>;
     using SVT   = std::map<RcString,Type *>;
+    using MMFD  = std::map<Value,ModFd>; ///< fd -> mod
 
     Vm( SI32 sizeof_ptr = 8 * sizeof( void * ), bool reverse_endianness = false );
 
@@ -46,6 +49,7 @@ public:
     bool          little_endian() const;
     Type         *type_ptr_for ( const RcString &name, const Vec<Variable> &args );
 
+    void          mod_fd       ( RcPtr<Inst> mod_inst, const Value &fd, bool mod_cursor, bool mod_content );
 
     #define BT( T ) Type *type_##T;
     #include "BaseTypes.h"
@@ -59,6 +63,7 @@ public:
     Scope        *scope;
     Deque<Type *> types;
     SVM           predefs;
+    MMFD          mod_fds;            ///< modified file descriptors
     SFM           predeffs;
     Vec<String>   includes;
     int           nb_calls;

@@ -8,7 +8,7 @@
 Variable::Variable( const RcPtr<Ref> &ref, Type *type, SI32 offset, Flags flags ) : ref( ref ), type( type ), flags( flags ), offset( offset ) {
 }
 
-Variable::Variable( const Value &value ) : Variable( new RefLeaf( value ), value.type ) {
+Variable::Variable( const Value &value, Flags flags ) : Variable( new RefLeaf( value ), value.type, 0, flags ) {
 }
 
 Variable &Variable::operator=( const Variable &value ) {
@@ -33,6 +33,10 @@ Variable Variable::to_Bool() const {
     }
 
     return *this;
+}
+
+Variable Variable::equal( const Variable &that ) const {
+    return find_attribute( "operator ==" ).apply( true, that );
 }
 
 bool Variable::is_false() const {

@@ -246,6 +246,32 @@ Type *Vm::type_ptr_for( const RcString &name, const Vec<Variable> &args ) {
     return res;
 }
 
+void Vm::mod_fd( RcPtr<Inst> mod_inst, const Value &fd, bool mod_cursor, bool mod_content ) {
+    if ( mod_content ) {
+        // even if we have != fd, it may point to the same file
+        // ->
+        auto iter = mod_fds.find( fd );
+        if ( iter == mod_fds.end() )
+            iter = mod_fds.insert( iter, std::make_pair( fd, ModFd{ mod_inst, mod_cursor, mod_content } ) );
+        if ( iter->second.mod_inst != mod_inst ) {
+            mod_inst->add_dep( iter->second.mod_inst );
+            iter->second.mod_inst = mod_inst;
+        }
+    } else if ( mod_cursor ) {
+        auto iter = mod_fds.find( fd );
+        if ( iter == mod_fds.end() )
+            iter = mod_fds.insert( iter, std::make_pair( fd, ModFd{ mod_inst, mod_cursor, mod_content } ) );
+
+        Variable fdv( fd, Variable::Flags::CONST );
+        for( auto iter : mod_fds ) {
+            if ( Variable( iter.first, Variable::Flags::CONST ).equal( fdv ).is_false() == false && iter.second.mod_inst != mod_inst ) {
+                mod_inst->add_dep( iter.second.mod_inst );
+                iter.second.mod_inst = mod_inst;
+            }
+        }
+    }
+}
+
 Variable Vm::visit( const RcString &names, const RcString &code, bool want_ret ) {
     auto _ = raii_save( scope->pos );
 
