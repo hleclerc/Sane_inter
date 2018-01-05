@@ -13,7 +13,11 @@ class Type;
 */
 class Vm {
 public:
-    struct ModFd { RcPtr<Inst> mod_inst; bool mod_cursor; bool mod_content; };
+    struct ModFd {
+        RcPtr<Inst> mod_inst;    ///< last modifying inst
+        bool        mod_cursor;  ///< true if modified position in the file
+        bool        mod_content; ///< true if modified the content of the file
+    };
 
     using MSV   = std::map<String,Variable>;
     using Error = ErrorList::Error;
@@ -44,12 +48,15 @@ public:
 
     bool          want_exec    () const { return true; }
 
-    Variable      new_Type     ( Type *type );
-    Variable      make_inst    ( Type *type, const Vec<Variable> &ctor_args, const Vec<RcString> &ctor_names, ApplyFlags apply_flags );
-    bool          little_endian() const;
     Type         *type_ptr_for ( const RcString &name, const Vec<Variable> &args );
+    Variable      make_inst    ( Type *type, const Vec<Variable> &ctor_args, const Vec<RcString> &ctor_names, ApplyFlags apply_flags );
+    Variable      new_Type     ( Type *type );
+
+    bool          little_endian() const;
 
     void          mod_fd       ( RcPtr<Inst> mod_inst, const Value &fd, bool mod_cursor, bool mod_content );
+
+    void          display_graph();
 
     #define BT( T ) Type *type_##T;
     #include "BaseTypes.h"

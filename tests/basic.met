@@ -5,3 +5,5 @@ class Pouetox
 
 p := Pouetox()
 stdout << p.a
+
+__primitive_ct_display_graph()

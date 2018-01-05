@@ -149,8 +149,8 @@ struct Vec { // : std::vector<T>
 
     Vec      concat               ( const Vec &v ) const { Vec res = *this; return res.append( v ); }
 
-    template<class O>
-    Vec<O>   map                  ( const std::function<O(const T &)> &f ) const { Vec<O> res( Rese(), size() ); for( const T &val : *this ) res << f( val ); return res; }
+    template<class F>
+    auto     map                  ( const F &f ) const -> Vec<decltype(f(*(T*)0))> { Vec<decltype(f(*(T*)0))> res( Rese(), size() ); for( const T &val : *this ) res << f( val ); return res; }
 
 protected:
 

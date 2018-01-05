@@ -31,6 +31,10 @@ void Cst::get_bytes( SI32 nout, void *dst, PI32 beg_dst, PI32 beg_src, PI32 len,
     memset_bit( msk, beg_dst, false, len );
 }
 
+int Cst::nb_outputs() const {
+    return 1;
+}
+
 Value make_Cst_PI64( PI64 val ) { if ( gvm->reverse_endianness ) val = byte_swaped( val ); return { new Cst( 64, &val ), 0, gvm->type_PI64 }; }
 Value make_Cst_SI64( SI64 val ) { if ( gvm->reverse_endianness ) val = byte_swaped( val ); return { new Cst( 64, &val ), 0, gvm->type_SI64 }; }
 Value make_Cst_PI32( PI32 val ) { if ( gvm->reverse_endianness ) val = byte_swaped( val ); return { new Cst( 32, &val ), 0, gvm->type_PI32 }; }

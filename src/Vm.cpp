@@ -272,6 +272,14 @@ void Vm::mod_fd( RcPtr<Inst> mod_inst, const Value &fd, bool mod_cursor, bool mo
     }
 }
 
+void Vm::display_graph() {
+    Vec<Inst *> to_disp;
+    for( std::pair<const Value&, const ModFd &> mfd : mod_fds )
+        to_disp << mfd.second.mod_inst.ptr();
+
+    Inst::display_graphviz( to_disp );
+}
+
 Variable Vm::visit( const RcString &names, const RcString &code, bool want_ret ) {
     auto _ = raii_save( scope->pos );
 
