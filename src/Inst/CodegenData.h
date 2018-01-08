@@ -1,0 +1,4 @@
+#ifndef CODEGENDATA_H
+#define CODEGENDATA_H
+
+#endif // CODEGENDATA_H
