@@ -1,4 +1,5 @@
 #include <boost/filesystem.hpp>
+#include "Codegen/Codegen_C.h"
 #include <fstream>
 #include "gvm.h"
 
@@ -26,4 +27,11 @@ int main( int argc, char **argv ) {
 
     // user script(s)
     gvm->import( argv[ 1 ], {}, want_graph_only );
+
+    // code generation
+    Codegen_C cg;
+    gvm->codegen( cg );
+    std::cout << cg.code();
+
+    return 0;
 }

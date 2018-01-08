@@ -47,11 +47,26 @@ void Type::write_to_stream( std::ostream &os ) const {
     os << content;
 }
 
-void Type::write_cst( std::ostream &os, const PI8 *data, int offset_mod_8 ) const {
-    os << content << "(" << "..." << ")";
+void Type::write_cst( std::ostream &os, const PI8 *data, int offset_mod_8, bool always_add_braces ) const {
+    // os << content << "(" << "..." << ")";
+    os << "{";
+    for( TypeContent::Attribute *attr = content.data.first_attribute; attr; attr = attr->next ) {
+        if ( attr != content.data.first_attribute )
+            os << ",";
+        attr->type->write_cst( os, data + ( offset_mod_8 + attr->off ) / 8, ( offset_mod_8 + attr->off ) % 8 );
+    }
+    os << "}";
 }
 
 void Type::destroy( const Variable &self, bool use_virtual ) {
+}
+
+String Type::c_name() const {
+    String res = content.data.name;
+    for( Variable *var : content.data.parameters ) {
+        res += to_string( *var );
+    }
+    return res;
 }
 
 void Type::spread_in( const Variable &self, Vec<Variable> &res, Vec<RcString> &names ) {

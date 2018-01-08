@@ -2,7 +2,9 @@
 #include "System/FileReader.h"
 #include "System/Stream.h"
 
+#include "Codegen/Codegen.h"
 #include "Ast/AstMaker.h"
+
 #include "AstVisitorVm.h"
 #include "Primitives.h"
 #include "RefLeaf.h"
@@ -278,6 +280,14 @@ void Vm::display_graph() {
         to_disp << mfd.second.mod_inst.ptr();
 
     Inst::display_graphviz( to_disp );
+}
+
+void Vm::codegen( Codegen &cg ) {
+    Vec<Inst *> targets;
+    for( std::pair<const Value&, const ModFd &> mfd : mod_fds )
+        targets << mfd.second.mod_inst.ptr();
+
+    cg.gen_code_for( targets );
 }
 
 Variable Vm::visit( const RcString &names, const RcString &code, bool want_ret ) {

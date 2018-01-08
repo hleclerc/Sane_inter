@@ -1,4 +1,13 @@
-#ifndef CODEGENDATA_H
-#define CODEGENDATA_H
+#pragma once
 
-#endif // CODEGENDATA_H
+#include "../System/Stream.h"
+class Reg;
+
+/**
+*/
+struct CodegenData {
+    CodegenData() {}
+
+    size_t      num_in_sched;
+    Vec<Reg *>  regs;
+};

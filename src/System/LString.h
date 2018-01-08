@@ -41,6 +41,7 @@ struct LString {
     ~LString();
 
     operator    RcString  () const;
+    operator    String    () const;
 
     LString     operator= ( const RcString &str ) { return reassign_with_str( str.data(), str.size() ); }
     LString     operator= ( const LString  &str ) { return reassign_with_str( str.data(), str.size() ); }

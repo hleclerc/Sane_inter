@@ -1,9 +1,9 @@
 # ct_info 987
-class Pouetox
+class MyStruct
     a := 10
     b := 15
 
-p := Pouetox()
+p := MyStruct()
 stdout << p.a
 
-__primitive_ct_display_graph()
+# __primitive_ct_display_graph()

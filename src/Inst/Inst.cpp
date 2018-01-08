@@ -1,16 +1,41 @@
+#include "../Codegen/Codegen.h"
 #include "../System/DotOut.h"
+#include "../System/Deque.h"
 #include "../Value.h"
 #include <fstream>
 
+size_t Inst::cur_op_id = 0;
+size_t Inst::date      = 0;
+
+Inst::Inst() : op_id( 0 ) {
+    creation_date = date++;
+}
+
 Inst::~Inst() {
+    for( size_t ninp = 0; ninp < children.size(); ++ninp )
+        children[ ninp ].inst->parents.remove_first( Parent{ this, ssize_t( ninp ) } );
+    for( size_t ndep = 0; ndep < deps.size(); ++ndep )
+        deps[ ndep ]->parents.remove_first( Parent{ this, ssize_t( - 1 - ndep ) } );
 }
 
 void Inst::add_child( const Value &ch ) {
+    ch.inst->parents << Parent{ this, ssize_t( children.size() ) };
     children << ch;
 }
 
 void Inst::add_dep( const RcPtr<Inst> &inst ) {
+    inst->parents << Parent{ this, ssize_t( - 1 - deps.size() ) };
     deps << inst;
+}
+
+bool Inst::all_children_with_op_id( size_t oi ) const {
+    for( const Value &ch : children )
+        if ( ch.inst->op_id < oi )
+            return false;
+    for( const RcPtr<Inst> &dep : deps )
+        if ( dep->op_id < oi )
+            return false;
+    return true;
 }
 
 int Inst::inp_corr( int nout ) const {
@@ -96,6 +121,41 @@ bool Inst::write_graph_rec( std::ostream &ss, std::set<const Inst *> &seen_insts
     return true;
 }
 
+void Inst::write_code( StreamSep &ss, Codegen &cg ) {
+    //    if ( nb_outs_with_content() == 1 ) {
+    //        // if we're going to use only the content, not the reference, we can store the content in reg
+    //        if ( ! has_out_used_as_ref() ) {
+    //            Reg *reg = cg.reg( this, 0, false );
+    //            std::ostringstream os;
+    //            StreamPrio sp( os, PRIO_paren );
+    //            write_inline_code( sp, cg, 0 );
+    //            reg->is_a_ref = false;
+    //            reg->name = os.str();
+    //            return;
+    //        }
+    //        // else, we make a declaration, initialized with write_inline_code
+    //        Reg *reg = cg.reg( this );
+    //        *ss.stream << ss.beg;
+    //        if ( ! reg->pre_declared )
+    //            *ss.stream << cg.repr( type( 0 ) ) << " ";
+    //        *ss.stream << cg.repr( reg, PRIO_Assignment ) << " = ";
+    //        StreamPrio sp( *ss.stream, PRIO_Assignment );
+    //        write_inline_code( sp, cg, 0 );
+    //        *ss.stream << ";" << ss.end;
+    //        return;
+    //    }
+
+    //
+    //    write_dot( std::cerr << __FUNCTION__ << " " );
+    //    TODO;
+
+    ss << "pouetos";
+}
+
+void Inst::write_inline_code( StreamPrio &ss, Codegen &cg, int nout, Type *type, int offset ) {
+    ss << "TODO: inline code for " << *this;
+}
+
 void Inst::get_bytes( SI32 nout, void *dst, PI32 beg_dst, PI32 beg_src, PI32 len, void *msk ) const {
     write_dot( std::cerr );
     TODO;
@@ -118,5 +178,48 @@ void Inst::display_graphviz( const Vec<Inst *> &lst, const std::function<void (s
     ss.close();
     if ( launch )
         exec_dot( filename.c_str() );
+}
+
+void Inst::dfs( const Vec<Inst *> &lst, const std::function<void (Inst *)> &f, bool deep, bool f_after, bool need_inc_ref ) {
+    ++cur_op_id;
+    for( Inst *inst : lst )
+        dfs_rec( inst, f, deep, f_after, need_inc_ref );
+}
+
+void Inst::dfs_rec( Inst *inst, const std::function<void (Inst *)> &f, bool deep, bool f_after, bool need_inc_ref ) {
+    if ( inst->op_id == Inst::cur_op_id )
+        return;
+    inst->op_id = Inst::cur_op_id;
+
+    RcPtr<Inst> tp( need_inc_ref ? inst : 0 );
+
+    if ( ! f_after )
+        f( inst );
+
+    if ( deep ) {
+        Deque<Inst *> outs;
+        inst->get_out_insts( outs );
+        for( Inst *out : outs )
+            dfs_rec( out, f, deep, f_after, need_inc_ref );
+    }
+
+    for( const Value &v : inst->children )
+        dfs_rec( v.inst.ptr(), f, deep, f_after, need_inc_ref );
+
+    if ( f_after )
+        f( inst );
+}
+
+Inst *Inst::parent_out_inst() const {
+    TODO;
+    return 0;
+}
+
+void Inst::get_out_insts( Deque<Inst *> &outs ) {
+}
+
+void Inst::externalize( Inst *inst, size_t ninp ) {
+    write_dot( std::cerr << __FUNCTION__ << " " );
+    TODO;
 }
 

@@ -11,12 +11,19 @@ public:
     TypeBT( const LString &name ) : Type( name ) {
     }
 
-    virtual void write_cst( std::ostream &os, const PI8 *data, int offset_mod_8 = 0 ) const override {
+    virtual void write_cst( std::ostream &os, const PI8 *data, int offset_mod_8 = 0, bool always_add_braces = false ) const override {
+        if ( always_add_braces )
+            os << "{";
+
         if ( reverse_endianness )
             TODO;
         if ( offset_mod_8 )
             TODO;
+
         os << *reinterpret_cast<const T *>( data );
+
+        if ( always_add_braces )
+            os << "}";
     }
 
     virtual bool primitive_number() const {

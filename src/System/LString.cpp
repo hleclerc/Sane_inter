@@ -8,6 +8,14 @@ LString::operator RcString() const {
     return { l->data, l->data + l->size_m2 / 2 };
 }
 
+LString::operator String() const {
+    const Short *s = reinterpret_cast<const Short *>( _data );
+    if ( s->size_m2_p1 & 1 )
+        return { s->data, s->data + s->size_m2_p1 / 2 };
+    const Long *l = reinterpret_cast<const Long *>( _data );
+    return { l->data, l->data + l->size_m2 / 2 };
+}
+
 void LString::resize(PT new_size) {
     reserve( new_size );
 

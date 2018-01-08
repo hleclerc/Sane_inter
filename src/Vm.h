@@ -7,6 +7,7 @@
 #include "Variable.h"
 #include "Scope.h"
 #include <map>
+class Codegen;
 class Type;
 
 /**
@@ -57,6 +58,7 @@ public:
     void          mod_fd       ( RcPtr<Inst> mod_inst, const Value &fd, bool mod_cursor, bool mod_content );
 
     void          display_graph();
+    void          codegen      ( Codegen &cg );
 
     #define BT( T ) Type *type_##T;
     #include "BaseTypes.h"

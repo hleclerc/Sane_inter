@@ -28,11 +28,12 @@ public:
     virtual Variable      make_sl_trial              ( bool want_ret, const Variable &func, const Variable &self, const Vec<Variable> &sl_args, const Vec<RcString> &sl_names, const Vec<Variable> &args, const Vec<RcString> &names, const Variable &with_self, ApplyFlags apply_flags ) const;
     virtual Variable      use_sl_trial               ( bool want_ret, const Variable &func, const Variable &self, const Vec<Variable> &sl_args, const Vec<RcString> &sl_names, const Vec<Variable> &args, const Vec<RcString> &names, const Variable &with_self, ApplyFlags apply_flags, const Variable &trial ) const;
     Class                *orig_class                 () const;
-    virtual void          write_cst                  ( std::ostream &os, const PI8 *data, int offset_mod_8 = 0 ) const;
+    virtual void          write_cst                  ( std::ostream &os, const PI8 *data, int offset_mod_8 = 0, bool always_add_braces = false ) const;
     virtual void          spread_in                  ( const Variable &self, Vec<Variable> &res, Vec<RcString> &names );
     virtual void          construct                  ( const Variable &self, const Vec<Variable> &args, const Vec<RcString> &names );
     virtual Variable      with_self                  ( Variable &orig, const Variable &new_self ) const;
     virtual void          destroy                    ( const Variable &self, bool use_virtual );
+    virtual String        c_name                     () const;
     virtual bool          error                      () const;
     virtual Variable      chbeba                     ( Variable &self, bool want_ret, const Vec<Variable> &args, const Vec<RcString> &names );
     virtual Variable      select                     ( Variable &self, bool want_ret, const Vec<Variable> &args, const Vec<RcString> &names );

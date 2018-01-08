@@ -151,11 +151,11 @@ inline T *inc_ref( T *p ) {
     return p;
 }
 
-template<class T>
-inline void dec_ref( const T *ptr ) {
-    if ( --ptr->cpt_use == 0 )
-        ptr->_free();
-}
+//template<class T>
+//inline void dec_ref( const T *ptr ) {
+//    if ( --ptr->cpt_use == 0 )
+//        ptr->_free();
+//}
 
 template<class T>
 bool operator==( const T *p, const RcPtr<T> &q ) { return p == q.data; }
