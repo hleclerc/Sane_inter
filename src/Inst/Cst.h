@@ -12,12 +12,14 @@ public:
         return {};
     }
 
-    Cst( int size, void *val = 0, void *kno = 0 );
+    Cst( Type *type, int size, void *val = 0, void *kno = 0 );
 
-    virtual void write_dot ( std::ostream &os, SI32 nout = 0, Type *type = 0, int offset = 0 ) const override;
-    virtual void get_bytes ( SI32 nout, void *dst, PI32 beg_dst, PI32 beg_src, PI32 len, void *msk ) const override;
-    virtual int  nb_outputs() const override;
+    virtual void write_to_stream ( std::ostream &os, SI32 nout = -1, Type *type = 0, int offset = -1 ) const;
+    virtual void write_dot       ( std::ostream &os ) const override;
+    virtual void get_bytes       ( SI32 nout, void *dst, PI32 beg_dst, PI32 beg_src, PI32 len, void *msk ) const override;
+    virtual int  nb_outputs      () const override;
 
+    Type   *type;
     BoolVec val;
     BoolVec kno;
 };

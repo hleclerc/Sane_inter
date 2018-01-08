@@ -10,7 +10,7 @@ int MemcpyKV::nb_outputs() const {
     return 1;
 }
 
-void MemcpyKV::write_dot( std::ostream &os, SI32 nout, Type *type, int offset ) const {
+void MemcpyKV::write_dot( std::ostream &os ) const {
     os << "MemcpyKV[" << dst_off << "]";
 }
 

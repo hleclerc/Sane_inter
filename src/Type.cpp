@@ -48,7 +48,7 @@ void Type::write_to_stream( std::ostream &os ) const {
 }
 
 void Type::write_cst( std::ostream &os, const PI8 *data, int offset_mod_8 ) const {
-    os << content;
+    os << content << "(" << "..." << ")";
 }
 
 void Type::destroy( const Variable &self, bool use_virtual ) {

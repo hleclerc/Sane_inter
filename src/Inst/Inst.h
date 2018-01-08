@@ -22,9 +22,9 @@ public:
     virtual Inp      val_corr               ( int nout ) const;
     virtual Inst    *clone                  () const;
 
-    virtual void     write_to_stream ( std::ostream &os, SI32 nout = 0, Type *type = 0, int offset = 0 ) const;
+    virtual void     write_to_stream ( std::ostream &os, SI32 nout = -1, Type *type = 0, int offset = -1 ) const;
     virtual bool     write_graph_rec ( std::ostream &ss, std::set<const Inst *> &seen_insts, const std::function<void(std::ostream&, const Inst *)> &f, bool disp_parents ) const;
-    virtual void     write_dot       ( std::ostream &os, SI32 nout = 0, Type *type = 0, int offset = 0 ) const = 0;
+    virtual void     write_dot       ( std::ostream &os ) const = 0;
     virtual void     get_bytes       ( SI32 nout, void *dst, PI32 beg_dst, PI32 beg_src, PI32 len, void *msk ) const;
     virtual void    *rcast           ( SI32 nout, Type *type, SI32 offset );
 

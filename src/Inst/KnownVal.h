@@ -11,7 +11,7 @@ public:
     template<class ...Args>
     KnownVal( Type *type, Args&& ...args ) : type( type ), data( std::forward<Args>( args )... ) {}
 
-    virtual void write_dot( std::ostream &os, SI32 nout = 0, Type *type = 0, int offset = 0 ) const override {
+    virtual void write_dot( std::ostream &os ) const override {
 
     }
     virtual void get_bytes( SI32 nout, void *dst, PI32 beg_dst, PI32 beg_src, PI32 len, void *msk ) const override {

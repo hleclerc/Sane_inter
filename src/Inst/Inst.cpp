@@ -34,7 +34,11 @@ int Inst::nb_outputs() const {
 }
 
 void Inst::write_to_stream( std::ostream &os, SI32 nout, Type *type, int offset ) const {
-    write_dot( os, nout, type, offset );
+    write_dot( os );
+    if ( nout >= 0 )
+        os << "[" << nout << "]";
+    if ( offset >= 0 )
+        os << "{" << offset << "}";
     if ( children.size() ) {
         os << '(' << children[ 0 ];
         for( size_t i = 1; i < children.size(); ++i )
@@ -53,7 +57,9 @@ bool Inst::write_graph_rec( std::ostream &ss, std::set<const Inst *> &seen_insts
     for( const Value &v : children ) {
         std::ostringstream label;
         if ( v.inst->nb_outputs() > 1 || v.nout )
-            label << v.nout;
+            label << v.nout;        
+        if ( v.offset )
+            label << ( label.str().size() ? "\\n" : "" ) << "off:" << v.offset;
         // label << v.type()->name;
 
         if ( children.size() > 1 )

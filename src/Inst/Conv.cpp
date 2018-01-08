@@ -5,7 +5,7 @@ Conv::Conv( const Value &orig, Type *target_type ) : target_type( target_type ) 
     add_child( orig );
 }
 
-void Conv::write_dot( std::ostream &os, SI32 nout, Type *type, int offset ) const {
+void Conv::write_dot( std::ostream &os ) const {
     os << "Conv[" << *target_type << "]";
 }
 

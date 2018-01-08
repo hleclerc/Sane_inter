@@ -2,7 +2,7 @@
 #include "../gvm.h"
 #include "Void.h"
 
-void Void::write_dot( std::ostream &os, SI32 nout, Type *type, int offset ) const {
+void Void::write_dot( std::ostream &os ) const {
     os << "void";
 }
 

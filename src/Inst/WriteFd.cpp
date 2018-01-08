@@ -5,7 +5,7 @@ WriteFd::WriteFd( const Vec<Value> &args ) {
         add_child( arg );
 }
 
-void WriteFd::write_dot( std::ostream &os, SI32 nout, Type *type, int offset ) const {
+void WriteFd::write_dot( std::ostream &os ) const {
     os << "WriteFd";
 }
 
