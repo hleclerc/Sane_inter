@@ -76,9 +76,7 @@ void Codegen_C::write_repr( std::ostream &os, Type *type ) {
 
 void Codegen_C::write_repr( std::ostream &os, const Value &value, int prio ) {
     if ( Reg *reg = value.inst->cd.regs.secure_get( value.nout ) ) {
-        if ( value.type != reg->type )
-            TODO;
-        os << *reg;
+        write_repr_rec( os, reg, value.inst, value.type, value.offset, prio, "" );
         return;
     }
     P( value );

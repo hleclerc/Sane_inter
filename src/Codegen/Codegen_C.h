@@ -26,6 +26,7 @@ public:
 protected:
     void               write_block   ( StreamSep &os, const Vec<Inst *> &out );
     void               get_scheduling( Vec<Inst *> &sched, const Vec<Inst *> &out );
+    bool               write_repr_rec( std::ostream &os, Reg *reg, Inst *inst, Type *type, int offset, int prio, const String &attr );
 
     std::ostringstream declarations;
     std::ostringstream main_block;
