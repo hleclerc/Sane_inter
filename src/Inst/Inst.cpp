@@ -46,6 +46,11 @@ Inst::Inp Inst::val_corr( int nout ) const {
     return {};
 }
 
+Type *Inst::out_type( int nout ) const {
+    TODO;
+    return 0;
+}
+
 Inst *Inst::clone() const {
     write_dot( std::cerr << __FUNCTION__ << " " );
     TODO;
@@ -122,6 +127,15 @@ bool Inst::write_graph_rec( std::ostream &ss, std::set<const Inst *> &seen_insts
 }
 
 void Inst::write_code( StreamSep &ss, Codegen &cg ) {
+    if ( nb_outputs() != 1 )
+        TODO;
+
+    Type *type = out_type( 0 );
+    ss.write_beg() << cg.repr( type ) << " " << *cg.reg( this, type, 0 ) << " = ";
+    StreamPrio sp{ *ss, PRIO_Assignment };
+    write_inline_code( sp, cg );
+    ss.write_end( ";" );
+
     //    if ( nb_outs_with_content() == 1 ) {
     //        // if we're going to use only the content, not the reference, we can store the content in reg
     //        if ( ! has_out_used_as_ref() ) {
@@ -148,17 +162,13 @@ void Inst::write_code( StreamSep &ss, Codegen &cg ) {
     //
     //    write_dot( std::cerr << __FUNCTION__ << " " );
     //    TODO;
-
-    ss << "pouetos";
 }
 
-void Inst::write_inline_code( StreamPrio &ss, Codegen &cg, int nout, Type *type, int offset ) {
+void Inst::write_inline_code( StreamPrio &ss, Codegen &cg ) {
     ss << "TODO: inline code for " << *this;
 }
 
-void Inst::get_bytes( SI32 nout, void *dst, PI32 beg_dst, PI32 beg_src, PI32 len, void *msk ) const {
-    write_dot( std::cerr );
-    TODO;
+void Inst::get_bytes( int nout, void *dst, int beg_dst, int beg_src, int len, void *msk ) const {
 }
 
 void *Inst::rcast( SI32 nout, Type *type, SI32 offset ) {

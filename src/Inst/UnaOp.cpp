@@ -13,19 +13,19 @@ bool not_bitwise( bool va ) { return ! va; }
 
 }
 
-Value make_neg( const Value &a ) {
+Value make_Neg( const Value &a ) {
     if ( Value r = test_known( a, []( auto va ) { return make_Cst( - va ); }, Value{} ) )
         return r;
     TODO; return {};
 }
 
-Value make_not_boolean( const Value &a ) {
+Value make_Not_logical( const Value &a ) {
     if ( Value r = test_known( a, []( auto va ) { return make_Cst( ! va ); }, Value{} ) )
         return r;
     TODO; return {};
 }
 
-Value make_not_bitwise( const Value &a ) {
+Value make_Not_bitwise( const Value &a ) {
     if ( Value r = test_known( a, []( auto va ) { return make_Cst( not_bitwise( va ) ); }, Value{} ) )
         return r;
     TODO; return {};

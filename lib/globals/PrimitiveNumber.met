@@ -33,78 +33,78 @@ class PrimitiveNumber extends Number
         __primitive_reassign self, val
 
     def operator!
-        __primitive_not_boolean self
+        __primitive_Not_boolean self
 
     def operator~
-        __primitive_not_bitwise self
+        __primitive_Not_bitwise self
 
 # operators, defined in global space to ease surdefs with (currently) unknown types
 global
 def operator| self: PrimitiveNumber, b: PrimitiveNumber
-    __primitive_or_bitwise self, b
+    __primitive_Or_bitwise self, b
 
 global
 def operator^ self: PrimitiveNumber, b: PrimitiveNumber
-    __primitive_xor_bitwise self, b
+    __primitive_Xor_bitwise self, b
 
 global
 def operator& self: PrimitiveNumber, b: PrimitiveNumber
-    __primitive_and_bitwise self, b
+    __primitive_And_bitwise self, b
 
 global
 def operator>> self: PrimitiveNumber, b: PrimitiveNumber
-    __primitive_shift_right self, b
+    __primitive_Shift_right self, b
 
 global
 def operator<< self: PrimitiveNumber, b: PrimitiveNumber
-    __primitive_shift_left self, b
+    __primitive_Shift_left self, b
 
 global
 def operator+ self: PrimitiveNumber, b: PrimitiveNumber
-    __primitive_add self, b
+    __primitive_Add self, b
 
 global
 def operator- self: PrimitiveNumber
-    __primitive_neg self
+    __primitive_Neg self
 
 global
 def operator- self: PrimitiveNumber, b: PrimitiveNumber
-    __primitive_sub self, b
+    __primitive_Sub self, b
 
 global
 def operator* self: PrimitiveNumber, b: PrimitiveNumber
-    __primitive_mul self, b
+    __primitive_Mul self, b
 
 global
 def operator% self: PrimitiveNumber, b: PrimitiveNumber
-    __primitive_mod self, b
+    __primitive_Mod self, b
 
 global
 def operator/ self: PrimitiveNumber, b: PrimitiveNumber
     assert b
-    __primitive_div self, b
+    __primitive_Div self, b
 
 global
 def operator// self: PrimitiveNumber, b: PrimitiveNumber
     assert b
-    __primitive_div_int self, b
+    __primitive_Div_int self, b
 
 global
 def operator< self: PrimitiveNumber, b: PrimitiveNumber
-    __primitive_inf self, b
+    __primitive_Inf self, b
 
 global
 def operator> self: PrimitiveNumber, b: PrimitiveNumber
-    __primitive_sup self, b
+    __primitive_Sup self, b
 
 global
 def operator<= self: PrimitiveNumber, b: PrimitiveNumber
-    __primitive_inf_equ self, b
+    __primitive_Inf_equ self, b
 
 global
 def operator>= self: PrimitiveNumber, b: PrimitiveNumber
-    __primitive_sup_equ self, b
+    __primitive_Sup_equ self, b
 
 global
 def operator== self: PrimitiveNumber, b: PrimitiveNumber
-    __primitive_equ self, b
+    __primitive_Equ self, b

@@ -10,12 +10,12 @@ public:
     Cst( Type *type, int size, void *val = 0, void *kno = 0 );
     Cst( AttrClone, const Cst *cst );
 
-    virtual void write_inline_code( StreamPrio &ss, Codegen &cg, int nout, Type *type, int offset ) override; ///<
-    virtual void write_to_stream  ( std::ostream &os, SI32 nout = -1, Type *type = 0, int offset = -1 ) const;
-    virtual void write_code       ( StreamSep &ss, Codegen &cg ) override;
-    virtual void write_dot        ( std::ostream &os ) const override;
-    virtual void get_bytes        ( SI32 nout, void *dst, PI32 beg_dst, PI32 beg_src, PI32 len, void *msk ) const override;
-    virtual int  nb_outputs       () const override;
+    virtual void  write_inline_code( StreamPrio &ss, Codegen &cg ) override; ///<
+    virtual void  write_to_stream  ( std::ostream &os, SI32 nout = -1, Type *type = 0, int offset = -1 ) const;
+    virtual int   nb_outputs       () const override;
+    virtual void  write_dot        ( std::ostream &os ) const override;
+    virtual void  get_bytes        ( int nout, void *dst, int beg_dst, int beg_src, int len, void *msk ) const override;
+    virtual Type *out_type         ( int nout ) const;
 
     Type   *type;
     BoolVec val;

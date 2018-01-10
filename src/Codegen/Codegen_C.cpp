@@ -23,6 +23,7 @@ Codegen_C::Codegen_C() {
     #undef BT
 
     add_include( "<stdint.h>" );
+    add_include( "\"src/System/Stream.h\"" );
 
     declarations << "typedef float       FP32;\n";
     declarations << "typedef double      FP64;\n";
@@ -55,15 +56,15 @@ String Codegen_C::code() {
     // inludes
     for( const String &include : includes  )
         res += "#include " + include + "\n";
-    if ( res.size() )
-        res += "\n";
 
     // declarations
-    res += declarations.str();
     if ( res.size() )
         res += "\n";
+    res += declarations.str();
 
     // code
+    if ( res.size() )
+        res += "\n";
     res += "int main( int argc, char **argv ) {\n";
     res += main_block.str();
     res += "}\n";
@@ -185,7 +186,7 @@ void Codegen_C::write_block( StreamSep &os, const Vec<Inst *> &out ) {
     Vec<Inst *> sched;
     get_scheduling( sched, out );
 
-    Inst::display_graphviz( out );
+    // Inst::display_graphviz( out );
     for( Inst *inst : sched )
         inst->write_code( os, *this );
 }

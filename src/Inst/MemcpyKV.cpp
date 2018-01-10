@@ -26,8 +26,29 @@ void MemcpyKV::write_dot( std::ostream &os ) const {
     os << "MemcpyKV[" << dst_off << "]";
 }
 
-void MemcpyKV::get_bytes( SI32 nout, void *dst, PI32 beg_dst, PI32 beg_src, PI32 len, void *msk ) const {
-    TODO;
+void MemcpyKV::get_bytes( int nout, void *dst, int beg_dst, int beg_src, int len, void *msk ) const {
+    // we have to get data from...
+    int len_ssp = children[ 1 ].type->size(), end_ssp = dst_off + len_ssp, end_src = beg_src + len;
+    if ( beg_src < dst_off ) { // left part of children[ 0 ] and...
+        if ( end_src <= dst_off ) { // => only children[ 0 ]
+            children[ 0 ].inst->get_bytes( children[ 0 ].nout, dst, beg_dst, beg_src, len, msk );
+        } else if ( end_src <= end_ssp ) {
+            children[ 1 ].inst->get_bytes( children[ 1 ].nout, dst, beg_dst + dst_off - beg_src, 0, end_src - dst_off, msk );
+            children[ 0 ].inst->get_bytes( children[ 0 ].nout, dst, beg_dst, beg_src, len, msk );
+        } else {
+            children[ 1 ].inst->get_bytes( children[ 1 ].nout, dst, beg_dst + dst_off - beg_src, 0, len_ssp, msk );
+            children[ 0 ].inst->get_bytes( children[ 0 ].nout, dst, beg_dst, beg_src, len, msk );
+        }
+    } else if ( beg_src < end_ssp ) { // children[ 1 ] and...
+        if ( end_src <= end_ssp ) {
+            children[ 1 ].inst->get_bytes( children[ 1 ].nout, dst, beg_dst, beg_src - dst_off, len, msk );
+        } else {
+            children[ 1 ].inst->get_bytes( children[ 1 ].nout, dst, beg_dst, beg_src - dst_off, end_ssp - beg_src, msk );
+            children[ 0 ].inst->get_bytes( children[ 0 ].nout, dst, beg_dst, beg_src, len, msk );
+        }
+    } else { // right part of children[ 0 ]
+        children[ 0 ].inst->get_bytes( children[ 0 ].nout, dst, beg_dst, beg_src, len, msk );
+    }
 }
 
 int MemcpyKV::inp_corr( int nout ) const {

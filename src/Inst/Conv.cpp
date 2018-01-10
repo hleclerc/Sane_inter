@@ -9,7 +9,7 @@ void Conv::write_dot( std::ostream &os ) const {
     os << "Conv[" << *target_type << "]";
 }
 
-void Conv::get_bytes( SI32 nout, void *dst, PI32 beg_dst, PI32 beg_src, PI32 len, void *msk ) const {
+void Conv::get_bytes( int nout, void *dst, int beg_dst, int beg_src, int len, void *msk ) const {
     TODO;
 }
 

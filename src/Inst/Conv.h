@@ -10,7 +10,7 @@ public:
     Conv( const Value &orig, Type *target_type );
 
     virtual void write_dot( std::ostream &os ) const override;
-    virtual void get_bytes( SI32 nout, void *dst, PI32 beg_dst, PI32 beg_src, PI32 len, void *msk ) const override;
+    virtual void get_bytes( int nout, void *dst, int beg_dst, int beg_src, int len, void *msk ) const override;
 
     Type        *target_type;
 };

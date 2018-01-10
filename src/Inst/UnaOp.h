@@ -1,21 +1,43 @@
 #pragma once
 
-#include "../Value.h"
+#include "../Codegen/Prio.h"
+#include "Clonable.h"
+#include "../gvm.h"
 
 /**
 */
 template<class Op>
-class UnaOp : public Inst {
+class UnaOp : public Clonable<UnaOp<Op>> {
 public:
     UnaOp( const Value &a ){
-        add_child( a );
+        this->add_child( a );
+    }
+    UnaOp( AttrClone, const UnaOp *orig ) {
     }
 
     virtual void write_dot( std::ostream &os ) const override {
-        os << "pouet";
+        os << Op::name();
+    }
+
+    virtual int nb_outputs() const override {
+        return 1;
+    }
+
+    virtual Type *out_type( int nout ) const override {
+        return Op::type( this->children[ 0 ].type );
     }
 };
 
-Value make_neg        ( const Value &a );
-Value make_not_boolean( const Value &a );
-Value make_not_bitwise( const Value &a );
+#define DECL_UNA_OP( NAME, PRIO, STR, TYPE ) \
+    Value make_##NAME( const Value &a ); \
+    struct NAME { \
+        enum { prio = PRIO }; \
+        static const char *str () { return STR; } \
+        static const char *name() { return #NAME; } \
+        static Value       make( const Value &a ) { return make_##NAME( a ); } \
+        static Type       *type( Type *a ) { return TYPE; } \
+    }
+
+DECL_UNA_OP( Neg        , PRIO_Unary_negation, "-", a );
+DECL_UNA_OP( Not_logical, PRIO_Logical_not   , "!", gvm->type_Bool );
+DECL_UNA_OP( Not_bitwise, PRIO_Logical_not   , "~", a );

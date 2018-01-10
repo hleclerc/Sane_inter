@@ -31,10 +31,9 @@ int main( int argc, char **argv ) {
     // code generation
     Codegen_C cg;
     gvm->codegen( cg );
-    std::cout << cg.code();
 
     // compilation
     std::ofstream fout( "res.cpp" );
     fout << cg.code() << std::flush;
-    return system( "g++ -o res res.cpp && ./res" );
+    return system( "cat res.cpp && g++ -o res res.cpp && ./res" );
 }

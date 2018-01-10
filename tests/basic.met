@@ -4,6 +4,6 @@ class MyStruct
     b := 15
 
 p := MyStruct()
-stdout << p.a
+stdout << p.a + __primitive_rand()
 
 # __primitive_ct_display_graph()

@@ -19,32 +19,32 @@ Cst::Cst( Type *type, int size, void *val, void *kno ) : type( type ), val( size
 Cst::Cst( AttrClone, const Cst *cst ) : type( cst->type ), val( cst->val ), kno( cst->kno ) {
 }
 
-void Cst::write_inline_code( StreamPrio &ss, Codegen &cg, int nout, Type *type, int offset ) {
-    TODO;
+void Cst::write_inline_code( StreamPrio &ss, Codegen &cg ) {
+    if ( ! kno.all_false() )
+        type->write_cst( ss.stream, val.data, 0, true );
+    else
+        ss << "{}";
 }
 
 void Cst::write_to_stream( std::ostream &os, SI32 nout, Type *type, int offset ) const {
     type->write_cst( os, val.data + offset / 8, offset % 8 );
 }
 
-void Cst::write_code( StreamSep &ss, Codegen &cg ) {
-    ss.write_beg() << cg.repr( type ) << " " << *cg.reg( this, type, 0 );
-    if ( ! kno.all_false() )
-        type->write_cst( *ss, val.data, 0, true );
-    ss.write_end( ";" );
-}
-
 void Cst::write_dot( std::ostream &os ) const {
     type->write_cst( os, val.data, 0 );
 }
 
-void Cst::get_bytes( SI32 nout, void *dst, PI32 beg_dst, PI32 beg_src, PI32 len, void *msk ) const {
-    if ( beg_src >= val.size )
+void Cst::get_bytes( int nout, void *dst, int beg_dst, int beg_src, int len, void *msk ) const {
+    if ( PI32( beg_src ) >= val.size )
         return;
-    if ( beg_src + len > val.size )
+    if ( PI32( beg_src + len ) > val.size )
         len = val.size - beg_src;
     memcpy_bit( dst, beg_dst, val.data, beg_src, len, msk );
     memset_bit( msk, beg_dst, false, len );
+}
+
+Type *Cst::out_type( int nout ) const {
+    return type;
 }
 
 int Cst::nb_outputs() const {

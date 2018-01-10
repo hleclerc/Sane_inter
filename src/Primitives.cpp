@@ -15,6 +15,7 @@
 #include "Inst/BinOp.h"
 #include "Inst/UnaOp.h"
 #include "Inst/Conv.h"
+#include "Inst/Rand.h"
 #include "Inst/Cst.h"
 #include "Primitives.h"
 #include "Variable.h"
@@ -94,9 +95,9 @@ REG_PRIMITIVE_TYPE( ct_info ) {
             return gvm->add_error( "__primitive_" #NAME " expects exactly 1 argument" ); \
         return make_##NAME( args[ 0 ].get() ); \
     }
-REG_PRIMITIVE_TYPE_UNA_OP( neg         )
-REG_PRIMITIVE_TYPE_UNA_OP( not_boolean )
-REG_PRIMITIVE_TYPE_UNA_OP( not_bitwise )
+REG_PRIMITIVE_TYPE_UNA_OP( Neg         )
+REG_PRIMITIVE_TYPE_UNA_OP( Not_logical )
+REG_PRIMITIVE_TYPE_UNA_OP( Not_bitwise )
 
 #define REG_PRIMITIVE_TYPE_BIN_OP( NAME ) \
     REG_PRIMITIVE_TYPE( NAME ) { \
@@ -104,23 +105,23 @@ REG_PRIMITIVE_TYPE_UNA_OP( not_bitwise )
             return gvm->add_error( "__primitive_" #NAME " expects exactly 2 argument" ); \
         return make_##NAME( args[ 0 ].get(), args[ 1 ].get() ); \
     }
-REG_PRIMITIVE_TYPE_BIN_OP( add         )
-REG_PRIMITIVE_TYPE_BIN_OP( sub         )
-REG_PRIMITIVE_TYPE_BIN_OP( mul         )
-REG_PRIMITIVE_TYPE_BIN_OP( mod         )
-REG_PRIMITIVE_TYPE_BIN_OP( div         )
-REG_PRIMITIVE_TYPE_BIN_OP( div_int     )
-REG_PRIMITIVE_TYPE_BIN_OP( or_bitwise  )
-REG_PRIMITIVE_TYPE_BIN_OP( xor_bitwise )
-REG_PRIMITIVE_TYPE_BIN_OP( and_bitwise )
-REG_PRIMITIVE_TYPE_BIN_OP( shift_right )
-REG_PRIMITIVE_TYPE_BIN_OP( shift_left  )
-REG_PRIMITIVE_TYPE_BIN_OP( inf         )
-REG_PRIMITIVE_TYPE_BIN_OP( sup         )
-REG_PRIMITIVE_TYPE_BIN_OP( inf_equ     )
-REG_PRIMITIVE_TYPE_BIN_OP( sup_equ     )
-REG_PRIMITIVE_TYPE_BIN_OP( not_equ     )
-REG_PRIMITIVE_TYPE_BIN_OP( equ         )
+REG_PRIMITIVE_TYPE_BIN_OP( Add         )
+REG_PRIMITIVE_TYPE_BIN_OP( Sub         )
+REG_PRIMITIVE_TYPE_BIN_OP( Mul         )
+REG_PRIMITIVE_TYPE_BIN_OP( Mod         )
+REG_PRIMITIVE_TYPE_BIN_OP( Div         )
+REG_PRIMITIVE_TYPE_BIN_OP( Div_int     )
+REG_PRIMITIVE_TYPE_BIN_OP( Or_bitwise  )
+REG_PRIMITIVE_TYPE_BIN_OP( Xor_bitwise )
+REG_PRIMITIVE_TYPE_BIN_OP( And_bitwise )
+REG_PRIMITIVE_TYPE_BIN_OP( Shift_right )
+REG_PRIMITIVE_TYPE_BIN_OP( Shift_left  )
+REG_PRIMITIVE_TYPE_BIN_OP( Inf         )
+REG_PRIMITIVE_TYPE_BIN_OP( Sup         )
+REG_PRIMITIVE_TYPE_BIN_OP( Inf_equ     )
+REG_PRIMITIVE_TYPE_BIN_OP( Sup_equ     )
+REG_PRIMITIVE_TYPE_BIN_OP( Not_equ     )
+REG_PRIMITIVE_TYPE_BIN_OP( Equ         )
 
 
 //REG_PRIMITIVE_TYPE( add_AT ) {
@@ -434,6 +435,10 @@ REG_PRIMITIVE_TYPE( write_fd ) {
 REG_PRIMITIVE_TYPE( ct_display_graph ) {
     gvm->display_graph();
     return gvm->ref_void;
+}
+
+REG_PRIMITIVE_TYPE( rand ) {
+    return make_Rand( gvm->type_SI32 );
 }
 
 //REG_PRIMITIVE_TYPE( convert_String ) {

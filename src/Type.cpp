@@ -129,6 +129,10 @@ Variable Type::apply( Variable &self, bool want_ret, const Vec<Variable> &args, 
     TODO; return {};
 }
 
+int Type::size() const {
+    return content.data.size;
+}
+
 int Type::is_signed() const {
     return -1;
 }

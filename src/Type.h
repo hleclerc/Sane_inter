@@ -40,6 +40,7 @@ public:
     virtual Variable      apply                      ( Variable &self, bool want_ret, const Vec<Variable> &args, const Vec<RcString> &names, const Variable &with_self, ApplyFlags apply_flags = ApplyFlags::NONE );
 
     //
+    int                   size                       () const;
     virtual int           is_signed                  () const;
     virtual int           mantissa_len               () const;
     virtual int           exponent_len               () const;

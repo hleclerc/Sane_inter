@@ -14,10 +14,10 @@ public:
     virtual void write_dot( std::ostream &os ) const override {
 
     }
-    virtual void get_bytes( SI32 nout, void *dst, PI32 beg_dst, PI32 beg_src, PI32 len, void *msk ) const override {
-        if ( beg_src >= 8 * sizeof( data ) )
+    virtual void get_bytes( int nout, void *dst, int beg_dst, int beg_src, int len, void *msk ) const override {
+        if ( PI32( beg_src ) >= 8 * sizeof( data ) )
             return;
-        if ( beg_src + len > 8 * sizeof( data ) )
+        if ( PI32( beg_src ) + len > 8 * sizeof( data ) )
             len = 8 * sizeof( data ) - beg_src;
         memcpy_bit( dst, beg_dst, &data, beg_src, len, msk );
         memset_bit( msk, beg_dst, false, len );
