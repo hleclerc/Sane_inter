@@ -27,7 +27,10 @@ void Cst::write_inline_code( StreamPrio &ss, Codegen &cg ) {
 }
 
 void Cst::write_to_stream( std::ostream &os, SI32 nout, Type *type, int offset ) const {
-    type->write_cst( os, val.data + offset / 8, offset % 8 );
+    if ( type )
+        type->write_cst( os, val.data + offset / 8, offset % 8 );
+    else
+        this->type->write_cst( os, val.data, 0 );
 }
 
 void Cst::write_dot( std::ostream &os ) const {

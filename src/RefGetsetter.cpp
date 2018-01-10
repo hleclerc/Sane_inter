@@ -37,6 +37,6 @@ Value RefGetsetter::get() const {
     return variable().get();
 }
 
-void RefGetsetter::set( const Value &val, SI32 offset ) {
-    variable().set( val, offset );
+void RefGetsetter::set( const Value &val, int cst ) {
+    variable().set( val, cst );
 }

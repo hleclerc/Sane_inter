@@ -549,40 +549,16 @@ Variable AstVisitorVm::on_if( RcString cond, const Vec<RcString> &ok ) {
 }
 
 Variable AstVisitorVm::on_if_else( RcString cond, const Vec<RcString> &ok, const Vec<RcString> &ko ) {
-    Variable cond_var = gvm->visit( names, cond, true );
+    Scope _scope( Scope::ScopeType::BLOCK );
+    gvm->if_else( gvm->visit( names, cond, true ), [&]() {
+        Scope _scope( Scope::ScopeType::IF_EXE );
+        gvm->visit( names, ok, false );
+    }, [&]() {
+        Scope _scope( Scope::ScopeType::IF_EXE );
+        gvm->visit( names, ko, false );
+    } );
 
-    if ( cond_var.is_true() ) {
-        Scope new_scope( Scope::ScopeType::IF_EXE );
-        return gvm->visit( names, ok, want_ret );
-    }
-
-    if ( cond_var.is_false() ) {
-        Scope new_scope( Scope::ScopeType::IF_EXE );
-        return gvm->visit( names, ko, want_ret );
-    }
-
-    P( cond_var );
-    P( cond_var.get() );
-    TODO; return {};
-//    Scope cond_scope( Scope::Scope_type::BLOCK, scope );
-
-//    Variable cond_var = cond_scope.visit( names, cond, true ).ugs( scope );
-//    if ( cond_var.type != cond_scope.vm->type_Bool ) {
-//        Variable res = cond_scope.find_variable( "Bool" ).apply( &cond_scope, true, cond_var ).ugs( &cond_scope );
-//        cond_var = res;
-//        if ( cond_var.type != cond_scope.vm->type_Bool ) {
-//            if ( ! cond_var.error() )
-//                cond_scope.add_error( "conv to Bool should give a Bool" );
-//            return ret_or_dec_ref( vm->ref_error );
-//        }
-//    }
-
-//    Scope new_scope( Scope::Scope_type::IF_EXE, &cond_scope );
-////    static int cpt = 0;
-////    if( ++cpt == 16 )
-////        scope->add_error("pouet");
-////    P( cond_var );
-//    ret_or_dec_ref( new_scope.visit( names, cond_var.is_true( &new_scope ) ? ok : ko, want_ret ) );
+    return gvm->ref_void;
 }
 
 Variable AstVisitorVm::on_while( RcString cond, const Vec<RcString> &ok ) {
@@ -924,7 +900,8 @@ void AstVisitorVm::init_of( RcString name, const Vec<Variable> &args, const Vec<
 
 Variable AstVisitorVm::xxxxof( RcString value, int w, bool in_bytes ) {
     Type *type = 0;
-    Interceptor inter( [&]() {
+    Interceptor inter;
+    inter.run( [&]() {
         Variable res = gvm->visit( names, value, true );
         type = res.type;
 

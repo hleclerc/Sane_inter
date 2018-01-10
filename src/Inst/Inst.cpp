@@ -12,19 +12,48 @@ Inst::Inst() : op_id( 0 ) {
 }
 
 Inst::~Inst() {
-    for( size_t ninp = 0; ninp < children.size(); ++ninp )
-        children[ ninp ].inst->parents.remove_first( Parent{ this, ssize_t( ninp ) } );
-    for( size_t ndep = 0; ndep < deps.size(); ++ndep )
-        deps[ ndep ]->parents.remove_first( Parent{ this, ssize_t( - 1 - ndep ) } );
+    for( int ninp = 0; ninp < (int)children.size(); ++ninp )
+        children[ ninp ].inst->parents.remove_first( Parent{ this, ninp } );
+    for( int ndep = 0; ndep < (int)deps.size(); ++ndep )
+        deps[ ndep ]->parents.remove_first( Parent{ this, - 1 - ndep } );
 }
 
 void Inst::add_child( const Value &ch ) {
-    ch.inst->parents << Parent{ this, ssize_t( children.size() ) };
+    ch.inst->parents << Parent{ this, int( children.size() ) };
     children << ch;
 }
 
+void Inst::mod_child( int ninp, const Value &ch ) {
+    children[ ninp ].inst->parents.remove_first( Parent{ this, ninp } );
+    ch.inst->parents << Parent{ this, ninp };
+    children[ ninp ] = ch;
+}
+
+void Inst::rem_child( int ninp ) {
+    // remove link of parent of child ninp
+    children[ ninp ].inst->parents.remove_first( Parent{ this, ninp } );
+
+    // offset ninp in parents of children with index > ninp
+    for( int i = children.size(); --i > ninp; )
+        --children[ i ].inst->parents.find( Parent{ this, i } )->ninp;
+
+    // remove from children list
+    children.remove( ninp );
+}
+
+void Inst::rem_out( int nout, bool check_if_unused ) {
+    for( Parent &p : parents ) {
+        if ( check_if_unused )
+            ASSERT( p.inst->children[ p.ninp ].nout != nout, "..." );
+        if ( p.inst->children[ p.ninp ].nout < 0 )
+            TODO;
+        if ( p.inst->children[ p.ninp ].nout > nout )
+            --p.inst->children[ p.ninp ].nout;
+    }
+}
+
 void Inst::add_dep( const RcPtr<Inst> &inst ) {
-    inst->parents << Parent{ this, ssize_t( - 1 - deps.size() ) };
+    inst->parents << Parent{ this, int( - 1 - deps.size() ) };
     deps << inst;
 }
 
@@ -36,6 +65,13 @@ bool Inst::all_children_with_op_id( size_t oi ) const {
         if ( dep->op_id < oi )
             return false;
     return true;
+}
+
+int Inst::nb_parents_on_nout( int nout ) const {
+    size_t res = 0;
+    for( const Parent &p : parents )
+        res += p.ninp >= 0 && p.inst->children[ p.ninp ].nout == nout;
+    return res;
 }
 
 int Inst::inp_corr( int nout ) const {
@@ -224,6 +260,11 @@ Inst *Inst::parent_out_inst() const {
     TODO;
     return 0;
 }
+
+bool Inst::simplify_for_cg( Codegen &cg ) {
+    return false;
+}
+
 
 void Inst::get_out_insts( Deque<Inst *> &outs ) {
 }

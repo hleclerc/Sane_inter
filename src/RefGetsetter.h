@@ -14,7 +14,7 @@ public:
     virtual bool     is_shared               () const override;
     Variable         variable                () const;
     virtual Value    get                     () const override;
-    virtual void     set                     ( const Value &val, SI32 offset ) override;
+    virtual void     set                     ( const Value &val, int cst = 0 ) override;
 
     Variable         g;
     Variable         s;

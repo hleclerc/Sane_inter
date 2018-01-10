@@ -15,16 +15,20 @@ class Type;
 */
 class Inst : public RcObj {
 public:
-    struct Parent { bool operator==( const Parent &p ) const { return inst == p.inst && ninp == p.ninp; } Inst *inst; ssize_t ninp; };
-    struct Inp { operator bool() const { return inst; } RcPtr<Inst> inst; size_t ninp; };
+    struct Parent { bool operator==( const Parent &p ) const { return inst == p.inst && ninp == p.ninp; } Inst *inst; int ninp; };
+    struct Inp { operator bool() const { return inst; } RcPtr<Inst> inst; int ninp; };
 
     Inst();
     virtual ~Inst();
 
     void             add_child              ( const Value &ch );
+    void             mod_child              ( int ninp, const Value &ch );
+    void             rem_child              ( int ninp );
+    void             rem_out                ( int nout, bool check_if_unused = true ); ///< shifts outputs > nout
     void             add_dep                ( const RcPtr<Inst> &inst );
 
     bool             all_children_with_op_id( size_t oi ) const;
+    int              nb_parents_on_nout     ( int nout ) const;
     virtual int      nb_outputs             () const;
     virtual int      inp_corr               ( int nout ) const;
     virtual Inp      val_corr               ( int nout ) const;
@@ -42,6 +46,7 @@ public:
 
     // instructions with sub graphs
     virtual Inst    *parent_out_inst        () const;
+    virtual bool     simplify_for_cg        ( Codegen &cg );
     virtual void     get_out_insts          ( Deque<Inst *> &outs );
     virtual void     externalize            ( Inst *inst, size_t ninp );
 

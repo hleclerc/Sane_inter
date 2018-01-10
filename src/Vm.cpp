@@ -6,6 +6,7 @@
 #include "Ast/AstMaker.h"
 
 #include "AstVisitorVm.h"
+#include "Interceptor.h"
 #include "Primitives.h"
 #include "RefLeaf.h"
 #include "Import.h"
@@ -14,6 +15,7 @@
 #include "Inst/KnownVal.h"
 #include "Inst/Void.h"
 #include "Inst/Cst.h"
+#include "Inst/If.h"
 
 
 #include "TypeCallableWithSelf.h"
@@ -288,6 +290,153 @@ void Vm::codegen( Codegen &cg ) {
         targets << mfd.second.mod_inst.ptr();
 
     cg.gen_code_for( targets );
+}
+
+void Vm::if_else( const Variable &cond_var, const std::function<void ()> &ok, const std::function<void ()> &ko ) {
+    // conversion to bool
+    if ( cond_var.type != type_Bool ) {
+        Variable n_cond_var = scope->find_variable( "Bool" ).apply( true, cond_var );
+        if ( n_cond_var.type != type_Bool ) {
+            if ( ! n_cond_var.error() )
+                add_error( "conv to Bool should give a Bool" );
+            return;
+        }
+        return if_else( n_cond_var, ok, ko );
+    }
+
+    // is value of cond is known
+    if ( cond_var.is_true() )
+        return ok();
+    if ( cond_var.is_false() )
+        return ko();
+
+    // else, execute ok and ko codes in sandboxes
+    Interceptor inter_ok;
+    inter_ok.run( ok );
+
+    Interceptor inter_ko;
+    inter_ko.run( ko );
+
+    //
+    RcPtr<IfInp> inp_ok = new IfInp;
+    RcPtr<IfInp> inp_ko = new IfInp;
+
+    Vec<Value> out_ok, out_ko;
+    for( auto &p : inter_ok.mod_refs ) {
+        out_ok << p.second.n;
+        auto iter_out_ko = inter_ko.mod_refs.find( p.first );
+        if ( iter_out_ko == inter_ko.mod_refs.end() )
+            out_ko.push_back( p.second.o );
+        else
+            out_ko.push_back( iter_out_ko->second.n );
+    }
+
+    for( auto &p : inter_ko.mod_refs ) {
+        if ( inter_ok.mod_refs.count( p.first ) )
+            continue;
+        int num = out_ok.size();
+        out_ok.push_back( Value( inp_ok, num, p.second.o.type ) );
+        out_ko.push_back( p.second.n );
+    }
+
+    // modify variables to take if outputs (we take inp_iv because int_call_s may have modified the variables)
+    Vec<Value> inp_if_inst;
+    inp_if_inst << cond_var.get();
+    RcPtr<If> inst_if = new If( inp_if_inst, inp_ok, new IfOut( out_ok ), inp_ko, new IfOut( out_ko ) );
+
+    int num = 0;
+    for( auto &p : inter_ok.mod_refs )
+        p.first->set( Value{ inst_if, num++, p.second.o.type }, -1 );
+    for( auto &p : inter_ko.mod_refs )
+        if ( inter_ok.mod_refs.count( p.first ) == 0 )
+            p.first->set( Value{ inst_if, num++, p.second.o.type }, -1 );
+
+    // update RefLeaf::breaks
+    //    if ( breaks_ok.size() || breaks_ko.size() )
+    //        ++Ref::inter_date;
+    //    for( const Ref::Break &br : breaks_ok )
+    //        Ref::breaks << Ref::Break{ br.nb_l, Ref::inter_date, make_And_log( br.cond, cond_val ) };
+    //    for( const Ref::Break &br : breaks_ko )
+    //        Ref::breaks << Ref::Break{ br.nb_l, Ref::inter_date, make_And_log( br.cond, make_Not_log( cond_val ) ) };
+
+    // externalize variables in common
+    externalize_common_insts( inst_if.ptr(), { (Inst *)inst_if->out_ok.ptr(), (Inst *)inst_if->out_ko.ptr() }, { (Inst *)inst_if->inp_ok.ptr(), (Inst *)inst_if->inp_ko.ptr() } );
+}
+
+void Vm::externalize_common_insts( Inst *main_inst, const Vec<Inst *> &inst_out, const Vec<Inst *> &inst_inp ) {
+    // first traversal: mark op_id
+    Inst::dfs( inst_out[ 0 ], []( Inst * ) {} );
+
+    // seconde ones: get instructions in common
+    Vec<Inst *> res;
+    size_t init_op_id = Inst::cur_op_id;
+    for( size_t i = 1; i < inst_out.size(); ++i ) {
+        ++Inst::cur_op_id;
+        insts_to_externalize_rec( res, inst_out[ i ], init_op_id );
+    }
+
+    // common inst cannot depend on an inst_inp
+    for( Inst *inst : res )
+        inst->op_id = init_op_id - 1;
+
+    // replace parents from inst_a or inst_b by if_inp and if inp
+    for( Inst *inst : res ) {
+        for( const Inst::Parent p : inst->parents ) {
+            if ( p.inst->op_id < init_op_id )
+                continue;
+            if ( p.ninp < 0 )
+                TODO;
+
+            // num input of If
+            int ind, nout = p.inst->children[ p.ninp ].nout;
+            for( size_t i = 0; ; ++i ) {
+                if ( i == main_inst->children.size() ) {
+                    ind = main_inst->children.size();
+                    main_inst->add_child( Value( inst, nout, inst->out_type( nout ) ) );
+                    break;
+                }
+                if ( main_inst->children[ i ].inst == inst && main_inst->children[ i ].nout == nout ) {
+                    ind = i;
+                    break;
+                }
+            }
+
+            // replace (once)
+            p.inst->mod_child( p.ninp, Value( inst_inp[ p.inst->op_id - init_op_id ], ind, p.inst->children[ p.ninp ].type, p.inst->children[ p.ninp ].offset ) );
+            p.inst->op_id = init_op_id - 1;
+        }
+    }
+    //    // replace
+
+    //    // inst->mod_child( ninp, Value( if_inp, ind ) );
+
+    //    //        for( size_t ninp = 0; ninp < inst->children.size(); ++ninp ) {
+    //    //            Value &ch = inst->children[ ninp ];
+    //    //            if ( ch.inst->op_id == init_op_id ) {
+    //    //                int ind = inst_if->children.index_first( ch );
+    //    //                if ( ind >= 0 ) {
+    //    //                } else {
+    //    //                    if_inst->add_child( ch );
+    //    //                    inst->mod_child( ninp, Value( if_inp, if_inst->children.size() - 1 ) );
+    //    //                }
+    //    //            }
+    //    //        }
+}
+
+void Vm::insts_to_externalize_rec( Vec<Inst *> &res, Inst *inst, size_t init_op_id ) {
+    if ( inst->op_id == Inst::cur_op_id )
+        return;
+    if ( inst->op_id >= init_op_id ) {
+        inst->op_id = Inst::cur_op_id;
+        res << inst;
+        return;
+    }
+    inst->op_id = Inst::cur_op_id;
+
+    for( const Value &val : inst->children )
+        insts_to_externalize_rec( res, val.inst.ptr(), init_op_id );
+    for( const RcPtr<Inst> &inst : inst->deps )
+        insts_to_externalize_rec( res, inst.ptr(), init_op_id );
 }
 
 Variable Vm::visit( const RcString &names, const RcString &code, bool want_ret ) {

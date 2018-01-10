@@ -14,6 +14,7 @@ public:
 
     Value      &operator=      ( const Value &value );
     bool        operator<      ( const Value &value ) const;
+    bool        operator==     ( const Value &value ) const;
 
     operator    bool           () const { return inst; }
 

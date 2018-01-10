@@ -44,7 +44,7 @@ public:
 
     bool        get_value           ( SI32 &val ) const;
 
-    void        set                 ( const Value &val, SI32 additionnal_offset = 0 );
+    void        set                 ( const Value &src_val, SI32 additionnal_offset = 0, int cst = 0 );
 
     Variable    sub_part            ( Type *new_type, SI32 add_off ) const;
 

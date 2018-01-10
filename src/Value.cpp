@@ -19,6 +19,10 @@ bool Value::operator<( const Value &that ) const {
     return std::tie( inst, type, nout, offset ) < std::tie( that.inst, that.type, that.nout, that.offset );
 }
 
+bool Value::operator==( const Value &that ) const {
+    return std::tie( inst, type, nout, offset ) == std::tie( that.inst, that.type, that.nout, that.offset );
+}
+
 void Value::write_to_stream( std::ostream &os ) const {
     if ( inst )
         inst->write_to_stream( os, nout, type, offset );

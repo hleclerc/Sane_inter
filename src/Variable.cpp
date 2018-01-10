@@ -1,4 +1,5 @@
 #include "System/BoolVec.h"
+#include "Inst/MemcpyKV.h"
 #include "RefGetsetter.h"
 #include "Variable.h"
 #include "RefLeaf.h"
@@ -189,12 +190,13 @@ bool Variable::get_value( SI32 &val ) const {
     return gvm->scope->find_variable( "SI32" ).get_value( val );
 }
 
-void Variable::set( const Value &val, SI32 additionnal_offset ) {
+void Variable::set( const Value &src_val, SI32 additionnal_offset, int cst ) {
     ASSERT( ref, "..." );
     if ( flags & Flags::CONST )
         gvm->add_error( "Const variable, should not be modified" );
-    else
-        ref->set( val, offset + additionnal_offset );
+    else {
+        ref->set( make_MemcpyKV( ref->get(), src_val, offset + additionnal_offset ), cst );
+    }
 }
 
 Variable Variable::sub_part( Type *new_type, SI32 add_off ) const {

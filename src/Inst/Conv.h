@@ -1,16 +1,20 @@
 #pragma once
 
 #include "../System/BoolVec.h"
-#include "../Value.h"
+#include "Clonable.h"
 
 /**
 */
-class Conv : public Inst {
+class Conv : public Clonable<Conv> {
 public:
     Conv( const Value &orig, Type *target_type );
+    Conv( AttrClone, const Conv *orig );
 
-    virtual void write_dot( std::ostream &os ) const override;
-    virtual void get_bytes( int nout, void *dst, int beg_dst, int beg_src, int len, void *msk ) const override;
+    virtual int   nb_outputs() const override;
+    virtual void  write_dot ( std::ostream &os ) const override;
+    virtual Type *out_type  ( int nout ) const override;
+
+    // virtual void get_bytes( int nout, void *dst, int beg_dst, int beg_src, int len, void *msk ) const override;
 
     Type        *target_type;
 };

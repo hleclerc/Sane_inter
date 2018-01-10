@@ -14,6 +14,6 @@ public:
     virtual void     write_to_stream         ( std::ostream &os ) const = 0;
     virtual bool     is_shared               () const;
     virtual Value    get                     () const = 0;
-    virtual void     set                     ( const Value &val, SI32 offset ) = 0;
+    virtual void     set                     ( const Value &val, int cst = 0 ) = 0;
 };
 

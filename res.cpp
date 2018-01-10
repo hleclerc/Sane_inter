@@ -18,10 +18,6 @@ typedef char        Char;
 struct Stream {
     SI32 fd;
 };
-struct MyStruct {
-    SI32 a;
-    SI32 b;
-};
 void write_fd( int fd, const char *content, size_t len ) {
     write( fd, content, len );
 }
@@ -55,12 +51,6 @@ int main( int argc, char **argv ) {
     Stream R0 = {};
     SI32 R1 = {0};
     R0.fd = R1;
-    MyStruct R2 = {};
-    SI32 R3 = {4005};
-    R2.a = R3;
-    SI32 R4 = {15};
-    R2.b = R4;
-    SI32 R5 = rand();
-    SI32 R6 = R2.a + R5;
-    write_fd(R0.fd,R6);
+    SI32 R2 = {0};
+    write_fd(R0.fd,R2);
 }

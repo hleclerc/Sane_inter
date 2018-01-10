@@ -105,7 +105,7 @@ void Codegen_C::write_repr( std::ostream &os, Type *type ) {
 void Codegen_C::write_repr( std::ostream &os, const Value &value, int prio ) {
     Type *reg_type = 0;
     std::function<void(StreamPrio &)> reg_writer;
-    if ( Reg *reg = value.inst->cd.regs.secure_get( value.nout ) ) {
+    if ( Reg *reg = value.inst->cd.regs.secure_get( value.nout, 0 ) ) {
         reg_type = reg->type;
         reg_writer = [reg]( StreamPrio &ss ) { ss << *reg; };
     } else {

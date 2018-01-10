@@ -2,21 +2,26 @@
 
 #include "System/EnumFlags.h"
 #include "Ref.h"
+class Interceptor;
 
 /**
 */
 class RefLeaf : public Ref {
 public:
-    enum class Flags: PI32 { NONE = 0, NOT_CONSTRUCTED = 1 };
+    enum class Flags: PI32 { NONE = 0, NOT_CONSTRUCTED = 1, CONST = 2 };
 
     RefLeaf( const Value &value, Flags flags = Flags::NONE );
 
-    virtual void  write_to_stream( std::ostream &os ) const override;
-    virtual bool  is_shared      () const override;
-    virtual Value get            () const override;
-    virtual void  set            ( const Value &new_val, SI32 offset ) override;
+    virtual void        write_to_stream( std::ostream &os ) const override;
+    virtual bool        is_shared      () const override;
+    virtual Value       get            () const override;
+    virtual void        set            ( const Value &new_val, int cst = 0 ) override;
 
-    Value         value;
-    Flags         flags;
+    PI64                creation_inter_date; ///< value of inter_date during creation
+    Value               value;
+    Flags               flags;
+
+    static Interceptor *interceptor;
+    static PI64         inter_date;
 };
 ENUM_FLAGS( RefLeaf::Flags )
