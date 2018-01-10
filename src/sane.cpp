@@ -33,5 +33,8 @@ int main( int argc, char **argv ) {
     gvm->codegen( cg );
     std::cout << cg.code();
 
-    return 0;
+    // compilation
+    std::ofstream fout( "res.cpp" );
+    fout << cg.code() << std::flush;
+    return system( "g++ -o res res.cpp && ./res" );
 }

@@ -1,6 +1,6 @@
 # ct_info 987
 class MyStruct
-    a := 10
+    a := 4005
     b := 15
 
 p := MyStruct()

@@ -14,24 +14,28 @@ public:
 
     Codegen_C();
 
-    virtual void       gen_code_for  ( const Vec<Inst *> &targets ) override;
-    virtual String     code          () override;
+    virtual void       gen_code_for       ( const Vec<Inst *> &targets ) override;
+    virtual String     code               () override;
 
-    virtual void       write_repr    ( std::ostream &os, Type *type ) override;
-    virtual void       write_repr    ( std::ostream &os, const Value &value, int prio ) override;
-    virtual Reg       *reg           ( Inst *inst, Type *type, int nout ) override;
+    virtual void       write_repr         ( std::ostream &os, Type *type ) override;
+    virtual void       write_repr         ( std::ostream &os, const Value &value, int prio ) override;
+    virtual Reg       *reg                ( Inst *inst, Type *type, int nout ) override;
 
-    virtual void       write_fd_repr ( std::ostream &os, Type *type ) override;
+    virtual String     write_func_write_fd( Type *type ) override;
+
 
 protected:
-    void               write_block   ( StreamSep &os, const Vec<Inst *> &out );
-    void               get_scheduling( Vec<Inst *> &sched, const Vec<Inst *> &out );
-    bool               write_repr_rec( std::ostream &os, Reg *reg, Inst *inst, Type *type, int offset, int prio, const String &attr );
+    void               write_block        ( StreamSep &os, const Vec<Inst *> &out );
+    void               get_scheduling     ( Vec<Inst *> &sched, const Vec<Inst *> &out );
+    bool               write_repr_rec     ( StreamPrio &os, const std::function<void(StreamPrio&)> &reg_writer, Type *reg_type, Type *tgt_type, int tgt_offset );
+    void               write_func_itoa    ();
+    void               add_include        ( const String &include );
 
     std::ostringstream declarations;
     std::ostringstream main_block;
     MTR                type_reprs;
     std::set<String>   decl_types;
     std::set<String>   decl_funcs;
+    Vec<String>        includes;
     int                nb_reg;
 };

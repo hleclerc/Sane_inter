@@ -129,6 +129,18 @@ Variable Type::apply( Variable &self, bool want_ret, const Vec<Variable> &args, 
     TODO; return {};
 }
 
+int Type::is_signed() const {
+    return -1;
+}
+
+int Type::mantissa_len() const {
+    return -1;
+}
+
+int Type::exponent_len() const {
+    return -1;
+}
+
 bool Type::error() const {
     return false;
 }

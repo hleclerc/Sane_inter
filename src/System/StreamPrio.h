@@ -3,35 +3,8 @@
 
 #pragma once
 
+#include <functional>
 #include "Stream.h"
-
-/**
-
-*/
-class StreamPrioRunner {
-public:
-    using TS = std::ostream;
-
-    StreamPrioRunner( TS &stream, bool close ) : stream( stream ), close( close ) {
-        if( close )
-            stream << "( ";
-    }
-
-    ~StreamPrioRunner() {
-        if ( close )
-            stream << " )";
-    }
-
-    template<class T>
-    StreamPrioRunner &operator<<( const T &val ) {
-        stream << val;
-        return *this;
-    }
-
-    TS  &stream;
-    bool close;
-};
-
 
 /**
 
@@ -40,10 +13,18 @@ class StreamPrio {
 public:
     using TS = std::ostream;
 
-    StreamPrio( TS &stream, int prio ) : stream( stream ), prio( prio ) {}
+    StreamPrio( TS &stream, int prio, bool close = false ) : stream( stream ), prio( prio ), close( close ) {
+        if ( close )
+            stream << "( ";
+    }
 
-    StreamPrioRunner operator()( int n_prio ) {
-        return { stream, prio < n_prio };
+    ~StreamPrio() {
+        if ( close )
+            stream << " )";
+    }
+
+    StreamPrio operator()( int n_prio ) {
+        return { stream, n_prio, prio < n_prio };
     }
 
     template<class T>
@@ -51,6 +32,12 @@ public:
         return stream << val;
     }
 
-    TS &stream;
-    int prio;
+    TS &operator<<( const std::function<void(StreamPrio &)> &func ) {
+        func( *this );
+        return stream;
+    }
+
+    TS  &stream;
+    int  prio;
+    bool close;
 };

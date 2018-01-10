@@ -11,13 +11,10 @@ WriteFd::WriteFd( AttrClone, const WriteFd * ) {
 
 void WriteFd::write_code( StreamSep &ss, Codegen &cg ) {
     ss.write_beg();
-    if ( children.size() == 2 ) {
-        cg.write_fd_repr( *ss, children[ 1 ].type );
-        *ss << "(" << cg.repr( children[ 0 ] ) << "," << cg.repr( children[ 1 ] ) << ")";
-    } else {
-        cg.write_fd_repr( *ss, 0 );
-        *ss << "(" << cg.repr( children[ 0 ] ) << "," << cg.repr( children[ 1 ] ) << "," << cg.repr( children[ 2 ] ) << ")";
-    }
+    if ( children.size() == 2 )
+        *ss << cg.write_func_write_fd( children[ 1 ].type ) << "(" << cg.repr( children[ 0 ] ) << "," << cg.repr( children[ 1 ] ) << ")";
+    else
+        *ss << cg.write_func_write_fd( 0 ) << "(" << cg.repr( children[ 0 ] ) << "," << cg.repr( children[ 1 ] ) << "," << cg.repr( children[ 2 ] ) << ")";
     ss.write_end( ";" );
 }
 

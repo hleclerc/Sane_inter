@@ -5,6 +5,7 @@
 #include "Codegen_C.h"
 #include "Reg.h"
 
+#include <cmath>
 #include <queue>
 
 struct CmpSchedInst {
@@ -16,9 +17,26 @@ struct CmpSchedInst {
 Codegen_C::Codegen_C() {
     nb_reg = 0;
 
+    // base arythmetic types
     #define BT( T ) type_reprs[ gvm->type_##T ] = #T;
     #include "../ArythmeticTypes.h"
     #undef BT
+
+    add_include( "<stdint.h>" );
+
+    declarations << "typedef float       FP32;\n";
+    declarations << "typedef double      FP64;\n";
+    declarations << "typedef long double FP80;\n";
+    declarations << "typedef bool        Bool;\n";
+    declarations << "typedef int8_t      SI8 ;\n";
+    declarations << "typedef int16_t     SI16;\n";
+    declarations << "typedef int32_t     SI32;\n";
+    declarations << "typedef int64_t     SI64;\n";
+    declarations << "typedef uint8_t     PI8 ;\n";
+    declarations << "typedef uint16_t    PI16;\n";
+    declarations << "typedef uint32_t    PI32;\n";
+    declarations << "typedef uint64_t    PI64;\n";
+    declarations << "typedef char        Char;\n";
 }
 
 void Codegen_C::gen_code_for( const Vec<Inst *> &targets ) {
@@ -33,10 +51,19 @@ void Codegen_C::gen_code_for( const Vec<Inst *> &targets ) {
 
 String Codegen_C::code() {
     String res;
+
+    // inludes
+    for( const String &include : includes  )
+        res += "#include " + include + "\n";
+    if ( res.size() )
+        res += "\n";
+
+    // declarations
     res += declarations.str();
     if ( res.size() )
         res += "\n";
 
+    // code
     res += "int main( int argc, char **argv ) {\n";
     res += main_block.str();
     res += "}\n";
@@ -75,10 +102,19 @@ void Codegen_C::write_repr( std::ostream &os, Type *type ) {
 }
 
 void Codegen_C::write_repr( std::ostream &os, const Value &value, int prio ) {
+    Type *reg_type = 0;
+    std::function<void(StreamPrio &)> reg_writer;
     if ( Reg *reg = value.inst->cd.regs.secure_get( value.nout ) ) {
-        write_repr_rec( os, reg, value.inst, value.type, value.offset, prio, "" );
-        return;
+        reg_type = reg->type;
+        reg_writer = [reg]( StreamPrio &ss ) { ss << *reg; };
+    } else {
+        TODO;
     }
+
+    StreamPrio ss( os, prio );
+    if ( write_repr_rec( ss, reg_writer, reg_type, value.type, value.offset ) )
+        return;
+
     P( value );
     TODO;
 }
@@ -91,14 +127,58 @@ Reg *Codegen_C::reg( Inst *inst, Type *type, int nout ) {
     return res;
 }
 
-void Codegen_C::write_fd_repr( std::ostream &os, Type *type ) {
+void Codegen_C::write_func_itoa() {
+    if ( decl_funcs.insert( "itoa" ).second == false )
+        return;
+    declarations << "template<class T>\n";
+    declarations << "char *itoa( char *buf, T content ) {\n";
+    declarations << "    if ( content == 0 ) {\n";
+    declarations << "        *( buf++ ) = '0';\n";
+    declarations << "        return buf;\n";
+    declarations << "    }\n";
+    declarations << "    if ( content < 0 ) {\n";
+    declarations << "        *( buf++ ) = '-';\n";
+    declarations << "        content = - content;\n";
+    declarations << "    }\n";
+    declarations << "    char *res = buf;\n";
+    declarations << "    while( content ) {\n";
+    declarations << "        *( res++ ) = '0' + content % 10;\n";
+    declarations << "        content /= 10;\n";
+    declarations << "    }\n";
+    declarations << "    for( char *fub = res, tmp; --fub > buf; ++buf ) {\n";
+    declarations << "        tmp = *fub; *fub = *buf; *buf = tmp;\n";
+    declarations << "    }\n";
+    declarations << "    return res;\n";
+    declarations << "}\n";
+}
+
+void Codegen_C::add_include( const String &include ) {
+    includes.push_back_unique( include );
+}
+
+String Codegen_C::write_func_write_fd( Type *type ) {
+    if ( decl_funcs.insert( type ? va_string( "write_fd:{}", *type ) : "write_fd" ).second == false )
+        return "write_fd";
+
     if ( type ) {
+        write_func_write_fd( 0 );
+        write_func_itoa();
+
         String type_name = to_string( repr( type ) );
         declarations << "void write_fd( int fd, const " << type_name << " &content ) {\n";
+        declarations << "    char buf[ " << type->is_signed() + std::ceil( type->mantissa_len() * log( 2 ) / log( 10 ) ) << " ];\n";
+        declarations << "    char *end = itoa( buf, content );\n";
+        declarations << "    write_fd( fd, buf, end - buf );\n";
+        declarations << "}\n";
+    } else {
+        add_include( "<unistd.h>" );
+
+        declarations << "void write_fd( int fd, const char *content, size_t len ) {\n";
+        declarations << "    write( fd, content, len );\n";
         declarations << "}\n";
     }
 
-    os << "write_fd";
+    return "write_fd";
 }
 
 void Codegen_C::write_block( StreamSep &os, const Vec<Inst *> &out ) {
@@ -133,4 +213,20 @@ void Codegen_C::get_scheduling( Vec<Inst *> &sched, const Vec<Inst *> &out ) {
             if ( p.inst->all_children_with_op_id( oi ) )
                 leaves.push( p.inst );
     }
+}
+
+bool Codegen_C::write_repr_rec( StreamPrio &ss, const std::function<void(StreamPrio&)> &reg_writer, Type *reg_type, Type *tgt_type, int tgt_offset ) {
+    if ( tgt_type == reg_type ) {
+        reg_writer( ss );
+        return true;
+    }
+
+    for( const TypeContent::Attribute *attr = reg_type->content.data.first_attribute; attr; attr = attr->next ) {
+        if ( tgt_offset < attr->off )
+            return false;
+        if ( write_repr_rec( ss, [attr,&reg_writer](StreamPrio &ss){ ss( PRIO_Member_selection ) << reg_writer << "." << attr->name; }, attr->type, tgt_type, tgt_offset - attr->off ) )
+            return true;
+    }
+
+    return false;
 }

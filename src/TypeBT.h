@@ -29,4 +29,19 @@ public:
     virtual bool primitive_number() const {
         return true;
     }
+
+    virtual int is_signed() const {
+        return std::is_signed<T>::value;
+    }
+
+    virtual int mantissa_len() const {
+        if ( std::is_integral<T>::value )
+            return 8 * sizeof( T ) - std::is_signed<T>::value;
+        TODO;
+        return -1;
+    }
+
+    virtual int exponent_len() const {
+        return -1;
+    }
 };
