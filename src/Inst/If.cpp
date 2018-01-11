@@ -66,6 +66,10 @@ If::If( const Vec<Value> &inp, RcPtr<IfInp> inp_ok, IfOut *out_ok, RcPtr<IfInp> 
 If::If( AttrClone, const If *a ) {
 }
 
+bool If::expects_a_reg_at( int ninp ) const {
+    return true;
+}
+
 void If::attr_clone( const If *a ) {
     inp_ok = static_cast<IfInp *>( a->inp_ok->clone() );
     inp_ko = static_cast<IfInp *>( a->inp_ko->clone() );
@@ -150,6 +154,10 @@ bool If::write_graph_rec( std::ostream &ss, std::set<const Inst *> &seen_insts, 
         ss << "  node_" << this << " -> node_" << out_ko.ptr() << " [color=blue,style=dotted,label=\"KO\"];\n";
         return true;
     }
+    return false;
+}
+
+bool If::can_be_inlined() const {
     return false;
 }
 

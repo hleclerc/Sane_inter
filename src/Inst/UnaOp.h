@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Codegen/Prio.h"
+#include "../Codegen/Codegen.h"
 #include "Clonable.h"
 #include "../gvm.h"
 
@@ -25,6 +25,10 @@ public:
 
     virtual Type *out_type( int nout ) const override {
         return Op::type( this->children[ 0 ].type );
+    }
+
+    virtual void write_inline_code( StreamPrio &ss, Codegen &cg, int nout, int flags ) override {
+        ss( Op::prio ) << Op::str() << " " << cg.repr( this->children[ 0 ], Op::prio );
     }
 };
 

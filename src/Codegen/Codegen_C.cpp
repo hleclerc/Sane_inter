@@ -102,14 +102,15 @@ void Codegen_C::write_repr( std::ostream &os, Type *type ) {
     os << iter->second;
 }
 
-void Codegen_C::write_repr( std::ostream &os, const Value &value, int prio ) {
+void Codegen_C::write_repr( std::ostream &os, const Value &value, int prio, int flags ) {
     Type *reg_type = 0;
     std::function<void(StreamPrio &)> reg_writer;
     if ( Reg *reg = value.inst->cd.out_regs.secure_get( value.nout, 0 ) ) {
         reg_type = reg->type;
         reg_writer = [reg]( StreamPrio &ss ) { ss << *reg; };
     } else {
-        TODO;
+        reg_type = value.inst->out_type( value.nout );
+        reg_writer = [&]( StreamPrio &ss ) { value.inst->write_inline_code( ss, *this, value.nout, flags ); };
     }
 
     StreamPrio ss( os, prio );
@@ -120,7 +121,7 @@ void Codegen_C::write_repr( std::ostream &os, const Value &value, int prio ) {
     TODO;
 }
 
-Reg *Codegen_C::reg( Inst *inst, Type *type, int nout ) {
+Reg *Codegen_C::new_reg_for( Inst *inst, Type *type, int nout ) {
     Reg *&res = inst->cd.out_regs.secure_get( nout, 0 );
     if ( ! res )
         res = new Reg( type, nb_reg++ );

@@ -24,6 +24,6 @@ Value make_Rand( Type *type ) {
     return { new Rand( type ), 0, type };
 }
 
-void Rand::write_inline_code( StreamPrio &ss, Codegen &cg, int flags ) {
+void Rand::write_inline_code( StreamPrio &ss, Codegen &cg, int nout, int flags ) {
     ss << "rand()";
 }

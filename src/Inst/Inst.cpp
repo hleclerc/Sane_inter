@@ -163,13 +163,17 @@ bool Inst::write_graph_rec( std::ostream &ss, std::set<const Inst *> &seen_insts
 }
 
 void Inst::write_code( StreamSep &ss, Codegen &cg ) {
+    // if this inst can be inlined inside a future inst, we don't do nothing here
+    if ( can_be_inlined() )
+        return;
+
     if ( nb_outputs() != 1 )
         TODO;
 
     Type *type = out_type( 0 );
-    ss.write_beg() << cg.repr( type ) << " " << *cg.reg( this, type, 0 ) << " = ";
+    ss.write_beg() << cg.repr( type ) << " " << *cg.new_reg_for( this, type, 0 ) << " = ";
     StreamPrio sp{ *ss, PRIO_Assignment };
-    write_inline_code( sp, cg, Codegen::WriteInlineCodeFlags::type_is_forced );
+    write_inline_code( sp, cg, 0, Codegen::WriteInlineCodeFlags::type_is_forced );
     ss.write_end( ";" );
 
     //    if ( nb_outs_with_content() == 1 ) {
@@ -200,8 +204,19 @@ void Inst::write_code( StreamSep &ss, Codegen &cg ) {
     //    TODO;
 }
 
-void Inst::write_inline_code( StreamPrio &ss, Codegen &cg, int flags ) {
+void Inst::write_inline_code( StreamPrio &ss, Codegen &cg, int nout, int flags ) {
     ss << "TODO: inline code for " << *this;
+}
+
+bool Inst::expects_a_reg_at( int ninp ) const {
+    return false;
+}
+
+bool Inst::can_be_inlined() const {
+    for( const Parent &p : parents )
+        if ( p.inst->expects_a_reg_at( p.ninp ) )
+            return false;
+    return true;
 }
 
 void Inst::get_bytes( int nout, void *dst, int beg_dst, int beg_src, int len, void *msk ) const {

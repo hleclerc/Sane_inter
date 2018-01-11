@@ -19,8 +19,8 @@ public:
 
     virtual void       write_block        ( StreamSep &os, const Vec<Inst *> &out ) override;
     virtual void       write_repr         ( std::ostream &os, Type *type ) override;
-    virtual void       write_repr         ( std::ostream &os, const Value &value, int prio ) override;
-    virtual Reg       *reg                ( Inst *inst, Type *type, int nout ) override;
+    virtual void       write_repr         ( std::ostream &os, const Value &value, int prio, int flags ) override;
+    virtual Reg       *new_reg_for        ( Inst *inst, Type *type, int nout ) override;
 
     virtual String     write_func_write_fd( Type *type ) override;
 

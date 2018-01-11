@@ -41,7 +41,9 @@ public:
     virtual void     get_bytes              ( int nout, void *dst, int beg_dst, int beg_src, int len, void *msk ) const;
     virtual void    *rcast                  ( SI32 nout, Type *type, SI32 offset );
 
-    virtual void     write_inline_code      ( StreamPrio &ss, Codegen &cg, int flags ); ///< helper for case nb_outputs == 1
+    virtual void     write_inline_code      ( StreamPrio &ss, Codegen &cg, int nout, int flags ); ///< helper for case nb_outputs == 1
+    virtual bool     expects_a_reg_at       ( int ninp ) const;
+    virtual bool     can_be_inlined         () const;
     virtual void     write_code             ( StreamSep &ss, Codegen &cg );
 
     // instructions with sub graphs

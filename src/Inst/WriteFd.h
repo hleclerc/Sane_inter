@@ -9,8 +9,10 @@ public:
     WriteFd( const Vec<Value> &args );
     WriteFd( AttrClone, const WriteFd * );
 
-    virtual void write_code   ( StreamSep &ss, Codegen &cg ) override;
-    virtual void write_dot    ( std::ostream &os ) const override;
-    virtual int  inp_corr     ( int nout ) const;
+    virtual bool expects_a_reg_at( int ninp ) const override;
+    virtual bool can_be_inlined  () const override;
+    virtual void write_code      ( StreamSep &ss, Codegen &cg ) override;
+    virtual void write_dot       ( std::ostream &os ) const override;
+    virtual int  inp_corr        ( int nout ) const;
 };
 

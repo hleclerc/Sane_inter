@@ -19,9 +19,9 @@ Cst::Cst( Type *type, int size, void *val, void *kno ) : type( type ), val( size
 Cst::Cst( AttrClone, const Cst *cst ) : type( cst->type ), val( cst->val ), kno( cst->kno ) {
 }
 
-void Cst::write_inline_code( StreamPrio &ss, Codegen &cg, int flags ) {
+void Cst::write_inline_code( StreamPrio &ss, Codegen &cg, int nout, int flags ) {
     if ( ! kno.all_false() )
-        type->write_cst( ss.stream, val.data, 0, true );
+        type->write_cst( ss.stream, val.data, 0, false );
     else
         ss << "{}";
 }

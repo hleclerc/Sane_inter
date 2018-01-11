@@ -26,3 +26,10 @@ int WriteFd::inp_corr( int nout ) const {
     return 3;
 }
 
+bool WriteFd::expects_a_reg_at( int ninp ) const {
+    return ninp == 0;
+}
+
+bool WriteFd::can_be_inlined() const {
+    return false;
+}
