@@ -161,7 +161,7 @@ bool If::can_be_inlined() const {
     return false;
 }
 
-bool If::mod_fd_content() const {
+bool If::mod_fd_content( int nout ) const {
     TODO;
 }
 

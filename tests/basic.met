@@ -1,4 +1,5 @@
 if __primitive_rand()
     stdout << 10
+stdout << 15
 
 # __primitive_ct_display_graph()

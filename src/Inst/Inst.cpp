@@ -91,7 +91,7 @@ Inst *Inst::clone() const {
     return 0;
 }
 
-bool Inst::mod_fd_content() const {
+bool Inst::mod_fd_content( int nout ) const {
     return false;
 }
 

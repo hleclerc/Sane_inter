@@ -50,7 +50,7 @@ public:
     virtual bool  write_graph_rec     ( std::ostream &ss, std::set<const Inst *> &seen_insts, const std::function<void(std::ostream&, const Inst *)> &f, bool disp_parents ) const override;
     virtual bool  can_be_inlined      () const override;
     // virtual void  virtual_destroy     ( int nout ) const override;
-    virtual bool  mod_fd_content      () const override;
+    virtual bool  mod_fd_content      ( int nout ) const override;
     virtual bool  mod_fd_cursor       () const override;
     virtual void  get_out_insts       ( Deque<Inst *> &outs ) override;
     // virtual bool  get_cpt_ref         ( int nout, Ref_count &rc ) const override; ///< return false if cpt_ref is not decidable

@@ -38,7 +38,7 @@ public:
     virtual Type    *out_type               ( int nout ) const;
     virtual Inst    *clone                  () const;
 
-    virtual bool     mod_fd_content         () const;
+    virtual bool     mod_fd_content         ( int nout ) const;
     virtual bool     mod_fd_cursor          () const;
 
     virtual void     write_to_stream        ( std::ostream &os, SI32 nout = -1, Type *type = 0, int offset = -1 ) const;

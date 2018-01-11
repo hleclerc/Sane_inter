@@ -36,7 +36,7 @@ bool WriteFd::can_be_inlined() const {
     return false;
 }
 
-bool WriteFd::mod_fd_content() const {
+bool WriteFd::mod_fd_content( int nout ) const {
     return true;
 }
 

@@ -260,10 +260,20 @@ void Vm::mod_fd( const Value &fd, RcPtr<Inst> mod_inst ) {
             inter->mod_mod_fds[ fd ];
     }
 
-    // even if we have != fd, it may point to the same file
-    int nout = mod_inst->nb_outputs();
-    mod_inst->add_child( iter->second );
-    iter->second = Value( mod_inst, nout, gvm->type_Ressource );
+    for( std::pair<const Value,Value> &p : mod_fds ) {
+        // it is a write. It has to be done after each read
+        int nout = mod_inst->nb_outputs();
+        if ( mod_inst->mod_fd_content( nout ) ) {
+            mod_inst->add_child( p.second );
+            p.second = Value( mod_inst, nout, gvm->type_Ressource );
+        } else if ( mod_inst->mod_fd_cursor() ) {
+            // test if fds are the same
+            TODO;
+        } else {
+            // reads are independants, but must be done after the writes
+            TODO;
+        }
+    }
 
 
     //    //
