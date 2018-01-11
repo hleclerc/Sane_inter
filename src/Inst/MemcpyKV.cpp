@@ -14,8 +14,8 @@ int MemcpyKV::nb_outputs() const {
 }
 
 void MemcpyKV::write_code( StreamSep &ss, Codegen &cg ) {
-    if ( cd.regs.empty() )
-        cd.regs << children[ 0 ].inst->cd.regs[ children[ 0 ].nout ];
+    if ( cd.out_regs.empty() )
+        cd.out_regs << children[ 0 ].inst->cd.out_regs[ children[ 0 ].nout ];
 
     if ( write_ssp_rec( ss, cg, dst_off, children[ 0 ].type, "" ) )
         return;

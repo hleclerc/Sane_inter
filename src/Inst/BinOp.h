@@ -28,7 +28,7 @@ public:
         return Op::type( this->children[ 0 ].type, this->children[ 1 ].type );
     }
 
-    virtual void write_inline_code( StreamPrio &ss, Codegen &cg ) override {
+    virtual void write_inline_code( StreamPrio &ss, Codegen &cg, int flags ) override {
         ss( Op::prio ) << cg.repr( this->children[ 0 ], Op::prio ) << " " << Op::str() << " " << cg.repr( this->children[ 1 ], Op::prio );
     }
 };

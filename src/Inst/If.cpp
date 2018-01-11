@@ -22,20 +22,10 @@ Inst::Inp IfInp::val_corr( int nout ) const {
     return Inp{ if_inst, nout };
 }
 
-//Inst *IfInp::dcast( int nout ) {
-//    return if_inst->children[ nout ].dcast();
-//}
-
 void IfInp::write_code( StreamSep &ss, Codegen &cg ) {
-    TODO;
-    //    for( size_t ninp = 0; ninp < if_inst->children.size(); ++ninp )
-    //        cd.out_regs.secure_set( ninp, if_inst->children[ ninp ].inst->cd.out_regs.secure_get( if_inst->children[ ninp ].nout, 0 ) );
+    for( size_t ninp = 0; ninp < if_inst->children.size(); ++ninp )
+        cd.out_regs.secure_set( ninp, if_inst->children[ ninp ].inst->cd.out_regs.secure_get( if_inst->children[ ninp ].nout, 0 ) );
 }
-
-//void IfInp::find_usable_ref_rec( int nout, std::function<void (Ptr_on_ref *)> f, int sg ) {
-//    if ( sg )
-//        if_inst->children[ nout ].inst->find_usable_ref_rec( if_inst->children[ nout ].nout, f, sg - 1 );
-//}
 
 Type *IfInp::out_type( int nout ) const {
     return if_inst->children[ nout ].type;
@@ -48,18 +38,6 @@ IfOut::IfOut( const Vec<Value> &out ) {
 
 void IfOut::write_dot( std::ostream &os ) const {
     os << "IfOut";
-}
-
-void IfOut::externalize( Inst *inst, size_t ninp ) {
-    //    Value &ch = inst->children[ ninp ];
-    //    int ind = if_inst->children.index_first( ch );
-    //    if ( ind >= 0 ) {
-    //        inst->mod_child( ninp, Value( if_inp, ind ) );
-    //    } else {
-    //        if_inst->add_child( ch );
-    //        inst->mod_child( ninp, Value( if_inp, if_inst->children.size() - 1 ) );
-    //    }
-    TODO;
 }
 
 int IfOut::nb_outputs() const {
@@ -176,7 +154,6 @@ bool If::write_graph_rec( std::ostream &ss, std::set<const Inst *> &seen_insts, 
 }
 
 void If::write_code( StreamSep &ss, Codegen &cg ) {
-    ss << "if ( 0 );";
     //    // some registers may have to be pre-declared
     //    for( int nout = 0; nout < nb_outputs(); ++nout ) {
     //        int ninp = inp_corr( nout );
@@ -208,38 +185,38 @@ void If::write_code( StreamSep &ss, Codegen &cg ) {
     //    //    for( const Value &ch : out_ko->children )
     //    //        ch.inst->find_usable_ref_rec( ch.nout, fd, 0 );
 
-    //    // code for ok and for ko
-    //    std::ostringstream os_ok;
-    //    std::ostringstream os_ko;
-    //    StreamSep ss_ok( os_ok, ss.beg + "    " );
-    //    StreamSep ss_ko( os_ko, ss.beg + "    " );
-    //    Codegen cg_ok( &cg );
-    //    Codegen cg_ko( &cg );
-    //    cg_ok.write_block( ss_ok, out_ok.ptr() );
-    //    cg_ko.write_block( ss_ko, out_ko.ptr() );
-    //    std::string s_ok = os_ok.str();
-    //    std::string s_ko = os_ko.str();
+    // code for ok and for ko
+    std::ostringstream os_ok;
+    std::ostringstream os_ko;
+    StreamSep ss_ok( os_ok, ss.beg + "    " );
+    StreamSep ss_ko( os_ko, ss.beg + "    " );
+    std::unique_ptr<Codegen> cg_ok( cg.new_child() );
+    std::unique_ptr<Codegen> cg_ko( cg.new_child() );
+    cg_ok->write_block( ss_ok, out_ok.ptr() );
+    cg_ko->write_block( ss_ko, out_ko.ptr() );
+    std::string s_ok = os_ok.str();
+    std::string s_ko = os_ko.str();
 
-    //    // write
-    //    if ( s_ko.empty() ) {
-    //        ss << "if ( " << cg.repr( children[ 0 ], PRIO_paren ) << " ) {";
-    //        *ss.stream << s_ok;
-    //        ss << "}";
-    //    } else if ( s_ok.empty() ) {
-    //        ss << "if ( ! " << cg.repr( children[ 0 ], PRIO_Logical_not ) << " ) {";
-    //        *ss.stream << s_ko;
-    //        ss << "}";
-    //    } else {
-    //        ss << "if ( " << cg.repr( children[ 0 ], PRIO_paren ) << " ) {";
-    //        *ss.stream << s_ok;
-    //        ss << "} else {";
-    //        *ss.stream << s_ko;
-    //        ss << "}";
-    //    }
+    // write
+    if ( s_ko.empty() ) {
+        ss << "if ( " << cg.repr( children[ 0 ], PRIO_paren ) << " ) {";
+        *ss.stream << s_ok;
+        ss << "}";
+    } else if ( s_ok.empty() ) {
+        ss << "if ( ! " << cg.repr( children[ 0 ], PRIO_Logical_not ) << " ) {";
+        *ss.stream << s_ko;
+        ss << "}";
+    } else {
+        ss << "if ( " << cg.repr( children[ 0 ], PRIO_paren ) << " ) {";
+        *ss.stream << s_ok;
+        ss << "} else {";
+        *ss.stream << s_ko;
+        ss << "}";
+    }
 
-    //    // store regs
-    //    for( int nout = 0; nout < nb_outputs(); ++nout )
-    //        cd.out_regs.secure_set( nout, out_ok->children[ nout ].inst->cd.out_regs.secure_get( out_ok->children[ nout ].nout, 0 ) );
+    // store regs
+    for( int nout = 0; nout < nb_outputs(); ++nout )
+        cd.out_regs.secure_set( nout, out_ok->children[ nout ].inst->cd.out_regs.secure_get( out_ok->children[ nout ].nout, 0 ) );
 }
 
 void If::get_out_insts( Deque<Inst *> &outs ) {

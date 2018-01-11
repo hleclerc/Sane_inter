@@ -381,21 +381,24 @@ void Vm::externalize_common_insts( Inst *main_inst, const Vec<Inst *> &inst_out,
 
     // replace parents from inst_a or inst_b by if_inp and if inp
     for( Inst *inst : res ) {
-        for( const Inst::Parent p : inst->parents ) {
+        Vec<Inst::Parent> parents = inst->parents;
+        for( const Inst::Parent &p : parents ) {
             if ( p.inst->op_id < init_op_id )
                 continue;
             if ( p.ninp < 0 )
                 TODO;
 
-            // num input of If
+            // num input of If (we want raw outputs, without offset or subtyping)
             int ind, nout = p.inst->children[ p.ninp ].nout;
+            Type *base_out_type = inst->out_type( nout );
             for( size_t i = 0; ; ++i ) {
                 if ( i == main_inst->children.size() ) {
                     ind = main_inst->children.size();
-                    main_inst->add_child( Value( inst, nout, inst->out_type( nout ) ) );
+                    main_inst->add_child( Value( inst, nout, base_out_type ) );
                     break;
                 }
-                if ( main_inst->children[ i ].inst == inst && main_inst->children[ i ].nout == nout ) {
+                const Value &ch = main_inst->children[ i ];
+                if ( ch.inst == inst && ch.nout == nout && ch.type == base_out_type && ch.offset == 0 ) {
                     ind = i;
                     break;
                 }
@@ -406,21 +409,6 @@ void Vm::externalize_common_insts( Inst *main_inst, const Vec<Inst *> &inst_out,
             p.inst->op_id = init_op_id - 1;
         }
     }
-    //    // replace
-
-    //    // inst->mod_child( ninp, Value( if_inp, ind ) );
-
-    //    //        for( size_t ninp = 0; ninp < inst->children.size(); ++ninp ) {
-    //    //            Value &ch = inst->children[ ninp ];
-    //    //            if ( ch.inst->op_id == init_op_id ) {
-    //    //                int ind = inst_if->children.index_first( ch );
-    //    //                if ( ind >= 0 ) {
-    //    //                } else {
-    //    //                    if_inst->add_child( ch );
-    //    //                    inst->mod_child( ninp, Value( if_inp, if_inst->children.size() - 1 ) );
-    //    //                }
-    //    //            }
-    //    //        }
 }
 
 void Vm::insts_to_externalize_rec( Vec<Inst *> &res, Inst *inst, size_t init_op_id ) {

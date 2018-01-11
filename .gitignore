@@ -13,3 +13,4 @@ ext
 doc/public
 *.pyc
 doc/PygmentSaneLexer/sanelexer.egg-info
+res.cpp 

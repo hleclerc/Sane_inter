@@ -169,7 +169,7 @@ void Inst::write_code( StreamSep &ss, Codegen &cg ) {
     Type *type = out_type( 0 );
     ss.write_beg() << cg.repr( type ) << " " << *cg.reg( this, type, 0 ) << " = ";
     StreamPrio sp{ *ss, PRIO_Assignment };
-    write_inline_code( sp, cg );
+    write_inline_code( sp, cg, Codegen::WriteInlineCodeFlags::type_is_forced );
     ss.write_end( ";" );
 
     //    if ( nb_outs_with_content() == 1 ) {
@@ -200,7 +200,7 @@ void Inst::write_code( StreamSep &ss, Codegen &cg ) {
     //    TODO;
 }
 
-void Inst::write_inline_code( StreamPrio &ss, Codegen &cg ) {
+void Inst::write_inline_code( StreamPrio &ss, Codegen &cg, int flags ) {
     ss << "TODO: inline code for " << *this;
 }
 
@@ -267,10 +267,5 @@ bool Inst::simplify_for_cg( Codegen &cg ) {
 
 
 void Inst::get_out_insts( Deque<Inst *> &outs ) {
-}
-
-void Inst::externalize( Inst *inst, size_t ninp ) {
-    write_dot( std::cerr << __FUNCTION__ << " " );
-    TODO;
 }
 

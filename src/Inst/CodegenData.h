@@ -9,5 +9,5 @@ struct CodegenData {
     CodegenData() {}
 
     size_t      num_in_sched;
-    Vec<Reg *>  regs;
+    Vec<Reg *>  out_regs;
 };

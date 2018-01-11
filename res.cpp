@@ -51,6 +51,17 @@ int main( int argc, char **argv ) {
     Stream R0 = {};
     SI32 R1 = {0};
     R0.fd = R1;
-    SI32 R2 = {0};
-    write_fd(R0.fd,R2);
+    Bool R2 = {};
+    SI32 R3 = rand();
+    Bool R4 = R3;
+    R2 = R4;
+    SI32 R5 = {0};
+    if ( R2 ) {
+        SI32 R6 = {2};
+        R5 = R6;
+    } else {
+        SI32 R6 = {3};
+        R5 = R6;
+    }
+    write_fd(R0.fd,R5);
 }

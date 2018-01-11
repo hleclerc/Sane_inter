@@ -14,8 +14,8 @@ struct CmpSchedInst {
     }
 };
 
-Codegen_C::Codegen_C() {
-    nb_reg = 0;
+Codegen_C::Codegen_C( Codegen_C *parent ) : parent( parent ) {
+    nb_reg = parent ? parent->nb_reg : 0;
 
     // base arythmetic types
     #define BT( T ) type_reprs[ gvm->type_##T ] = #T;
@@ -105,7 +105,7 @@ void Codegen_C::write_repr( std::ostream &os, Type *type ) {
 void Codegen_C::write_repr( std::ostream &os, const Value &value, int prio ) {
     Type *reg_type = 0;
     std::function<void(StreamPrio &)> reg_writer;
-    if ( Reg *reg = value.inst->cd.regs.secure_get( value.nout, 0 ) ) {
+    if ( Reg *reg = value.inst->cd.out_regs.secure_get( value.nout, 0 ) ) {
         reg_type = reg->type;
         reg_writer = [reg]( StreamPrio &ss ) { ss << *reg; };
     } else {
@@ -121,7 +121,7 @@ void Codegen_C::write_repr( std::ostream &os, const Value &value, int prio ) {
 }
 
 Reg *Codegen_C::reg( Inst *inst, Type *type, int nout ) {
-    Reg *&res = inst->cd.regs.secure_get( nout, 0 );
+    Reg *&res = inst->cd.out_regs.secure_get( nout, 0 );
     if ( ! res )
         res = new Reg( type, nb_reg++ );
 
@@ -180,6 +180,10 @@ String Codegen_C::write_func_write_fd( Type *type ) {
     }
 
     return "write_fd";
+}
+
+Codegen *Codegen_C::new_child() {
+    return new Codegen_C( this );
 }
 
 void Codegen_C::write_block( StreamSep &os, const Vec<Inst *> &out ) {
