@@ -3,6 +3,7 @@
 #include "../System/RcPtr.h"
 #include "../System/Deque.h"
 #include "CodegenData.h"
+#include <functional>
 #include <set>
 class StreamPrio;
 class StreamSep;
@@ -17,6 +18,7 @@ class Inst : public RcObj {
 public:
     struct Parent { bool operator==( const Parent &p ) const { return inst == p.inst && ninp == p.ninp; } Inst *inst; int ninp; };
     struct Inp { operator bool() const { return inst; } RcPtr<Inst> inst; int ninp; };
+    using AsFunc = std::function<void(const PI8 *)>;
 
     Inst();
     virtual ~Inst();
@@ -26,6 +28,8 @@ public:
     void             rem_child              ( int ninp );
     void             rem_out                ( int nout, bool check_if_unused = true ); ///< shifts outputs > nout
     void             add_dep                ( const RcPtr<Inst> &inst );
+
+    void             replace_by             ( int nout, Inst *new_inst, int new_nout ); ///< replace { this, nout } by { new_inst, new_nout }
 
     bool             all_children_with_op_id( size_t oi ) const;
     int              nb_parents_on_nout     ( int nout ) const;
@@ -40,6 +44,7 @@ public:
     virtual void     write_dot              ( std::ostream &os ) const = 0;
     virtual void     get_bytes              ( int nout, void *dst, int beg_dst, int beg_src, int len, void *msk ) const;
     virtual void    *rcast                  ( SI32 nout, Type *type, SI32 offset );
+    virtual AsFunc   get_assign_func        ( int nout, int off, int len );
 
     virtual void     write_inline_code      ( StreamPrio &ss, Codegen &cg, int nout, int flags ); ///< helper for case nb_outputs == 1
     virtual bool     expects_a_reg_at       ( int ninp ) const;

@@ -1,4 +1,5 @@
 #include "../Codegen/Codegen.h"
+#include "../System/BoolVec.h"
 #include "MemcpyKV.h"
 #include "../Type.h"
 
@@ -11,6 +12,28 @@ MemcpyKV::MemcpyKV( const Value &dst, const Value &src, SI32 dst_off ) : dst_off
 
 bool MemcpyKV::expects_a_reg_at( int ninp ) const {
     return ninp == 0;
+}
+
+bool MemcpyKV::simplify_for_cg( Codegen &cg ) {
+    //    // we can replace memcpy( ... ) by children[ 1 ] ?
+    //    if ( children[ 0 ].type->size() == children[ 1 ].type->size() &&
+    //         children[ 0 ].inst->has_been_refed( children[ 0 ].nout ) == false &&
+    //         children[ 1 ].inst->has_been_refed( children[ 1 ].nout ) == false &&
+    //         children[ 1 ].can_take_creation_constraints( children[ 0 ].creation_constraints() ) ) {
+    //    }
+
+    // if children[ 1 ] data is known and children[ 0 ] can be modified accordingly
+    int len = children[ 1 ].type->size();
+    BoolVec dst( len );
+    if ( children[ 1 ].get_bytes( dst.data, 0, 0, len ) ) {
+        if ( std::function<void(const PI8 *)> assign = children[ 0 ].inst->get_assign_func( children[ 0 ].nout, dst_off, len ) ) {
+            replace_by( 0, children[ 0 ].inst.ptr(), children[ 0 ].nout );
+            assign( dst.data );
+            return true;
+        }
+    }
+
+    return false;
 }
 
 bool MemcpyKV::can_be_inlined() const {
@@ -60,6 +83,10 @@ void MemcpyKV::get_bytes( int nout, void *dst, int beg_dst, int beg_src, int len
 
 int MemcpyKV::inp_corr( int nout ) const {
     return nout == 0 ? 0 : -1;
+}
+
+Type *MemcpyKV::out_type( int nout ) const {
+    return children[ 0 ].inst->out_type( children[ 0 ].nout );
 }
 
 bool MemcpyKV::write_ssp_rec( StreamSep &ss, Codegen &cg, int dst_offset, Type *dst_type, String m ) const {

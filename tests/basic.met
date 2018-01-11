@@ -1,4 +1,5 @@
-a := 0
+a := 1
+a = 10
 if __primitive_rand()
     a = 2
 else
@@ -6,4 +7,4 @@ else
 
 stdout << a
 
-__primitive_ct_display_graph()
+# __primitive_ct_display_graph()

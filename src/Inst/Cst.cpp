@@ -33,6 +33,13 @@ void Cst::write_to_stream( std::ostream &os, SI32 nout, Type *type, int offset )
         this->type->write_cst( os, val.data, 0 );
 }
 
+Inst::AsFunc Cst::get_assign_func( int nout, int off, int len ) {
+    return [this,off,len]( const PI8 *data ) {
+        memcpy_bit( val.data, off, data, 0, len );
+        memset_bit( kno.data, off, true, len );
+    };
+}
+
 void Cst::write_dot( std::ostream &os ) const {
     type->write_cst( os, val.data, 0 );
 }

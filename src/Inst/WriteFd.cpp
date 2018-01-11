@@ -1,5 +1,7 @@
 #include "../Codegen/Codegen.h"
+#include "../Type.h"
 #include "WriteFd.h"
+#include "Cst.h"
 
 WriteFd::WriteFd( const Vec<Value> &args ) {
     for( const Value &arg : args )
@@ -32,4 +34,8 @@ bool WriteFd::expects_a_reg_at( int ninp ) const {
 
 bool WriteFd::can_be_inlined() const {
     return false;
+}
+
+int WriteFd::nb_outputs() const {
+    return 0;
 }

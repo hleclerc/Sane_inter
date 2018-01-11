@@ -57,6 +57,13 @@ void Inst::add_dep( const RcPtr<Inst> &inst ) {
     deps << inst;
 }
 
+void Inst::replace_by( int nout, Inst *new_inst, int new_nout ) {
+    Vec<Inst::Parent> cp_parents = parents;
+    for( const Parent &p : cp_parents )
+        if ( p.inst->children[ p.ninp ].inst == this && p.inst->children[ p.ninp ].nout == nout )
+            p.inst->mod_child( p.ninp, Value( new_inst, new_nout, p.inst->children[ p.ninp ].type, p.inst->children[ p.ninp ].offset ) );
+}
+
 bool Inst::all_children_with_op_id( size_t oi ) const {
     for( const Value &ch : children )
         if ( ch.inst->op_id < oi )
@@ -83,6 +90,7 @@ Inst::Inp Inst::val_corr( int nout ) const {
 }
 
 Type *Inst::out_type( int nout ) const {
+    write_dot( std::cerr << __FUNCTION__ << " " );
     TODO;
     return 0;
 }
@@ -226,6 +234,10 @@ void *Inst::rcast( SI32 nout, Type *type, SI32 offset ) {
     write_dot( std::cerr );
     TODO;
     return 0;
+}
+
+Inst::AsFunc Inst::get_assign_func( int nout, int off, int len ) {
+    return {};
 }
 
 void Inst::display_graphviz( const Vec<Inst *> &lst, const std::function<void (std::ostream &, const Inst *)> &f, const std::string &filename, bool disp_parents, bool launch ) {

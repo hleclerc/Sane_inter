@@ -1,4 +1,4 @@
-#include "../Inst/Inst.h"
+#include "../Inst/Gatherer.h"
 #include "../Type.h"
 #include "../gvm.h"
 
@@ -41,13 +41,17 @@ Codegen_C::Codegen_C( Codegen_C *parent ) : parent( parent ) {
 }
 
 void Codegen_C::gen_code_for( const Vec<Inst *> &targets ) {
-    Vec<RcPtr<Inst>> clones( Rese(), targets.size() );
+    RcPtr<Inst> gatherer = new Gatherer;
     ++Inst::cur_op_id;
     for( Inst *inst : targets )
-        clones << inst->clone();
+        gatherer->add_child( Value( inst->clone(), 0, gvm->type_Void ) );
+
+    base_simplifications( gatherer.ptr() );
+
+    Inst::display_graphviz( gatherer.ptr() );
 
     StreamSep st( main_block, "    " );
-    write_block( st, clones.map( []( const RcPtr<Inst> &ip ) { return ip.ptr(); } ) );
+    write_block( st, gatherer->children.map( []( const Value &val ) { return val.inst.ptr(); } ) );
 }
 
 String Codegen_C::code() {
