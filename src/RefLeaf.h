@@ -14,6 +14,7 @@ public:
 
     virtual void        write_to_stream( std::ostream &os ) const override;
     virtual bool        is_shared      () const override;
+    virtual void        constify       () override;
     virtual Value       get            () const override;
     virtual void        set            ( const Value &new_val, int cst = 0 ) override;
 

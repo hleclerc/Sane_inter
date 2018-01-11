@@ -14,18 +14,12 @@ class Type;
 */
 class Vm {
 public:
-    struct ModFd {
-        RcPtr<Inst> mod_inst;    ///< last modifying inst
-        bool        mod_cursor;  ///< true if modified position in the file
-        bool        mod_content; ///< true if modified the content of the file
-    };
-
     using MSV   = std::map<String,Variable>;
     using Error = ErrorList::Error;
     using SFM   = std::map<RcString,std::function<Variable()>>;
     using SVM   = std::map<RcString,Variable>;
     using SVT   = std::map<RcString,Type *>;
-    using MMFD  = std::map<Value,ModFd>; ///< fd -> mod
+    using MVV   = std::map<Value,Value>;
 
     Vm( SI32 sizeof_ptr = 8 * sizeof( void * ), bool reverse_endianness = false );
 
@@ -55,7 +49,7 @@ public:
 
     bool          little_endian           () const;
 
-    void          mod_fd                  ( RcPtr<Inst> mod_inst, const Value &fd, bool mod_cursor, bool mod_content );
+    void          mod_fd                  ( const Value &fd, RcPtr<Inst> mod_inst );
 
     void          display_graph           ();
     void          codegen                 ( Codegen &cg );
@@ -77,7 +71,7 @@ public:
     Scope        *scope;
     Deque<Type *> types;
     SVM           predefs;
-    MMFD          mod_fds;            ///< modified file descriptors
+    MVV           mod_fds;            ///< modified file descriptors (fd -> last modification)
     SFM           predeffs;
     Vec<String>   includes;
     int           nb_calls;

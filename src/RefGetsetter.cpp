@@ -33,6 +33,11 @@ Variable RefGetsetter::variable() const {
     return value;
 }
 
+void RefGetsetter::constify() {
+    variable();
+    value.constify( true );
+}
+
 Value RefGetsetter::get() const {
     return variable().get();
 }

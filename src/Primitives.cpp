@@ -428,7 +428,7 @@ REG_PRIMITIVE_TYPE( constified ) {
 REG_PRIMITIVE_TYPE( write_fd ) {
     if ( args.size() < 2 )
         return gvm->add_error( "__primitive_write_fd expects at least 2 arguments" );
-    gvm->mod_fd( new WriteFd( args.map( []( const Variable &v ) { return v.get(); } ) ), args[ 0 ].get(), true, true );
+    gvm->mod_fd( args[ 0 ].get(), new WriteFd( args.map( []( const Variable &v ) { return v.get(); } ), args.size() - 1 ) );
     return gvm->ref_void;
 }
 

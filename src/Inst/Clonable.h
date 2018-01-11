@@ -22,8 +22,6 @@ public:
 
         for( const Value &ch : this->children )
             res->add_child( Value( ch.inst->clone(), ch.nout, ch.type, ch.offset ) );
-        for( const RcPtr<Inst> &ch : this->deps )
-            res->add_dep( ch->clone() );
 
         return res;
     }

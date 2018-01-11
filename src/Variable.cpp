@@ -108,6 +108,15 @@ void Variable::setup_vtables() {
     // TODO;
 }
 
+Variable Variable::constify( bool deep ) {
+    flags |= Flags::CONST;
+
+    if ( deep )
+        ref->constify();
+
+    return *this;
+}
+
 Variable Variable::chbeba( bool want_ret, const Vec<Variable> &args, const Vec<RcString> &names ) {
     return type->chbeba( *this, want_ret, args, names );
 }

@@ -1,10 +1,4 @@
-a := 1
-a = 10
 if __primitive_rand()
-    a = 2
-else
-    a = 3
-
-stdout << a
+    stdout << 10
 
 # __primitive_ct_display_graph()

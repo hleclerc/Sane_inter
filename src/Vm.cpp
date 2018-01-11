@@ -12,6 +12,7 @@
 #include "Import.h"
 #include "Vm.h"
 
+#include "Inst/Ressource.h"
 #include "Inst/KnownVal.h"
 #include "Inst/Void.h"
 #include "Inst/Cst.h"
@@ -246,48 +247,68 @@ Type *Vm::type_ptr_for( const RcString &name, const Vec<Variable> &args ) {
     }
     Type *res = types.push_back_val( new Type( name ) );
     for( const Variable &arg : args )
-        res->content.data.parameters << main_scope.add_static_variable( init_mode ? arg : arg.find_attribute( "operator :=" ).apply( true ) ); // TODO: make a constified copy
+        res->content.data.parameters << main_scope.add_static_variable( init_mode ? arg : arg.find_attribute( "operator :=" ).apply( true ).constify( true ) );
     return res;
 }
 
-void Vm::mod_fd( RcPtr<Inst> mod_inst, const Value &fd, bool mod_cursor, bool mod_content ) {
-    if ( mod_content ) {
-        // even if we have != fd, it may point to the same file
-        // ->
-        auto iter = mod_fds.find( fd );
-        if ( iter == mod_fds.end() )
-            iter = mod_fds.insert( iter, std::make_pair( fd, ModFd{ mod_inst, mod_cursor, mod_content } ) );
-        if ( iter->second.mod_inst != mod_inst ) {
-            mod_inst->add_dep( iter->second.mod_inst );
-            iter->second.mod_inst = mod_inst;
-        }
-    } else if ( mod_cursor ) {
-        auto iter = mod_fds.find( fd );
-        if ( iter == mod_fds.end() )
-            iter = mod_fds.insert( iter, std::make_pair( fd, ModFd{ mod_inst, mod_cursor, mod_content } ) );
-
-        Variable fdv( fd, Variable::Flags::CONST );
-        for( auto iter : mod_fds ) {
-            if ( Variable( iter.first, Variable::Flags::CONST ).equal( fdv ).is_false() == false && iter.second.mod_inst != mod_inst ) {
-                mod_inst->add_dep( iter.second.mod_inst );
-                iter.second.mod_inst = mod_inst;
-            }
-        }
+void Vm::mod_fd( const Value &fd, RcPtr<Inst> mod_inst ) {
+    // item in the mod_fds map
+    auto iter = mod_fds.find( fd );
+    if ( iter == mod_fds.end() ) {
+        iter = mod_fds.insert( iter, std::make_pair( fd, make_Ressource() ) );
+        if ( Interceptor *inter = RefLeaf::interceptor )
+            inter->mod_mod_fds[ fd ];
     }
+
+    // even if we have != fd, it may point to the same file
+    int nout = mod_inst->nb_outputs();
+    mod_inst->add_child( iter->second );
+    iter->second = Value( mod_inst, nout, gvm->type_Ressource );
+
+
+    //    //
+    //    if ( mod_inst->mod_fd_content() ) {
+    //        // even if we have != fd, it may point to the same file
+    //        if ( iter->second.mod_inst == mod_inst ) {
+    //            if ( Interceptor *inter = RefLeaf::interceptor )
+    //                inter->new_mod_fds[ fd ];
+    //        } else {
+    //            if ( Interceptor *inter = RefLeaf::interceptor ) {
+    //                P( inter );
+    //                TODO;
+    //                //                auto iter = inter->new_mod_fds.find( fd );
+    //                //                if ( iter != inter->new_mod_fds.end() )
+    //                //                    iter = inter->mod_mod_fds.insert( fd );
+    //            }
+    //            int nout = mod_inst->nb_outputs();
+    //            mod_inst->add_child( iter->second.mod_inst );
+    //            iter->second.mod_inst = Value( mod_inst, nout, gvm->type_Ressource );
+    //        }
+    //    } else if ( mod_inst->mod_fd_cursor() ) {
+    //        Variable fdv( fd, Variable::Flags::CONST );
+    //        for( auto iter : mod_fds ) {
+    //            if ( Variable( iter.first, Variable::Flags::CONST ).equal( fdv ).is_false() == false && iter.second.mod_inst != mod_inst ) {
+    //                mod_inst->add_child( iter.second.mod_inst );
+    //                iter.second.mod_inst = mod_inst;
+    //            }
+    //        }
+    //    } else {
+    //        TODO;
+    //    }
 }
 
 void Vm::display_graph() {
     Vec<Inst *> to_disp;
-    for( std::pair<const Value&, const ModFd &> mfd : mod_fds )
-        to_disp << mfd.second.mod_inst.ptr();
+    for( std::pair<const Value&, const Value &> mfd : mod_fds )
+        to_disp << mfd.second.inst.ptr();
 
     Inst::display_graphviz( to_disp );
 }
 
 void Vm::codegen( Codegen &cg ) {
     Vec<Inst *> targets;
-    for( std::pair<const Value&, const ModFd &> mfd : mod_fds )
-        targets << mfd.second.mod_inst.ptr();
+    for( std::pair<const Value&, const Value &> mfd : mod_fds )
+        targets << mfd.second.inst.ptr();
 
     cg.gen_code_for( targets );
 }
@@ -321,6 +342,7 @@ void Vm::if_else( const Variable &cond_var, const std::function<void ()> &ok, co
     RcPtr<IfInp> inp_ok = new IfInp;
     RcPtr<IfInp> inp_ko = new IfInp;
 
+    // save new values
     Vec<Value> out_ok, out_ko;
     for( auto &p : inter_ok.mod_refs ) {
         out_ok << p.second.n;
@@ -339,10 +361,23 @@ void Vm::if_else( const Variable &cond_var, const std::function<void ()> &ok, co
         out_ko.push_back( p.second.n );
     }
 
-    // modify variables to take if outputs (we take inp_iv because int_call_s may have modified the variables)
-    Vec<Value> inp_if_inst;
-    inp_if_inst << cond_var.get();
-    RcPtr<If> inst_if = new If( inp_if_inst, inp_ok, new IfOut( out_ok ), inp_ko, new IfOut( out_ko ) );
+    // new If inst
+    RcPtr<If> inst_if = new If( cond_var.get(), inp_ok, new IfOut( out_ok ), inp_ko, new IfOut( out_ko ) );
+
+    // add deps
+    for( const auto &p : inter_ok.mod_mod_fds ) {
+        if ( p.second.o )
+            TODO;
+        inst_if->out_ok->add_child( p.second.n );
+        gvm->mod_fd( p.first, inst_if );
+    }
+    for( const auto &p : inter_ko.mod_mod_fds ) {
+        if ( p.second.o )
+            TODO;
+        inst_if->out_ko->add_child( p.second.n );
+        if ( inter_ok.mod_mod_fds.count( p.first ) == 0 )
+            gvm->mod_fd( p.first, inst_if );
+    }
 
     int num = 0;
     for( auto &p : inter_ok.mod_refs )
@@ -423,8 +458,6 @@ void Vm::insts_to_externalize_rec( Vec<Inst *> &res, Inst *inst, size_t init_op_
 
     for( const Value &val : inst->children )
         insts_to_externalize_rec( res, val.inst.ptr(), init_op_id );
-    for( const RcPtr<Inst> &inst : inst->deps )
-        insts_to_externalize_rec( res, inst.ptr(), init_op_id );
 }
 
 Variable Vm::visit( const RcString &names, const RcString &code, bool want_ret ) {

@@ -161,6 +161,14 @@ bool If::can_be_inlined() const {
     return false;
 }
 
+bool If::mod_fd_content() const {
+    TODO;
+}
+
+bool If::mod_fd_cursor() const {
+    TODO;
+}
+
 void If::write_code( StreamSep &ss, Codegen &cg ) {
     //    // some registers may have to be pre-declared
     //    for( int nout = 0; nout < nb_outputs(); ++nout ) {

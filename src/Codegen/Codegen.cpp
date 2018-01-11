@@ -18,11 +18,18 @@ void Codegen::base_simplifications( Inst *inst ) {
 }
 
 bool Codegen::base_simplifications_rec( Inst *inst ) {
+    // out insts
+    Deque<Inst *> outs;
+    inst->get_out_insts( outs );
+    bool change = false;
+    for( Inst *out : outs )
+        change |= base_simplifications_rec( out );
+    if ( change )
+        return true;
+
+    // children
     for( const Value &ch : inst->children )
         if ( base_simplifications_rec( ch.inst.ptr() ) )
-            return true;
-    for( const RcPtr<Inst> &ch : inst->deps )
-        if ( base_simplifications_rec( ch.ptr() ) )
             return true;
 
     return inst->simplify_for_cg( *this );

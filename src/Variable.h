@@ -27,10 +27,11 @@ public:
     RcString    valid_constraint_for( const Variable &tested_var, TCI &tci ) const;
     Variable    find_attribute      ( const RcString &name, bool ret_err = true, bool msg_if_err = false ) const;
     void        setup_vtables       ();
+    Variable    constify            ( bool deep );
     Variable    to_Bool             () const;
-    Variable    equal               ( const Variable &that ) const;
     Variable    chbeba              ( bool want_ret, const Vec<Variable> &args = {}, const Vec<RcString> &names = {} );
     Variable    select              ( bool want_ret, const Vec<Variable> &args = {}, const Vec<RcString> &names = {} );
+    Variable    equal               ( const Variable &that ) const;
     void        clear               () { ref = 0; type = 0; }
     Variable    apply               ( bool want_ret, const Vec<Variable> &args = {}, const Vec<RcString> &names = {}, ApplyFlags apply_flags = ApplyFlags::NONE, const Vec<size_t> &spreads = {} );
 

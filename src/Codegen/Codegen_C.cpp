@@ -76,6 +76,9 @@ String Codegen_C::code() {
 }
 
 void Codegen_C::write_repr( std::ostream &os, Type *type ) {
+    if ( parent )
+        return parent->write_repr( os, type );
+
     auto iter = type_reprs.find( type );
     if ( iter == type_reprs.end() ) {
         // find a name
@@ -134,6 +137,8 @@ Reg *Codegen_C::new_reg_for( Inst *inst, Type *type, int nout ) {
 }
 
 void Codegen_C::write_func_itoa() {
+    if ( parent )
+        return parent->write_func_itoa();
     if ( decl_funcs.insert( "itoa" ).second == false )
         return;
     declarations << "template<class T>\n";
@@ -159,10 +164,15 @@ void Codegen_C::write_func_itoa() {
 }
 
 void Codegen_C::add_include( const String &include ) {
+    if ( parent )
+        return parent->add_include( include );
     includes.push_back_unique( include );
 }
 
 String Codegen_C::write_func_write_fd( Type *type ) {
+    if ( parent )
+        return parent->write_func_write_fd( type );
+
     if ( decl_funcs.insert( type ? va_string( "write_fd:{}", *type ) : "write_fd" ).second == false )
         return "write_fd";
 

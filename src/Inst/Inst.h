@@ -27,7 +27,6 @@ public:
     void             mod_child              ( int ninp, const Value &ch );
     void             rem_child              ( int ninp );
     void             rem_out                ( int nout, bool check_if_unused = true ); ///< shifts outputs > nout
-    void             add_dep                ( const RcPtr<Inst> &inst );
 
     void             replace_by             ( int nout, Inst *new_inst, int new_nout ); ///< replace { this, nout } by { new_inst, new_nout }
 
@@ -38,6 +37,9 @@ public:
     virtual Inp      val_corr               ( int nout ) const;
     virtual Type    *out_type               ( int nout ) const;
     virtual Inst    *clone                  () const;
+
+    virtual bool     mod_fd_content         () const;
+    virtual bool     mod_fd_cursor          () const;
 
     virtual void     write_to_stream        ( std::ostream &os, SI32 nout = -1, Type *type = 0, int offset = -1 ) const;
     virtual bool     write_graph_rec        ( std::ostream &ss, std::set<const Inst *> &seen_insts, const std::function<void(std::ostream&, const Inst *)> &f, bool disp_parents ) const;
@@ -63,7 +65,6 @@ public:
     size_t           creation_date; ///< used mainly for ordering during code generation
     Vec<Value>       children;
     Vec<Parent>      parents;
-    Vec<RcPtr<Inst>> deps;
 
     CodegenData      cd;
 

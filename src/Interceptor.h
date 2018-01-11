@@ -8,7 +8,7 @@
 */
 class Interceptor {
 public:
-    struct Interception {
+    struct ValChange {
         Value o; ///< old value
         Value n; ///< new value
     };
@@ -18,12 +18,14 @@ public:
         Value  cond;
     };
 
-    using MapInter = std::map<RcPtr<RefLeaf>,Interception>;
+    using MapRVC = std::map<RcPtr<RefLeaf>,ValChange>;
+    using MapVIC = std::map<Value,ValChange>;
 
     void       run( const std::function<void()> &func );
 
+    MapVIC     mod_mod_fds;
     PI64       inter_date;
-    MapInter   mod_refs;
+    MapRVC     mod_refs;
     Vec<Break> breaks;
 };
 

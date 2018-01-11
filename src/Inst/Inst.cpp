@@ -14,8 +14,6 @@ Inst::Inst() : op_id( 0 ) {
 Inst::~Inst() {
     for( int ninp = 0; ninp < (int)children.size(); ++ninp )
         children[ ninp ].inst->parents.remove_first( Parent{ this, ninp } );
-    for( int ndep = 0; ndep < (int)deps.size(); ++ndep )
-        deps[ ndep ]->parents.remove_first( Parent{ this, - 1 - ndep } );
 }
 
 void Inst::add_child( const Value &ch ) {
@@ -52,11 +50,6 @@ void Inst::rem_out( int nout, bool check_if_unused ) {
     }
 }
 
-void Inst::add_dep( const RcPtr<Inst> &inst ) {
-    inst->parents << Parent{ this, int( - 1 - deps.size() ) };
-    deps << inst;
-}
-
 void Inst::replace_by( int nout, Inst *new_inst, int new_nout ) {
     Vec<Inst::Parent> cp_parents = parents;
     for( const Parent &p : cp_parents )
@@ -67,9 +60,6 @@ void Inst::replace_by( int nout, Inst *new_inst, int new_nout ) {
 bool Inst::all_children_with_op_id( size_t oi ) const {
     for( const Value &ch : children )
         if ( ch.inst->op_id < oi )
-            return false;
-    for( const RcPtr<Inst> &dep : deps )
-        if ( dep->op_id < oi )
             return false;
     return true;
 }
@@ -99,6 +89,14 @@ Inst *Inst::clone() const {
     write_dot( std::cerr << __FUNCTION__ << " " );
     TODO;
     return 0;
+}
+
+bool Inst::mod_fd_content() const {
+    return false;
+}
+
+bool Inst::mod_fd_cursor() const {
+    return false;
 }
 
 int Inst::nb_outputs() const {

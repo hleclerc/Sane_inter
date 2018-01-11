@@ -3,17 +3,17 @@
 #include "WriteFd.h"
 #include "Cst.h"
 
-WriteFd::WriteFd( const Vec<Value> &args ) {
+WriteFd::WriteFd( const Vec<Value> &args, int nb_inp ) : nb_inp( nb_inp ) {
     for( const Value &arg : args )
         add_child( arg );
 }
 
-WriteFd::WriteFd( AttrClone, const WriteFd * ) {
+WriteFd::WriteFd( AttrClone, const WriteFd *orig ) : nb_inp( orig->nb_inp ) {
 }
 
 void WriteFd::write_code( StreamSep &ss, Codegen &cg ) {
     ss.write_beg();
-    if ( children.size() == 2 )
+    if ( nb_inp == 1 )
         *ss << cg.write_func_write_fd( children[ 1 ].type ) << "(" << cg.repr( children[ 0 ] ) << "," << cg.repr( children[ 1 ] ) << ")";
     else
         *ss << cg.write_func_write_fd( 0 ) << "(" << cg.repr( children[ 0 ] ) << "," << cg.repr( children[ 1 ] ) << "," << cg.repr( children[ 2 ] ) << ")";
@@ -36,6 +36,14 @@ bool WriteFd::can_be_inlined() const {
     return false;
 }
 
+bool WriteFd::mod_fd_content() const {
+    return true;
+}
+
+bool WriteFd::mod_fd_cursor() const {
+    return true;
+}
+
 int WriteFd::nb_outputs() const {
-    return 0;
+    return children.size() - ( 1 + nb_inp );
 }

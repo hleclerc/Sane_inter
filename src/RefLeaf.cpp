@@ -16,6 +16,10 @@ bool RefLeaf::is_shared() const {
     return cpt_use > 1;
 }
 
+void RefLeaf::constify() {
+    flags |= Flags::CONST;
+}
+
 Value RefLeaf::get() const {
     return value;
 }
@@ -31,7 +35,7 @@ void RefLeaf::set( const Value &src_val, int cst ) {
     if ( interceptor && inter_date > creation_inter_date ) {
         auto iter = interceptor->mod_refs.find( this );
         if ( iter == interceptor->mod_refs.end() )
-            interceptor->mod_refs.emplace_hint( iter, this, Interceptor::Interception{ value, {} } );
+            interceptor->mod_refs.emplace_hint( iter, this, Interceptor::ValChange{ value, {} } );
     }
 
     // change value
