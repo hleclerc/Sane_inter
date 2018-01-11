@@ -163,10 +163,12 @@ bool If::can_be_inlined() const {
 
 bool If::mod_fd_content( int nout ) const {
     TODO;
+    return false;
 }
 
 bool If::mod_fd_cursor() const {
     TODO;
+    return false;
 }
 
 void If::write_code( StreamSep &ss, Codegen &cg ) {
