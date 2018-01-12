@@ -7,6 +7,7 @@
 #include <set>
 class StreamPrio;
 class StreamSep;
+class Ressource;
 class Codegen;
 class BoolVec;
 class Value;
@@ -38,7 +39,7 @@ public:
     virtual Type    *out_type               ( int nout ) const;
     virtual Inst    *clone                  () const;
 
-    virtual void     get_mod_ressources     ( const std::function<void( const Value &fd, int mod_type )> &cb ) const;
+    virtual void     get_mod_ressources     ( const std::function<void( Ressource *rs, bool write )> &cb ) const;
 
     virtual void     write_to_stream        ( std::ostream &os, SI32 nout = -1, Type *type = 0, int offset = -1 ) const;
     virtual bool     write_graph_rec        ( std::ostream &ss, std::set<const Inst *> &seen_insts, const std::function<void(std::ostream&, const Inst *)> &f, bool disp_parents ) const;

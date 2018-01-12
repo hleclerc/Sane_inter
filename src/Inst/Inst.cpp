@@ -91,7 +91,7 @@ Inst *Inst::clone() const {
     return 0;
 }
 
-void Inst::get_mod_ressources( const std::function<void (const Value &, int)> &cb ) const {
+void Inst::get_mod_ressources( const std::function<void( Ressource *rs, bool write )> &cb ) const {
 }
 
 int Inst::nb_outputs() const {

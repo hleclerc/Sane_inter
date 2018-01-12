@@ -253,9 +253,9 @@ Type *Vm::type_ptr_for( const RcString &name, const Vec<Variable> &args ) {
 
 void Vm::mod_fd( RcPtr<Inst> mod_inst ) {
     // get ressource descriptors directly modified by mod_inst
-    std::map<Value,int> modifications;
-    mod_inst->get_mod_ressources( [&]( const Value &fd, int mod_type ) {
-        auto insert = modifications.insert( std::make_pair( fd, 0 ) );
+    std::map<Ressource *,bool> modifications;
+    mod_inst->get_mod_ressources( [&]( Ressource *rs, bool write ) {
+        auto insert = modifications.insert( std::make_pair( rs, 0 ) );
         insert.first->second = std::max( insert.first->second, mod_type );
     } );
 

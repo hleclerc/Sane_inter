@@ -45,7 +45,7 @@ public:
     If( const Vec<Value> &inp, RcPtr<IfInp> inp_ok, IfOut *out_ok, RcPtr<IfInp> inp_ko, IfOut *out_ko );
     If( AttrClone, const If *a );
 
-    virtual void  get_mod_ressources  ( const std::function<void( const Value &fd, int mod_type )> &cb ) const override;
+    virtual void  get_mod_ressources  ( const std::function<void( Ressource *rs, bool write )> &cb ) const override;
     virtual bool  expects_a_reg_at    ( int ninp ) const override;
     virtual bool  simplify_for_cg     ( Codegen &cg ) override;
     virtual bool  write_graph_rec     ( std::ostream &ss, std::set<const Inst *> &seen_insts, const std::function<void(std::ostream&, const Inst *)> &f, bool disp_parents ) const override;

@@ -66,7 +66,7 @@ If::If( const Vec<Value> &inp, RcPtr<IfInp> inp_ok, IfOut *out_ok, RcPtr<IfInp> 
 If::If( AttrClone, const If *a ) {
 }
 
-void If::get_mod_ressources( const std::function<void (const Value &, int)> &cb ) const {
+void If::get_mod_ressources( const std::function<void( Ressource *, bool)> &cb ) const {
     TODO;
 }
 

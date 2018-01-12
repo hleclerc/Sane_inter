@@ -4,7 +4,7 @@
 RessourceInst::RessourceInst() {
 }
 
-RessourceInst::RessourceInst( AttrClone, const Ressource *orig ) {
+RessourceInst::RessourceInst( AttrClone, const RessourceInst *orig ) {
 }
 
 int RessourceInst::nb_outputs() const {

@@ -7,7 +7,7 @@
 class RessourceInst : public Clonable<RessourceInst> {
 public:
     RessourceInst();
-    RessourceInst( AttrClone, const Ressource *orig );
+    RessourceInst( AttrClone, const RessourceInst *orig );
 
     virtual int   nb_outputs() const override;
     virtual void  write_code( StreamSep &ss, Codegen &cg ) override;
