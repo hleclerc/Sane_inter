@@ -12,7 +12,7 @@
 #include "Import.h"
 #include "Vm.h"
 
-#include "Inst/Ressource.h"
+#include "Inst/RessourceInst.h"
 #include "Inst/KnownVal.h"
 #include "Inst/Void.h"
 #include "Inst/Cst.h"

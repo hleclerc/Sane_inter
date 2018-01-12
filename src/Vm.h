@@ -4,6 +4,7 @@
 #include "System/va_string.h"
 #include "System/Deque.h"
 #include "System/Vec.h"
+#include "RessourceMap.h"
 #include "Variable.h"
 #include "Scope.h"
 #include <map>
@@ -14,13 +15,11 @@ class Type;
 */
 class Vm {
 public:
-    struct RessourceState { Value modifier; Vec<Value> readers; };
     using MSV   = std::map<String,Variable>;
     using Error = ErrorList::Error;
     using SFM   = std::map<RcString,std::function<Variable()>>;
     using SVM   = std::map<RcString,Variable>;
     using SVT   = std::map<RcString,Type *>;
-    using MVRS  = std::map<Value,RessourceState>;
 
     Vm( SI32 sizeof_ptr = 8 * sizeof( void * ), bool reverse_endianness = false );
 
@@ -83,7 +82,7 @@ public:
     SI32          sizeof_ptr;
     SI32          aligof_ptr;
     std::ostream *error_stream;
-    MVRS          mod_ressources;     ///< modified file descriptors (fd -> last changes)
+    RessourceMap  ressource_map;      ///< modified file descriptors (fd -> last changes)
     bool          reverse_endianness;
 };
 

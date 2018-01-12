@@ -1,27 +1,27 @@
-#include "Ressource.h"
+#include "RessourceInst.h"
 #include "../gvm.h"
 
-Ressource::Ressource() {
+RessourceInst::RessourceInst() {
 }
 
-Ressource::Ressource( AttrClone, const Ressource *orig ) {
+RessourceInst::RessourceInst( AttrClone, const Ressource *orig ) {
 }
 
-int Ressource::nb_outputs() const {
+int RessourceInst::nb_outputs() const {
     return 1;
 }
 
-void Ressource::write_dot( std::ostream &os ) const {
+void RessourceInst::write_dot( std::ostream &os ) const {
     os << "RS";
 }
 
-Type *Ressource::out_type( int nout ) const {
+Type *RessourceInst::out_type( int nout ) const {
     return gvm->type_Ressource;
 }
 
-Value make_Ressource() {
-    return { new Ressource, 0, gvm->type_Ressource };
+Value make_RessourceInst() {
+    return { new RessourceInst, 0, gvm->type_Ressource };
 }
 
-void Ressource::write_code( StreamSep &ss, Codegen &cg ) {
+void RessourceInst::write_code( StreamSep &ss, Codegen &cg ) {
 }

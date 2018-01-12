@@ -4,10 +4,10 @@
 
 /**
 */
-class Ressource : public Clonable<Ressource> {
+class RessourceInst : public Clonable<RessourceInst> {
 public:
-    Ressource();
-    Ressource( AttrClone, const Ressource *orig );
+    RessourceInst();
+    RessourceInst( AttrClone, const Ressource *orig );
 
     virtual int   nb_outputs() const override;
     virtual void  write_code( StreamSep &ss, Codegen &cg ) override;
@@ -15,4 +15,4 @@ public:
     virtual Type *out_type  ( int nout ) const override;
 };
 
-Value make_Ressource();
+Value make_RessourceInst();

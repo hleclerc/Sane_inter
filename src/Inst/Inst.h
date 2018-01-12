@@ -16,7 +16,6 @@ class Type;
 */
 class Inst : public RcObj {
 public:
-    struct RessourceModifierType { enum { MOD_WR, MOD_RD, MOD_RD_WITH_MOD_OF_CUR }; };
     struct Parent { bool operator==( const Parent &p ) const { return inst == p.inst && ninp == p.ninp; } Inst *inst; int ninp; };
     struct Inp { operator bool() const { return inst; } RcPtr<Inst> inst; int ninp; };
     using AsFunc = std::function<void(const PI8 *)>;
