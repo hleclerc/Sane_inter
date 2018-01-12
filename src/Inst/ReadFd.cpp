@@ -13,7 +13,7 @@ ReadFd::ReadFd( const Value &fd, const Value &ptr, const Value &len ) {
 ReadFd::ReadFd( AttrClone, const ReadFd *orig ) {
 }
 
-void ReadFd::get_mod_ressources( const std::function<void( const Value &, int )> &cb ) const {
+void ReadFd::get_mod_ressources( const std::function<void( const Ressource *rs, bool write )> &cb ) const {
     cb( children[ 0 ], RessourceModifierType::MOD_RD_WITH_MOD_OF_CUR );
 }
 

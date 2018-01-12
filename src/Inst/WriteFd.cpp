@@ -1,6 +1,6 @@
 #include "../Codegen/Codegen.h"
 #include "../Type.h"
-#include "../Vm.h"
+#include "../gvm.h"
 #include "WriteFd.h"
 #include "Cst.h"
 
@@ -12,8 +12,10 @@ WriteFd::WriteFd( const Vec<Value> &args, int nb_inp ) : nb_inp( nb_inp ) {
 WriteFd::WriteFd( AttrClone, const WriteFd *orig ) : nb_inp( orig->nb_inp ) {
 }
 
-void WriteFd::get_mod_ressources( const std::function<void( const Value &, int )> &cb ) const {
-    cb( children[ 0 ], RessourceModifierType::MOD_WR );
+void WriteFd::get_mod_ressources( const std::function<void( Ressource *rs, bool write )> &cb ) const {
+    auto fw = [&cb]( Ressource *rs ) { cb( rs, true ); };
+    gvm->ressource_map.pot_rs_on_file_content( children[ 0 ], fw );
+    gvm->ressource_map.pot_rs_on_file_cursor ( children[ 0 ], fw );
 }
 
 void WriteFd::write_code( StreamSep &ss, Codegen &cg ) {

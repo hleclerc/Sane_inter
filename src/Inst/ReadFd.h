@@ -10,7 +10,7 @@ public:
     ReadFd( const Value &fd, const Value &ptr, const Value &len );
     ReadFd( AttrClone, const ReadFd * );
 
-    virtual void get_mod_ressources( const std::function<void( const Value &fd, int mod_type )> &cb ) const override;
+    virtual void get_mod_ressources( const std::function<void( const Ressource *rs, bool write )> &cb ) const override;
     //    virtual bool expects_a_reg_at  ( int ninp ) const override;
     //    virtual bool can_be_inlined    () const override;
     virtual int  nb_outputs        () const override;

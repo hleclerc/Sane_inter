@@ -14,7 +14,7 @@ ReadFdAt::ReadFdAt( const Value &fd, const Value &ptr, const Value &off, const V
 ReadFdAt::ReadFdAt( AttrClone, const ReadFdAt *orig ) {
 }
 
-void ReadFdAt::get_mod_ressources( const std::function<void( const Value &, int )> &cb ) const {
+void ReadFdAt::get_mod_ressources( const std::function<void( const Ressource *rs, bool write )> &cb ) const {
     cb( children[ 0 ], RessourceModifierType::MOD_RD );
 }
 

@@ -10,7 +10,7 @@ public:
     WriteFd( const Vec<Value> &args, int nb_inp );
     WriteFd( AttrClone, const WriteFd * );
 
-    virtual void get_mod_ressources( const std::function<void( const Value &fd, int mod_type )> &cb ) const override;
+    virtual void get_mod_ressources( const std::function<void( Ressource *rs, bool write )> &cb ) const override;
     virtual bool expects_a_reg_at  ( int ninp ) const override;
     virtual bool can_be_inlined    () const override;
     virtual int  nb_outputs        () const override;
