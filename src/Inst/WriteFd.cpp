@@ -1,5 +1,6 @@
 #include "../Codegen/Codegen.h"
 #include "../Type.h"
+#include "../Vm.h"
 #include "WriteFd.h"
 #include "Cst.h"
 
@@ -9,6 +10,10 @@ WriteFd::WriteFd( const Vec<Value> &args, int nb_inp ) : nb_inp( nb_inp ) {
 }
 
 WriteFd::WriteFd( AttrClone, const WriteFd *orig ) : nb_inp( orig->nb_inp ) {
+}
+
+void WriteFd::get_mod_ressources( const std::function<void( const Value &, int )> &cb ) const {
+    cb( children[ 0 ], RessourceModifierType::MOD_WR );
 }
 
 void WriteFd::write_code( StreamSep &ss, Codegen &cg ) {
@@ -34,14 +39,6 @@ bool WriteFd::expects_a_reg_at( int ninp ) const {
 
 bool WriteFd::can_be_inlined() const {
     return false;
-}
-
-bool WriteFd::mod_fd_content( int nout ) const {
-    return true;
-}
-
-bool WriteFd::mod_fd_cursor() const {
-    return true;
 }
 
 int WriteFd::nb_outputs() const {

@@ -14,6 +14,12 @@ class Stream
     def write data
         __primitive_write_fd fd, data
 
+    def read ptr, len
+        __primitive_read_fd fd, ptr, len
+
+    def read_at ptr, off, len
+        __primitive_read_fd_at fd, ptr, off, len
+
     fd := -1
 
 # Used in ctor of object that can be constructed from a stream
@@ -35,6 +41,10 @@ stdout := Stream 0
 # error output file
 global
 stderr := Stream 1
+
+# error output file
+global
+stdin := Stream 2
 
 global
 def print ...args

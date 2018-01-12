@@ -199,13 +199,17 @@ bool Variable::get_value( SI32 &val ) const {
     return gvm->scope->find_variable( "SI32" ).get_value( val );
 }
 
-void Variable::set( const Value &src_val, SI32 additionnal_offset, int cst ) {
-    ASSERT( ref, "..." );
-    if ( flags & Flags::CONST )
+void Variable::set_bv( const Value &src_val, int cst ) {
+    if ( flags & Flags::CONST ) {
         gvm->add_error( "Const variable, should not be modified" );
-    else {
-        ref->set( make_MemcpyKV( ref->get(), src_val, offset + additionnal_offset ), cst );
+        return;
     }
+    ASSERT( ref, "..." );
+    ref->set( src_val, cst );
+}
+
+void Variable::memcpy( const Value &src_val, int cst ) {
+    set_bv( make_MemcpyKV( ref->get(), src_val, offset ), cst );
 }
 
 Variable Variable::sub_part( Type *new_type, SI32 add_off ) const {

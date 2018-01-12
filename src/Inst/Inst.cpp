@@ -91,12 +91,7 @@ Inst *Inst::clone() const {
     return 0;
 }
 
-bool Inst::mod_fd_content( int nout ) const {
-    return false;
-}
-
-bool Inst::mod_fd_cursor() const {
-    return false;
+void Inst::get_mod_ressources( const std::function<void (const Value &, int)> &cb ) const {
 }
 
 int Inst::nb_outputs() const {

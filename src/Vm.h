@@ -14,12 +14,13 @@ class Type;
 */
 class Vm {
 public:
+    struct RessourceState { Value modifier; Vec<Value> readers; };
     using MSV   = std::map<String,Variable>;
     using Error = ErrorList::Error;
     using SFM   = std::map<RcString,std::function<Variable()>>;
     using SVM   = std::map<RcString,Variable>;
     using SVT   = std::map<RcString,Type *>;
-    using MVV   = std::map<Value,Value>;
+    using MVRS  = std::map<Value,RessourceState>;
 
     Vm( SI32 sizeof_ptr = 8 * sizeof( void * ), bool reverse_endianness = false );
 
@@ -49,7 +50,7 @@ public:
 
     bool          little_endian           () const;
 
-    void          mod_fd                  ( const Value &fd, RcPtr<Inst> mod_inst );
+    void          mod_fd                  ( RcPtr<Inst> mod_inst );
 
     void          display_graph           ();
     void          codegen                 ( Codegen &cg );
@@ -71,7 +72,6 @@ public:
     Scope        *scope;
     Deque<Type *> types;
     SVM           predefs;
-    MVV           mod_fds;            ///< modified file descriptors (fd -> last modification)
     SFM           predeffs;
     Vec<String>   includes;
     int           nb_calls;
@@ -83,6 +83,7 @@ public:
     SI32          sizeof_ptr;
     SI32          aligof_ptr;
     std::ostream *error_stream;
+    MVRS          mod_ressources;     ///< modified file descriptors (fd -> last changes)
     bool          reverse_endianness;
 };
 

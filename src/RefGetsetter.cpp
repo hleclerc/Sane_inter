@@ -43,5 +43,5 @@ Value RefGetsetter::get() const {
 }
 
 void RefGetsetter::set( const Value &val, int cst ) {
-    variable().set( val, cst );
+    variable().memcpy( val, cst );
 }

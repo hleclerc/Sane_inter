@@ -9,14 +9,18 @@
 //#include "Ast/Ast_maker.h"
 //#include "System/rcast.h"
 //#include "System/Math.h"
-#include "AnonymousRoom.h"
 #include "System/Math.h"
+
+#include "Inst/ReadFdAt.h"
+#include "Inst/ReadFd.h"
 #include "Inst/WriteFd.h"
 #include "Inst/BinOp.h"
 #include "Inst/UnaOp.h"
 #include "Inst/Conv.h"
 #include "Inst/Rand.h"
 #include "Inst/Cst.h"
+
+#include "AnonymousRoom.h"
 #include "Primitives.h"
 #include "Variable.h"
 //#include "SurdefList.h"
@@ -163,18 +167,18 @@ REG_PRIMITIVE_TYPE( reassign ) {
     // primitive numbers
     if ( va.type->primitive_number() ) {
         if ( va.type == vb.type )
-            return va.set( vb.get() ), va;
+            return va.memcpy( vb.get() ), va;
         if ( vb.type->primitive_number() )
-            return va.set( make_Conv( vb.get(), va.type ) ), va;
+            return va.memcpy( make_Conv( vb.get(), va.type ) ), va;
         TODO;
     }
 
     // AT
     if ( va.type == gvm->type_AT || va.type == gvm->type_NullableAT ) {
         if ( vb.type == gvm->type_AT || vb.type == gvm->type_NullableAT )
-            return va.set( vb.get() ), va;
+            return va.memcpy( vb.get() ), va;
         if ( vb.type->primitive_number() )
-            return va.set( make_Conv( vb.get(), gvm->type_PT ) ), va;
+            return va.memcpy( make_Conv( vb.get(), gvm->type_PT ) ), va;
         TODO;
         return args[ 0 ];
     }
@@ -428,7 +432,25 @@ REG_PRIMITIVE_TYPE( constified ) {
 REG_PRIMITIVE_TYPE( write_fd ) {
     if ( args.size() < 2 )
         return gvm->add_error( "__primitive_write_fd expects at least 2 arguments" );
-    gvm->mod_fd( args[ 0 ].get(), new WriteFd( args.map( []( const Variable &v ) { return v.get(); } ), args.size() - 1 ) );
+    gvm->mod_fd( new WriteFd( args.map( []( const Variable &v ) { return v.get(); } ), args.size() - 1 ) );
+    return gvm->ref_void;
+}
+
+REG_PRIMITIVE_TYPE( read_fd ) {
+    if ( args.size() != 3 )
+        return gvm->add_error( "__primitive_read_fd expects 3 arguments" );
+    RcPtr<Inst> inst = new ReadFd( args[ 0 ].get(), args[ 1 ].get(), args[ 2 ].get() );
+    const_cast<Variable &>( args[ 1 ] ).set_bv( Value( inst, 0, args[ 0 ].type ) );
+    gvm->mod_fd( inst );
+    return gvm->ref_void;
+}
+
+REG_PRIMITIVE_TYPE( read_fd_at ) {
+    if ( args.size() != 4 )
+        return gvm->add_error( "__primitive_read_fd_at expects 3 arguments" );
+    RcPtr<Inst> inst = new ReadFdAt( args[ 0 ].get(), args[ 1 ].get(), args[ 2 ].get(), args[ 3 ].get() );
+    const_cast<Variable &>( args[ 1 ] ).set_bv( Value( inst, 0, args[ 0 ].type ) );
+    gvm->mod_fd( inst );
     return gvm->ref_void;
 }
 

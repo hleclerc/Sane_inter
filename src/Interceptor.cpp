@@ -22,14 +22,14 @@ void Interceptor::run( const std::function<void ()> &func ) {
     }
 
     // save and remove new mod fds
-    for( auto p = mod_mod_fds.begin(); p != mod_mod_fds.end(); ++p ) {
-        auto iter = gvm->mod_fds.find( p->first );
-        p->second.n = iter->second;
-        if ( p->second.o ) {
-            TODO;
-        } else
-            gvm->mod_fds.erase( iter );
-    }
+    //    for( auto p = mod_mod_fds.begin(); p != mod_mod_fds.end(); ++p ) {
+    //        auto iter = gvm->mod_fds.find( p->first );
+    //        p->second.n = iter->second;
+    //        if ( p->second.o ) {
+    //            TODO;
+    //        } else
+    //            gvm->mod_fds.erase( iter );
+    //    }
 
     // new_breaks = breaks;
 }

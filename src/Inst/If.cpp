@@ -66,6 +66,10 @@ If::If( const Vec<Value> &inp, RcPtr<IfInp> inp_ok, IfOut *out_ok, RcPtr<IfInp> 
 If::If( AttrClone, const If *a ) {
 }
 
+void If::get_mod_ressources( const std::function<void (const Value &, int)> &cb ) const {
+    TODO;
+}
+
 bool If::expects_a_reg_at( int ninp ) const {
     return true;
 }
@@ -158,16 +162,6 @@ bool If::write_graph_rec( std::ostream &ss, std::set<const Inst *> &seen_insts, 
 }
 
 bool If::can_be_inlined() const {
-    return false;
-}
-
-bool If::mod_fd_content( int nout ) const {
-    TODO;
-    return false;
-}
-
-bool If::mod_fd_cursor() const {
-    TODO;
     return false;
 }
 

@@ -10,14 +10,13 @@ public:
     WriteFd( const Vec<Value> &args, int nb_inp );
     WriteFd( AttrClone, const WriteFd * );
 
-    virtual bool expects_a_reg_at( int ninp ) const override;
-    virtual bool can_be_inlined  () const override;
-    virtual bool mod_fd_content  ( int nout ) const override;
-    virtual bool mod_fd_cursor   () const override;
-    virtual int  nb_outputs      () const override;
-    virtual void write_code      ( StreamSep &ss, Codegen &cg ) override;
-    virtual void write_dot       ( std::ostream &os ) const override;
-    virtual int  inp_corr        ( int nout ) const;
+    virtual void get_mod_ressources( const std::function<void( const Value &fd, int mod_type )> &cb ) const override;
+    virtual bool expects_a_reg_at  ( int ninp ) const override;
+    virtual bool can_be_inlined    () const override;
+    virtual int  nb_outputs        () const override;
+    virtual void write_code        ( StreamSep &ss, Codegen &cg ) override;
+    virtual void write_dot         ( std::ostream &os ) const override;
+    virtual int  inp_corr          ( int nout ) const;
 
     int          nb_inp; ///< 1 => write value content. 2 => expects a pointer and a length
 };

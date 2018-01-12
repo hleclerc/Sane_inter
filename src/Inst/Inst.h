@@ -16,6 +16,7 @@ class Type;
 */
 class Inst : public RcObj {
 public:
+    struct RessourceModifierType { enum { MOD_WR, MOD_RD, MOD_RD_WITH_MOD_OF_CUR }; };
     struct Parent { bool operator==( const Parent &p ) const { return inst == p.inst && ninp == p.ninp; } Inst *inst; int ninp; };
     struct Inp { operator bool() const { return inst; } RcPtr<Inst> inst; int ninp; };
     using AsFunc = std::function<void(const PI8 *)>;
@@ -38,8 +39,7 @@ public:
     virtual Type    *out_type               ( int nout ) const;
     virtual Inst    *clone                  () const;
 
-    virtual bool     mod_fd_content         ( int nout ) const;
-    virtual bool     mod_fd_cursor          () const;
+    virtual void     get_mod_ressources     ( const std::function<void( const Value &fd, int mod_type )> &cb ) const;
 
     virtual void     write_to_stream        ( std::ostream &os, SI32 nout = -1, Type *type = 0, int offset = -1 ) const;
     virtual bool     write_graph_rec        ( std::ostream &ss, std::set<const Inst *> &seen_insts, const std::function<void(std::ostream&, const Inst *)> &f, bool disp_parents ) const;

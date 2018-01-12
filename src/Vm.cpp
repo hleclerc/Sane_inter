@@ -251,74 +251,70 @@ Type *Vm::type_ptr_for( const RcString &name, const Vec<Variable> &args ) {
     return res;
 }
 
-void Vm::mod_fd( const Value &fd, RcPtr<Inst> mod_inst ) {
-    // item in the mod_fds map
-    auto iter = mod_fds.find( fd );
-    if ( iter == mod_fds.end() ) {
-        iter = mod_fds.insert( iter, std::make_pair( fd, make_Ressource() ) );
-        if ( Interceptor *inter = RefLeaf::interceptor )
-            inter->mod_mod_fds[ fd ];
-    }
+void Vm::mod_fd( RcPtr<Inst> mod_inst ) {
+    // get ressource descriptors directly modified by mod_inst
+    std::map<Value,int> modifications;
+    mod_inst->get_mod_ressources( [&]( const Value &fd, int mod_type ) {
+        auto insert = modifications.insert( std::make_pair( fd, 0 ) );
+        insert.first->second = std::max( insert.first->second, mod_type );
+    } );
 
-    for( std::pair<const Value,Value> &p : mod_fds ) {
-        // it is a write. It has to be done after each read
-        int nout = mod_inst->nb_outputs();
-        if ( mod_inst->mod_fd_content( nout ) ) {
-            mod_inst->add_child( p.second );
-            p.second = Value( mod_inst, nout, gvm->type_Ressource );
-        } else if ( mod_inst->mod_fd_cursor() ) {
-            // test if fds are the same
+    // for each ressource descriptor directly modified by mod_inst
+    for( std::pair<Value,int> mod : modifications ) {
+        // register a ressource in mod_fds if not already done
+        auto iter = mod_ressources.find( mod.first );
+        if ( iter == mod_ressources.end() ) {
+            RessourceState rs;
+            rs.modifier = make_Ressource();
+            iter = mod_ressources.insert( iter, std::make_pair( mod.first, rs ) );
+            if ( Interceptor *inter = RefLeaf::interceptor )
+                inter->mod_mod_fds[ mod.first ];
+        }
+
+        //
+        switch ( mod.second ) {
+        case Inst::RessourceModifierType::MOD_WR:
+            // find ressources potentially modified by mod_inst
+            for( std::pair<const Value,RessourceState> &p : mod_ressources ) {
+                int nout = mod_inst->nb_outputs();
+                mod_inst->add_child( p.second.modifier );
+                p.second.modifier = Value( mod_inst, nout, gvm->type_Ressource );
+            }
+            break;
+        case Inst::RessourceModifierType::MOD_RD:
+            // find ressources potentially modified by mod_inst
+            //            for( std::pair<const Value,RessourceState> &p : mod_ressources ) {
+            //                int nout = mod_inst->nb_outputs();
+            //                mod_inst->add_child( p.second.modifier );
+            //                p.second.modifier = Value( mod_inst, nout, gvm->type_Ressource );
+            //            }
             TODO;
-        } else {
-            // reads are independants, but must be done after the writes
-            TODO;
+            break;
+        case Inst::RessourceModifierType::MOD_RD_WITH_MOD_OF_CUR:
+            // -> we only add a reader
+            //            for( std::pair<const Value,RessourceState> &p : mod_ressources ) {
+            //                int nout = mod_inst->nb_outputs();
+            //                mod_inst->add_child( p.second.modifier );
+            //                p.second.modifier = Value( mod_inst, nout, gvm->type_Ressource );
+            //            }
+            // TODO;
+            break;
         }
     }
-
-
-    //    //
-    //    if ( mod_inst->mod_fd_content() ) {
-    //        // even if we have != fd, it may point to the same file
-    //        if ( iter->second.mod_inst == mod_inst ) {
-    //            if ( Interceptor *inter = RefLeaf::interceptor )
-    //                inter->new_mod_fds[ fd ];
-    //        } else {
-    //            if ( Interceptor *inter = RefLeaf::interceptor ) {
-    //                P( inter );
-    //                TODO;
-    //                //                auto iter = inter->new_mod_fds.find( fd );
-    //                //                if ( iter != inter->new_mod_fds.end() )
-    //                //                    iter = inter->mod_mod_fds.insert( fd );
-    //            }
-    //            int nout = mod_inst->nb_outputs();
-    //            mod_inst->add_child( iter->second.mod_inst );
-    //            iter->second.mod_inst = Value( mod_inst, nout, gvm->type_Ressource );
-    //        }
-    //    } else if ( mod_inst->mod_fd_cursor() ) {
-    //        Variable fdv( fd, Variable::Flags::CONST );
-    //        for( auto iter : mod_fds ) {
-    //            if ( Variable( iter.first, Variable::Flags::CONST ).equal( fdv ).is_false() == false && iter.second.mod_inst != mod_inst ) {
-    //                mod_inst->add_child( iter.second.mod_inst );
-    //                iter.second.mod_inst = mod_inst;
-    //            }
-    //        }
-    //    } else {
-    //        TODO;
-    //    }
 }
 
 void Vm::display_graph() {
     Vec<Inst *> to_disp;
-    for( std::pair<const Value&, const Value &> mfd : mod_fds )
-        to_disp << mfd.second.inst.ptr();
+    for( std::pair<const Value&, const RessourceState &> mfd : mod_ressources )
+        to_disp << mfd.second.modifier.inst.ptr();
 
     Inst::display_graphviz( to_disp );
 }
 
 void Vm::codegen( Codegen &cg ) {
     Vec<Inst *> targets;
-    for( std::pair<const Value&, const Value &> mfd : mod_fds )
-        targets << mfd.second.inst.ptr();
+    for( std::pair<const Value&, const RessourceState &> mfd : mod_ressources )
+        targets << mfd.second.modifier.inst.ptr();
 
     cg.gen_code_for( targets );
 }
@@ -374,27 +370,15 @@ void Vm::if_else( const Variable &cond_var, const std::function<void ()> &ok, co
     // new If inst
     RcPtr<If> inst_if = new If( cond_var.get(), inp_ok, new IfOut( out_ok ), inp_ko, new IfOut( out_ko ) );
 
-    // add deps
-    for( const auto &p : inter_ok.mod_mod_fds ) {
-        if ( p.second.o )
-            TODO;
-        inst_if->out_ok->add_child( p.second.n );
-        gvm->mod_fd( p.first, inst_if );
-    }
-    for( const auto &p : inter_ko.mod_mod_fds ) {
-        if ( p.second.o )
-            TODO;
-        inst_if->out_ko->add_child( p.second.n );
-        if ( inter_ok.mod_mod_fds.count( p.first ) == 0 )
-            gvm->mod_fd( p.first, inst_if );
-    }
-
+    // stuff modified by the the if instruction (variables, ressources, breaks)
     int num = 0;
     for( auto &p : inter_ok.mod_refs )
         p.first->set( Value{ inst_if, num++, p.second.o.type }, -1 );
     for( auto &p : inter_ko.mod_refs )
         if ( inter_ok.mod_refs.count( p.first ) == 0 )
             p.first->set( Value{ inst_if, num++, p.second.o.type }, -1 );
+
+    gvm->mod_fd( inst_if );
 
     // update RefLeaf::breaks
     //    if ( breaks_ok.size() || breaks_ko.size() )
