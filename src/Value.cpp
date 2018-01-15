@@ -59,6 +59,10 @@ bool Value::is_equal( const Value &that ) const {
     return false;
 }
 
+void Value::thread_visitor( const std::function<void( Inst *, int, int )> &cb, bool call_before ) const {
+    inst->thread_visitor( nout, cb, call_before );
+}
+
 bool Value::is_not_equal( const Value &that ) const {
     if ( type == that.type ) {
         BoolVec bv_this( this->type->size() );

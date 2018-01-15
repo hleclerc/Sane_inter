@@ -294,3 +294,16 @@ bool Inst::simplify_for_cg( Codegen &cg ) {
 void Inst::get_out_insts( Deque<Inst *> &outs ) {
 }
 
+void Inst::thread_visitor( int nout, const std::function<void( Inst *, int nout, int ninp )> &cb, bool call_before ) {
+    int ninp = inp_corr( nout );
+
+    if ( call_before )
+        cb( this, nout, ninp );
+
+    if ( ninp >= 0 )
+        children[ ninp ].thread_visitor( cb, call_before );
+
+    if ( ! call_before )
+        cb( this, nout, ninp );
+}
+

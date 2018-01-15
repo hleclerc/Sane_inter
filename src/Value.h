@@ -25,8 +25,10 @@ public:
 
     void       *rcast          ();
 
-    bool        is_equal       ( const Value &that ) const; ///< works for a very limited number of cases (SI32, ...).
     bool        is_not_equal   ( const Value &that ) const; ///< works for a very limited number of cases (SI32, ...).
+    bool        is_equal       ( const Value &that ) const; ///< works for a very limited number of cases (SI32, ...).
+
+    void        thread_visitor ( const std::function<void( Inst *, int nout, int ninp )> &cb, bool call_before = true ) const;
 
     RcPtr<Inst> inst;
     Type       *type;

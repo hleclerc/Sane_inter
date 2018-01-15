@@ -2,10 +2,7 @@
 #include "RefLeaf.h"
 #include "gvm.h"
 
-Interceptor *RefLeaf::interceptor = 0;
-PI64         RefLeaf::inter_date = 0;
-
-RefLeaf::RefLeaf( const Value &value, Flags flags ) : creation_inter_date( inter_date ), value( value ), flags( flags ) {
+RefLeaf::RefLeaf( const Value &value, Flags flags ) : creation_inter_date( gvm ? gvm->inter_date : 0 ), value( value ), flags( flags ) {
 }
 
 void RefLeaf::write_to_stream( std::ostream &os ) const {
@@ -32,10 +29,10 @@ void RefLeaf::set( const Value &src_val, int cst ) {
         gvm->add_error( "a const reference should not be modified" );
 
     // interception
-    if ( interceptor && inter_date > creation_inter_date ) {
-        auto iter = interceptor->mod_refs.find( this );
-        if ( iter == interceptor->mod_refs.end() )
-            interceptor->mod_refs.emplace_hint( iter, this, Interceptor::ValChange{ value, {} } );
+    if ( gvm->interceptor && gvm->inter_date > creation_inter_date ) {
+        auto iter = gvm->interceptor->mod_refs.find( this );
+        if ( iter == gvm->interceptor->mod_refs.end() )
+            gvm->interceptor->mod_refs.emplace_hint( iter, this, Interceptor::ValueChange{ value, {} } );
     }
 
     // change value

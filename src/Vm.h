@@ -8,6 +8,7 @@
 #include "Variable.h"
 #include "Scope.h"
 #include <map>
+class Interceptor;
 class Codegen;
 class Type;
 
@@ -81,6 +82,8 @@ public:
     SVT           base_types;
     SI32          sizeof_ptr;
     SI32          aligof_ptr;
+    PI64          inter_date;
+    Interceptor  *interceptor;
     std::ostream *error_stream;
     RessourceMap  ressource_map;      ///< modified file descriptors (fd -> last changes)
     bool          reverse_endianness;

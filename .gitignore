@@ -15,3 +15,4 @@ doc/public
 doc/PygmentSaneLexer/sanelexer.egg-info
 res.cpp 
 sane
+.prim*

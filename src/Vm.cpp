@@ -36,6 +36,8 @@
 
 Vm::Vm( SI32 sizeof_ptr, bool reverse_endianness ) : main_scope( Scope::ScopeType::ROOT ), sizeof_ptr( sizeof_ptr ), aligof_ptr( sizeof_ptr ), reverse_endianness( reverse_endianness ) {
     error_stream = &std::cerr;
+    interceptor  = 0;
+    inter_date   = 0;
     init_mode    = true;
     nb_breaks    = 0;
     nb_calls     = 0;
@@ -263,28 +265,35 @@ void Vm::mod_fd( RcPtr<Inst> mod_inst ) {
     // for each ressource descriptor directly modified by mod_inst
     for( std::pair<Ressource *,int> mod : modifications ) {
         Ressource *rs = mod.first;
+        if ( ! rs->state.last_writer )
+            rs->state.last_writer = make_RessourceInst( rs );
+
+        //
+        if ( interceptor ) {
+            auto iter = interceptor->mod_ressources.find( rs );
+            if ( iter == interceptor->mod_ressources.end() )
+                iter = interceptor->mod_ressources.emplace_hint( iter, rs, Interceptor::RessourceChange{ rs->state, { rs->state.last_writer, {} } } );
+        }
+
         // write ?
+        int nout = mod_inst->nb_outputs();
         if ( mod.second ) {
-            int nout = mod_inst->nb_outputs();
-            if ( rs->last_readers.size() ) {
+            mod_inst->ressource_writers.insert( mod_inst->children.size() );
+
+            if ( rs->state.last_readers.size() ) {
                 RcPtr<Inst> ga = new Gatherer;
-                for( const Value &reader : rs->last_readers  )
+                for( const Value &reader : rs->state.last_readers )
                     ga->add_child( reader );
-                rs->last_readers.clear();
+                rs->state.last_readers.clear();
                 mod_inst->add_child( Value( ga, 0, gvm->type_Ressource ) );
-                rs->last_writer = Value( mod_inst, nout, gvm->type_Ressource );
+                rs->state.last_writer = Value( mod_inst, nout, gvm->type_Ressource );
             } else {
-                if ( ! rs->last_writer )
-                    rs->last_writer = make_RessourceInst( rs );
-                mod_inst->add_child( rs->last_writer );
-                rs->last_writer = Value( mod_inst, nout, gvm->type_Ressource );
+                mod_inst->add_child( rs->state.last_writer );
+                rs->state.last_writer = Value( mod_inst, nout, gvm->type_Ressource );
             }
         } else {
-            int nout = mod_inst->nb_outputs();
-            if ( ! rs->last_writer )
-                rs->last_writer = make_RessourceInst( rs );
-            mod_inst->add_child( rs->last_writer );
-            rs->last_readers << Value( mod_inst, nout, gvm->type_Ressource );
+            mod_inst->add_child( rs->state.last_writer );
+            rs->state.last_readers << Value( mod_inst, nout, gvm->type_Ressource );
         }
     }
 }
@@ -292,8 +301,8 @@ void Vm::mod_fd( RcPtr<Inst> mod_inst ) {
 void Vm::display_graph( const char *fn ) {
     Vec<Inst *> to_disp;
     ressource_map.visit( [&]( Ressource *rs ) {
-        if ( rs->last_writer )
-            to_disp << rs->last_writer.inst.ptr() ;
+        if ( rs->state.last_writer )
+            to_disp << rs->state.last_writer.inst.ptr() ;
     } );
 
     Inst::display_graphviz( to_disp, [](std::ostream &, const Inst *) {}, fn );
@@ -302,8 +311,8 @@ void Vm::display_graph( const char *fn ) {
 void Vm::codegen( Codegen &cg ) {
     Vec<Inst *> targets;
     ressource_map.visit( [&]( Ressource *rs ) {
-        if ( rs->last_writer )
-            targets << rs->last_writer.inst.ptr() ;
+        if ( rs->state.last_writer )
+            targets << rs->state.last_writer.inst.ptr() ;
     } );
 
     cg.gen_code_for( targets );
@@ -338,29 +347,46 @@ void Vm::if_else( const Variable &cond_var, const std::function<void ()> &ok, co
     RcPtr<IfInp> inp_ok = new IfInp;
     RcPtr<IfInp> inp_ko = new IfInp;
 
-    // save new values
+    // save new values in out instructions
     Vec<Value> out_ok, out_ko;
     for( auto &p : inter_ok.mod_refs ) {
         out_ok << p.second.n;
         auto iter_out_ko = inter_ko.mod_refs.find( p.first );
         if ( iter_out_ko == inter_ko.mod_refs.end() )
-            out_ko.push_back( p.second.o );
+            out_ko << p.second.o;
         else
-            out_ko.push_back( iter_out_ko->second.n );
+            out_ko << iter_out_ko->second.n;
     }
 
     for( auto &p : inter_ko.mod_refs ) {
         if ( inter_ok.mod_refs.count( p.first ) )
             continue;
         int num = out_ok.size();
-        out_ok.push_back( Value( inp_ok, num, p.second.o.type ) );
-        out_ko.push_back( p.second.n );
+        out_ok << Value( inp_ok, num, p.second.o.type );
+        out_ko << p.second.n;
+    }
+
+    for( const std::pair<Ressource *,Interceptor::RessourceChange> &p : inter_ok.mod_ressources ) {
+        out_ok << p.second.n.make_single_inst();
+        auto iter_out_ko = inter_ko.mod_ressources.find( p.first );
+        if ( iter_out_ko == inter_ko.mod_ressources.end() )
+            out_ko << p.second.o.make_single_inst();
+        else
+            out_ko << iter_out_ko->second.n.make_single_inst();
+    }
+
+    for( auto &p : inter_ko.mod_ressources ) {
+        if ( inter_ok.mod_ressources.count( p.first ) )
+            continue;
+        int num = out_ok.size();
+        out_ok << Value( inp_ok, num, gvm->type_Ressource );
+        out_ko << p.second.n.make_single_inst();
     }
 
     // new If inst
     RcPtr<If> inst_if = new If( cond_var.get(), inp_ok, new IfOut( out_ok ), inp_ko, new IfOut( out_ko ) );
 
-    // stuff modified by the the if instruction (variables, ressources, breaks)
+    // variables modified by the the if instruction
     int num = 0;
     for( auto &p : inter_ok.mod_refs )
         p.first->set( Value{ inst_if, num++, p.second.o.type }, -1 );
@@ -368,6 +394,7 @@ void Vm::if_else( const Variable &cond_var, const std::function<void ()> &ok, co
         if ( inter_ok.mod_refs.count( p.first ) == 0 )
             p.first->set( Value{ inst_if, num++, p.second.o.type }, -1 );
 
+    // ressources modified by the the if instruction
     gvm->mod_fd( inst_if );
 
     // update RefLeaf::breaks
@@ -394,6 +421,9 @@ void Vm::externalize_common_insts( Inst *main_inst, const Vec<Inst *> &inst_out,
         insts_to_externalize_rec( res, inst_out[ i ], init_op_id );
     }
 
+    //    ++Inst::cur_op_id;
+    //    insts_to_externalize_rec( res, main_inst, init_op_id );
+
     // common inst cannot depend on an inst_inp
     for( Inst *inst : res )
         inst->op_id = init_op_id - 1;
@@ -404,8 +434,6 @@ void Vm::externalize_common_insts( Inst *main_inst, const Vec<Inst *> &inst_out,
         for( const Inst::Parent &p : parents ) {
             if ( p.inst->op_id < init_op_id )
                 continue;
-            if ( p.ninp < 0 )
-                TODO;
 
             // num input of If (we want raw outputs, without offset or subtyping)
             int ind, nout = p.inst->children[ p.ninp ].nout;
@@ -424,8 +452,8 @@ void Vm::externalize_common_insts( Inst *main_inst, const Vec<Inst *> &inst_out,
             }
 
             // replace (once)
-            p.inst->mod_child( p.ninp, Value( inst_inp[ p.inst->op_id - init_op_id ], ind, p.inst->children[ p.ninp ].type, p.inst->children[ p.ninp ].offset ) );
-            p.inst->op_id = init_op_id - 1;
+            if ( p.inst->op_id - init_op_id < inst_inp.size() )
+                p.inst->mod_child( p.ninp, Value( inst_inp[ p.inst->op_id - init_op_id ], ind, p.inst->children[ p.ninp ].type, p.inst->children[ p.ninp ].offset ) );
         }
     }
 }

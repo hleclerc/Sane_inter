@@ -33,7 +33,7 @@ void WriteFd::write_dot( std::ostream &os ) const {
 }
 
 int WriteFd::inp_corr( int nout ) const {
-    return 3;
+    return nout + ( 1 + nb_inp );
 }
 
 bool WriteFd::expects_a_reg_at( int ninp ) const {

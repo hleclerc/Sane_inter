@@ -4,10 +4,10 @@
 #include "ReadFdAt.h"
 #include "Cst.h"
 
-ReadFdAt::ReadFdAt( const Value &fd, const Value &ptr, const Value &off, const Value &len ) {
+ReadFdAt::ReadFdAt(const Value &fd, const Value &ptr, const Value &off_in_file, const Value &len ) {
     add_child( fd  );
     add_child( ptr );
-    add_child( off );
+    add_child( off_in_file );
     add_child( len );
 }
 
@@ -25,6 +25,12 @@ int ReadFdAt::nb_outputs() const {
     return children.size() - 3;
 }
 
+int ReadFdAt::inp_corr( int nout ) const {
+    if ( nout )
+        return nout + 3;
+    return 1;
+}
+
 //void ReadFdAt::write_code( StreamSep &ss, Codegen &cg ) {
 //    ss.write_beg();
 //    if ( nb_inp == 1 )
@@ -38,10 +44,6 @@ void ReadFdAt::write_dot( std::ostream &os ) const {
     os << "ReadFdAt";
 }
 
-//int ReadFdAt::inp_corr( int nout ) const {
-//    return 3;
-//}
-
 //bool ReadFdAt::expects_a_reg_at( int ninp ) const {
 //    return ninp == 0;
 //}
@@ -50,6 +52,3 @@ void ReadFdAt::write_dot( std::ostream &os ) const {
 //    return false;
 //}
 
-//int ReadFdAt::nb_outputs() const {
-//    return children.size() - ( 1 + nb_inp );
-//}

@@ -43,10 +43,10 @@ public:
 
     virtual void     write_to_stream        ( std::ostream &os, SI32 nout = -1, Type *type = 0, int offset = -1 ) const;
     virtual bool     write_graph_rec        ( std::ostream &ss, std::set<const Inst *> &seen_insts, const std::function<void(std::ostream&, const Inst *)> &f, bool disp_parents ) const;
+    virtual AsFunc   get_assign_func        ( int nout, int off, int len );
     virtual void     write_dot              ( std::ostream &os ) const = 0;
     virtual void     get_bytes              ( int nout, void *dst, int beg_dst, int beg_src, int len, void *msk ) const;
     virtual void    *rcast                  ( SI32 nout, Type *type, SI32 offset );
-    virtual AsFunc   get_assign_func        ( int nout, int off, int len );
 
     virtual void     write_inline_code      ( StreamPrio &ss, Codegen &cg, int nout, int flags ); ///< helper for case nb_outputs == 1
     virtual bool     expects_a_reg_at       ( int ninp ) const;
@@ -58,6 +58,8 @@ public:
     virtual bool     simplify_for_cg        ( Codegen &cg );
     virtual void     get_out_insts          ( Deque<Inst *> &outs );
 
+    void             thread_visitor         ( int nout, const std::function<void( Inst *inst, int nout, int ninp )> &cb, bool call_before = true );
+
     static void      display_graphviz       ( const Vec<Inst *> &lst, const std::function<void (std::ostream &, const Inst *)> &f = {}, const std::string &filename = ".res", bool disp_parents = false, bool launch = true );
     static void      dfs_rec                ( Inst *inst, const std::function<void(Inst*)> &f, bool deep = false, bool f_after = false, bool need_inc_ref = false );
     static void      dfs                    ( const Vec<Inst *> &lst, const std::function<void(Inst*)> &f, bool deep = false, bool f_after = false, bool need_inc_ref = false );
@@ -66,6 +68,7 @@ public:
     Vec<Value>       children;
     Vec<Parent>      parents;
 
+    std::set<int>    ressource_writers; ///< ninp of the ressources changed by this
     CodegenData      cd;
 
     mutable void    *op_mp;

@@ -2,7 +2,6 @@
 
 #include "System/EnumFlags.h"
 #include "Ref.h"
-class Interceptor;
 
 /**
 */
@@ -21,8 +20,5 @@ public:
     PI64                creation_inter_date; ///< value of inter_date during creation
     Value               value;
     Flags               flags;
-
-    static Interceptor *interceptor;
-    static PI64         inter_date;
 };
 ENUM_FLAGS( RefLeaf::Flags )

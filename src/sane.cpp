@@ -35,6 +35,5 @@ int main( int argc, char **argv ) {
     // compilation
     std::ofstream fout( "res.cpp" );
     fout << cg.code() << std::flush;
-    return system( "cat res.cpp && g++ -o res res.cpp && ./res" );
-    //return system( "g++ -o res res.cpp && ./res" );
+    return system( "g++ -o res res.cpp && ./res" );
 }

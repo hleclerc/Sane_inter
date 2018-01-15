@@ -4,8 +4,8 @@
 
 void Interceptor::run( const std::function<void ()> &func ) {
     // new global interception context
-    auto _r0 = raii_save( RefLeaf::inter_date, RefLeaf::inter_date + 1 );
-    auto _r1 = raii_save( RefLeaf::interceptor, this );
+    auto _r0 = raii_save( gvm->inter_date, gvm->inter_date + 1 );
+    auto _r1 = raii_save( gvm->interceptor, this );
 
     // do the stuff
     func();
@@ -22,14 +22,15 @@ void Interceptor::run( const std::function<void ()> &func ) {
     }
 
     // save and remove new mod fds
-    //    for( auto p = mod_mod_fds.begin(); p != mod_mod_fds.end(); ++p ) {
-    //        auto iter = gvm->mod_fds.find( p->first );
-    //        p->second.n = iter->second;
-    //        if ( p->second.o ) {
-    //            TODO;
-    //        } else
-    //            gvm->mod_fds.erase( iter );
-    //    }
+    for( auto p = mod_ressources.begin(); p != mod_ressources.end(); ) {
+        if ( p->first->state == p->second.o ) {
+            p = mod_ressources.erase( p );
+        } else {
+            p->second.n = p->first->state;
+            p->first->state = p->second.o;
+            ++p;
+        }
+    }
 
     // new_breaks = breaks;
 }

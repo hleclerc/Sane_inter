@@ -1,6 +1,8 @@
 #include "../Codegen/Codegen.h"
-#include "../Type.h"
 // #include "../Ref_count.h"
+#include "../Type.h"
+
+#include "RessourceInst.h"
 #include "UnaOp.h"
 //#include "Room.h"
 //#include "Copy.h"
@@ -67,7 +69,36 @@ If::If( AttrClone, const If *a ) {
 }
 
 void If::get_mod_ressources( const std::function<void( Ressource *, bool)> &cb ) const {
-    TODO;
+    std::map<Ressource *,bool> rm;
+
+    auto by_ch = [&]( const Value &ch ) {
+        if ( ch.type != gvm->type_Ressource )
+            return;
+        bool write = 0;
+        Ressource *rs = 0;
+        ch.thread_visitor( [&]( Inst *inst, int nout, int ninp ) {
+            if ( RessourceInst *ri = dynamic_cast<RessourceInst *>( inst ) )
+                rs = ri->rs;
+            else if ( inst->ressource_writers.count( ninp ) )
+                write = true;
+        } );
+
+        if ( rs ) {
+            auto iter = rm.find( rs );
+            if ( iter == rm.end() )
+                rm.emplace_hint( iter, rs, write );
+            else if ( write && ! iter->second )
+                iter->second = true;
+        }
+    };
+
+    for( const Value &ch : out_ok->children )
+        by_ch( ch );
+    for( const Value &ch : out_ko->children )
+        by_ch( ch );
+
+    for( std::pair<Ressource *,bool> rp : rm )
+        cb( rp.first, rp.second );
 }
 
 bool If::expects_a_reg_at( int ninp ) const {
@@ -102,13 +133,13 @@ bool If::simplify_for_cg( Codegen &cg ) {
         }
 
         // if an if output is unused, we can remove the computation
-        if ( nb_parents_on_nout( nout ) == 0 ) {
-            out_ok->rem_child( nout );
-            out_ko->rem_child( nout );
-            rem_out( nout );
-            res = true;
-            continue;
-        }
+//        if ( nb_parents_on_nout( nout ) == 0 ) {
+//            out_ok->rem_child( nout );
+//            out_ko->rem_child( nout );
+//            rem_out( nout );
+//            res = true;
+//            continue;
+//        }
     }
 
     // inputs

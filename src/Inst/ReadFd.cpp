@@ -37,9 +37,11 @@ void ReadFd::write_dot( std::ostream &os ) const {
     os << "ReadFd";
 }
 
-//int ReadFd::inp_corr( int nout ) const {
-//    return 3;
-//}
+int ReadFd::inp_corr( int nout ) const {
+    if ( nout )
+        return nout + 2;
+    return 1;
+}
 
 //bool ReadFd::expects_a_reg_at( int ninp ) const {
 //    return ninp == 0;
