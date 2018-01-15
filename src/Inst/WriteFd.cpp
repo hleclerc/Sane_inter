@@ -13,9 +13,10 @@ WriteFd::WriteFd( AttrClone, const WriteFd *orig ) : nb_inp( orig->nb_inp ) {
 }
 
 void WriteFd::get_mod_ressources( const std::function<void( Ressource *rs, bool write )> &cb ) const {
+    // we write the cursor and the content
     auto fw = [&cb]( Ressource *rs ) { cb( rs, true ); };
-    gvm->ressource_map.pot_rs_on_file_content( children[ 0 ], fw );
-    gvm->ressource_map.pot_rs_on_file_cursor ( children[ 0 ], fw );
+    gvm->ressource_map.get_prs_on_file_content( children[ 0 ], fw );
+    gvm->ressource_map.get_prs_on_file_cursor ( children[ 0 ], fw );
 }
 
 void WriteFd::write_code( StreamSep &ss, Codegen &cg ) {

@@ -1,12 +1,14 @@
 # if __primitive_rand()
 #     stdout << 10
-a := rand()
-a = 18
-# stdin.read a, 4
-stdout << a
 
-# stderr << 16
-# stdout << 17
-# stderr << 18
+stdout << 16
 
-__primitive_ct_display_graph()
+a := 17
+b := 18
+stdout.read_at a, 0, 32
+stdout.read_at b, 0, 32
+
+stdout << 19
+
+
+# __primitive_ct_display_graph()

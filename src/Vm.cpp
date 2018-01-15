@@ -14,6 +14,7 @@
 
 #include "Inst/RessourceInst.h"
 #include "Inst/KnownVal.h"
+#include "Inst/Gatherer.h"
 #include "Inst/Void.h"
 #include "Inst/Cst.h"
 #include "Inst/If.h"
@@ -256,65 +257,54 @@ void Vm::mod_fd( RcPtr<Inst> mod_inst ) {
     std::map<Ressource *,bool> modifications;
     mod_inst->get_mod_ressources( [&]( Ressource *rs, bool write ) {
         auto insert = modifications.insert( std::make_pair( rs, 0 ) );
-        insert.first->second = std::max( insert.first->second, mod_type );
+        insert.first->second = std::max( insert.first->second, write );
     } );
 
     // for each ressource descriptor directly modified by mod_inst
-    for( std::pair<Value,int> mod : modifications ) {
-        // register a ressource in mod_fds if not already done
-        auto iter = mod_ressources.find( mod.first );
-        if ( iter == mod_ressources.end() ) {
-            RessourceState rs;
-            rs.modifier = make_Ressource();
-            iter = mod_ressources.insert( iter, std::make_pair( mod.first, rs ) );
-            if ( Interceptor *inter = RefLeaf::interceptor )
-                inter->mod_mod_fds[ mod.first ];
-        }
-
-        //
-        switch ( mod.second ) {
-        case Inst::RessourceModifierType::MOD_WR:
-            // find ressources potentially modified by mod_inst
-            for( std::pair<const Value,RessourceState> &p : mod_ressources ) {
-                int nout = mod_inst->nb_outputs();
-                mod_inst->add_child( p.second.modifier );
-                p.second.modifier = Value( mod_inst, nout, gvm->type_Ressource );
+    for( std::pair<Ressource *,int> mod : modifications ) {
+        Ressource *rs = mod.first;
+        // write ?
+        if ( mod.second ) {
+            int nout = mod_inst->nb_outputs();
+            if ( rs->last_readers.size() ) {
+                RcPtr<Inst> ga = new Gatherer;
+                for( const Value &reader : rs->last_readers  )
+                    ga->add_child( reader );
+                rs->last_readers.clear();
+                mod_inst->add_child( Value( ga, 0, gvm->type_Ressource ) );
+                rs->last_writer = Value( mod_inst, nout, gvm->type_Ressource );
+            } else {
+                if ( ! rs->last_writer )
+                    rs->last_writer = make_RessourceInst( rs );
+                mod_inst->add_child( rs->last_writer );
+                rs->last_writer = Value( mod_inst, nout, gvm->type_Ressource );
             }
-            break;
-        case Inst::RessourceModifierType::MOD_RD:
-            // find ressources potentially modified by mod_inst
-            //            for( std::pair<const Value,RessourceState> &p : mod_ressources ) {
-            //                int nout = mod_inst->nb_outputs();
-            //                mod_inst->add_child( p.second.modifier );
-            //                p.second.modifier = Value( mod_inst, nout, gvm->type_Ressource );
-            //            }
-            TODO;
-            break;
-        case Inst::RessourceModifierType::MOD_RD_WITH_MOD_OF_CUR:
-            // -> we only add a reader
-            //            for( std::pair<const Value,RessourceState> &p : mod_ressources ) {
-            //                int nout = mod_inst->nb_outputs();
-            //                mod_inst->add_child( p.second.modifier );
-            //                p.second.modifier = Value( mod_inst, nout, gvm->type_Ressource );
-            //            }
-            // TODO;
-            break;
+        } else {
+            int nout = mod_inst->nb_outputs();
+            if ( ! rs->last_writer )
+                rs->last_writer = make_RessourceInst( rs );
+            mod_inst->add_child( rs->last_writer );
+            rs->last_readers << Value( mod_inst, nout, gvm->type_Ressource );
         }
     }
 }
 
-void Vm::display_graph() {
+void Vm::display_graph( const char *fn ) {
     Vec<Inst *> to_disp;
-    for( std::pair<const Value&, const RessourceState &> mfd : mod_ressources )
-        to_disp << mfd.second.modifier.inst.ptr();
+    ressource_map.visit( [&]( Ressource *rs ) {
+        if ( rs->last_writer )
+            to_disp << rs->last_writer.inst.ptr() ;
+    } );
 
-    Inst::display_graphviz( to_disp );
+    Inst::display_graphviz( to_disp, [](std::ostream &, const Inst *) {}, fn );
 }
 
 void Vm::codegen( Codegen &cg ) {
     Vec<Inst *> targets;
-    for( std::pair<const Value&, const RessourceState &> mfd : mod_ressources )
-        targets << mfd.second.modifier.inst.ptr();
+    ressource_map.visit( [&]( Ressource *rs ) {
+        if ( rs->last_writer )
+            targets << rs->last_writer.inst.ptr() ;
+    } );
 
     cg.gen_code_for( targets );
 }

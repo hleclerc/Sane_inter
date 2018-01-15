@@ -455,7 +455,7 @@ REG_PRIMITIVE_TYPE( read_fd_at ) {
 }
 
 REG_PRIMITIVE_TYPE( ct_display_graph ) {
-    gvm->display_graph();
+    gvm->display_graph( ".prim" );
     return gvm->ref_void;
 }
 

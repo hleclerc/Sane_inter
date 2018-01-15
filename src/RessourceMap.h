@@ -11,11 +11,13 @@ public:
 
     RessourceMap();
 
-    void       pot_rs_on_file_content( const Value &fd, const std::function<void( Ressource * )> &cb );
-    void       pot_rs_on_file_cursor ( const Value &fd, const std::function<void( Ressource * )> &cb );
+    void       get_prs_on_file_content( const Value &fd, const std::function<void( Ressource * )> &cb );
+    void       get_prs_on_file_cursor ( const Value &fd, const std::function<void( Ressource * )> &cb );
 
-    MVR        file_cursors;
-    MVR        file_contents;
+    void       visit                 ( std::function<void( Ressource *rs )> visitor );
+
+    MVR        file_cursors; ///< fd => ressource (representation of the file cursor)
+    Ressource  file_content;
 };
 
 

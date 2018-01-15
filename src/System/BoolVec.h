@@ -13,17 +13,20 @@ public:
 
     void   write_to_stream( std::ostream &os ) const;
 
-    bool   all_true () const; ///< true if all bits are set
-    bool   all_false() const; ///< true if all bits are not set
+    bool   operator==     ( const BoolVec &that ) const;
+    bool   operator!=     ( const BoolVec &that ) const;
 
-    bool   all_true ( size_t beg, size_t end ) const; ///< true is all bits are set
-    bool   all_false( size_t beg, size_t end ) const; ///< true is all bits are not set
+    bool   all_true       () const; ///< true if all bits are set
+    bool   all_false      () const; ///< true if all bits are not set
 
-    bool   get      ( size_t index ) const;
+    bool   all_true       ( size_t beg, size_t end ) const; ///< true is all bits are set
+    bool   all_false      ( size_t beg, size_t end ) const; ///< true is all bits are not set
 
-    void   set      ( size_t beg, size_t end, bool val );
-    void   set      ( size_t index, bool val );
-    void   set      ( bool val );
+    bool   get            ( size_t index ) const;
+
+    void   set            ( size_t beg, size_t end, bool val );
+    void   set            ( size_t index, bool val );
+    void   set            ( bool val );
 
     PI8   *data;
     size_t size;

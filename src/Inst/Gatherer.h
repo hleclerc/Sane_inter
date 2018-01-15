@@ -9,6 +9,7 @@ public:
     Gatherer();
     Gatherer( AttrClone, const Gatherer *orig );
 
-    virtual void  write_dot        ( std::ostream &os ) const override;
+    virtual int   nb_outputs() const override;
+    virtual void  write_dot ( std::ostream &os ) const override;
 };
 

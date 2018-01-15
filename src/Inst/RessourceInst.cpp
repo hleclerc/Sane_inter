@@ -1,10 +1,10 @@
 #include "RessourceInst.h"
 #include "../gvm.h"
 
-RessourceInst::RessourceInst() {
+RessourceInst::RessourceInst( Ressource *rs ) : rs( rs ) {
 }
 
-RessourceInst::RessourceInst( AttrClone, const RessourceInst *orig ) {
+RessourceInst::RessourceInst( AttrClone, const RessourceInst *orig ) : rs( orig->rs ) {
 }
 
 int RessourceInst::nb_outputs() const {
@@ -12,15 +12,18 @@ int RessourceInst::nb_outputs() const {
 }
 
 void RessourceInst::write_dot( std::ostream &os ) const {
-    os << "RS";
+    if ( rs )
+        os << *rs;
+    else
+        os << "NULL RS";
 }
 
 Type *RessourceInst::out_type( int nout ) const {
     return gvm->type_Ressource;
 }
 
-Value make_RessourceInst() {
-    return { new RessourceInst, 0, gvm->type_Ressource };
+Value make_RessourceInst( Ressource *rs ) {
+    return { new RessourceInst( rs ), 0, gvm->type_Ressource };
 }
 
 void RessourceInst::write_code( StreamSep &ss, Codegen &cg ) {

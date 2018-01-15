@@ -1,5 +1,6 @@
 #include "System/BoolVec.h"
 #include "Value.h"
+#include "Type.h"
 
 Value::Value( const RcPtr<Inst> &inst, SI32 nout, Type *type, SI32 offset ) : inst( inst ), type( type ), nout( nout ), offset( offset ) {
 }
@@ -42,5 +43,33 @@ void Value::get_bytes( void *dst, PI32 beg_dst, PI32 beg_src, PI32 len, void *ms
 
 void *Value::rcast() {
     return inst->rcast( nout, type, offset );
+}
+
+bool Value::is_equal( const Value &that ) const {
+    if ( type == that.type ) {
+        BoolVec bv_this( this->type->size() );
+        BoolVec bv_that( that. type->size() );
+        if ( this->get_bytes( bv_this.data, 0, 0, this->type->size() ) &&
+             that. get_bytes( bv_that.data, 0, 0, that. type->size() ) )
+            return bv_this == bv_that;
+        return false;
+    }
+
+    TODO;
+    return false;
+}
+
+bool Value::is_not_equal( const Value &that ) const {
+    if ( type == that.type ) {
+        BoolVec bv_this( this->type->size() );
+        BoolVec bv_that( that. type->size() );
+        if ( this->get_bytes( bv_this.data, 0, 0, this->type->size() ) &&
+             that. get_bytes( bv_that.data, 0, 0, that. type->size() ) )
+            return bv_this != bv_that;
+        return false;
+    }
+
+    TODO;
+    return false;
 }
 

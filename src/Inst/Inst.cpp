@@ -2,6 +2,7 @@
 #include "../System/DotOut.h"
 #include "../System/Deque.h"
 #include "../Value.h"
+#include "../gvm.h"
 #include <fstream>
 
 size_t Inst::cur_op_id = 0;
@@ -129,10 +130,14 @@ bool Inst::write_graph_rec( std::ostream &ss, std::set<const Inst *> &seen_insts
             label << ( label.str().size() ? "\\n" : "" ) << "off:" << v.offset;
         // label << v.type()->name;
 
+        const char *style = "plain";
+        if ( v.type == gvm->type_Ressource )
+            style = "dotted";
+
         if ( children.size() > 1 )
-            ss << "  node_" << this << ":f" << cpt++ << " -> node_" << v.inst.ptr() << " [label=\"" << label.str() << "\"];\n";
+            ss << "  node_" << this << ":f" << cpt++ << " -> node_" << v.inst.ptr() << " [style=" << style << ",label=\"" << label.str() << "\"];\n";
         else
-            ss << "  node_" << this << " -> node_" << v.inst.ptr() << " [label=\"" << label.str() << "\"];\n";
+            ss << "  node_" << this << " -> node_" << v.inst.ptr() << " [style=" << style << ",label=\"" << label.str() << "\"];\n";
         v.inst->write_graph_rec( ss, seen_insts, f, disp_parents );
     }
 

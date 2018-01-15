@@ -1,4 +1,5 @@
 #include "BoolVec.h"
+#include "Memcpy.h"
 
 BoolVec::BoolVec( Reference, void *data, size_t size ) : data( (PI8 *)data ), size( size ), rese( 0 ) {
 }
@@ -30,6 +31,14 @@ BoolVec::~BoolVec() {
 void BoolVec::write_to_stream( std::ostream &os ) const {
     for( size_t i = 0; i < size; ++i )
         os << get( i );
+}
+
+bool BoolVec::operator==( const BoolVec &that ) const {
+    return size == that.size && memcmp_bit( data, 0, that.data, 0, size ) == 0;
+}
+
+bool BoolVec::operator!=( const BoolVec &that ) const {
+    return ! operator ==( that );
 }
 
 bool BoolVec::all_true() const {

@@ -25,6 +25,9 @@ public:
 
     void       *rcast          ();
 
+    bool        is_equal       ( const Value &that ) const; ///< works for a very limited number of cases (SI32, ...).
+    bool        is_not_equal   ( const Value &that ) const; ///< works for a very limited number of cases (SI32, ...).
+
     RcPtr<Inst> inst;
     Type       *type;
     SI32        nout;

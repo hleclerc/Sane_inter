@@ -41,6 +41,16 @@ struct Vec { // : std::vector<T>
 
     ~Vec() { for( size_t i = _size; i--; ) _data[ i ].~T(); if ( _rese ) free( _data ); }
 
+    void clear() {
+         for( size_t i = _size; i--; )
+             _data[ i ].~T();
+         if ( _rese )
+             free( _data );
+         _data = 0;
+         _size = 0;
+         _rese = 0;
+    }
+
     template<class U>
     void operator=( const Vec<U> &vec ) { resize( vec.size() ); for( size_t i = 0; i < vec.size(); ++i ) _data[ i ] = vec[ i ]; }
 

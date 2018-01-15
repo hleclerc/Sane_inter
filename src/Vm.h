@@ -51,7 +51,7 @@ public:
 
     void          mod_fd                  ( RcPtr<Inst> mod_inst );
 
-    void          display_graph           ();
+    void          display_graph           ( const char *fn = ".res" );
     void          codegen                 ( Codegen &cg );
 
     void          if_else                 ( const Variable &cond_var, const std::function<void(void)> &ok, const std::function<void(void)> &ko );

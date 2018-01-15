@@ -48,7 +48,7 @@ void Codegen_C::gen_code_for( const Vec<Inst *> &targets ) {
 
     base_simplifications( gatherer.ptr() );
 
-    Inst::display_graphviz( gatherer.ptr() );
+    Inst::display_graphviz( gatherer->children.map( []( const Value &v ) { return v.inst.ptr(); } ) );
 
     StreamSep st( main_block, "    " );
     write_block( st, gatherer->children.map( []( const Value &val ) { return val.inst.ptr(); } ) );

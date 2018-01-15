@@ -11,8 +11,8 @@ public:
 
     void        write_to_stream( std::ostream &os ) const;
 
-    Value       last_writers;
     Vec<Value>  last_readers;
+    Value       last_writer;
     const char *desc;
 };
 

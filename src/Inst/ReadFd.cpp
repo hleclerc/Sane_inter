@@ -1,6 +1,6 @@
 #include "../Codegen/Codegen.h"
 #include "../Type.h"
-#include "../Vm.h"
+#include "../gvm.h"
 #include "ReadFd.h"
 #include "Cst.h"
 
@@ -13,8 +13,15 @@ ReadFd::ReadFd( const Value &fd, const Value &ptr, const Value &len ) {
 ReadFd::ReadFd( AttrClone, const ReadFd *orig ) {
 }
 
-void ReadFd::get_mod_ressources( const std::function<void( const Ressource *rs, bool write )> &cb ) const {
-    cb( children[ 0 ], RessourceModifierType::MOD_RD_WITH_MOD_OF_CUR );
+void ReadFd::get_mod_ressources( const std::function<void(Ressource *, bool)> &cb ) const {
+    // we read the content of fd
+    gvm->ressource_map.get_prs_on_file_content( children[ 0 ], [&]( Ressource *rs ) {
+        cb( rs, false );
+    } );
+    // we write the cursor of fd
+    gvm->ressource_map.get_prs_on_file_cursor( children[ 0 ], [&]( Ressource *rs ) {
+        cb( rs, true );
+    } );
 }
 
 //void ReadFd::write_code( StreamSep &ss, Codegen &cg ) {

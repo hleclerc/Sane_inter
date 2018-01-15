@@ -1,6 +1,6 @@
 #include "../Codegen/Codegen.h"
 #include "../Type.h"
-#include "../Vm.h"
+#include "../gvm.h"
 #include "ReadFdAt.h"
 #include "Cst.h"
 
@@ -14,8 +14,15 @@ ReadFdAt::ReadFdAt( const Value &fd, const Value &ptr, const Value &off, const V
 ReadFdAt::ReadFdAt( AttrClone, const ReadFdAt *orig ) {
 }
 
-void ReadFdAt::get_mod_ressources( const std::function<void( const Ressource *rs, bool write )> &cb ) const {
-    cb( children[ 0 ], RessourceModifierType::MOD_RD );
+void ReadFdAt::get_mod_ressources( const std::function<void( Ressource *rs, bool write )> &cb ) const {
+    // we read the content of fd
+    gvm->ressource_map.get_prs_on_file_content( children[ 0 ], [&]( Ressource *rs ) {
+        cb( rs, false );
+    } );
+}
+
+int ReadFdAt::nb_outputs() const {
+    return children.size() - 3;
 }
 
 //void ReadFdAt::write_code( StreamSep &ss, Codegen &cg ) {
