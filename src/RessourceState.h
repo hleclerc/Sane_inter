@@ -1,0 +1,4 @@
+#ifndef RESSOURCESTATE_H
+#define RESSOURCESTATE_H
+
+#endif // RESSOURCESTATE_H
