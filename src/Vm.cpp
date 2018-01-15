@@ -280,17 +280,11 @@ void Vm::mod_fd( RcPtr<Inst> mod_inst ) {
         if ( mod.second ) {
             mod_inst->ressource_writers.insert( mod_inst->children.size() );
 
-            if ( rs->state.last_readers.size() ) {
-                RcPtr<Inst> ga = new Gatherer;
-                for( const Value &reader : rs->state.last_readers )
-                    ga->add_child( reader );
-                rs->state.last_readers.clear();
-                mod_inst->add_child( Value( ga, 0, gvm->type_Ressource ) );
-                rs->state.last_writer = Value( mod_inst, nout, gvm->type_Ressource );
-            } else {
-                mod_inst->add_child( rs->state.last_writer );
-                rs->state.last_writer = Value( mod_inst, nout, gvm->type_Ressource );
-            }
+            Value val = rs->state.make_single_inst();
+            rs->state.last_readers.clear();
+            mod_inst->add_child( val );
+
+            rs->state.last_writer = Value( mod_inst, nout, gvm->type_Ressource );
         } else {
             mod_inst->add_child( rs->state.last_writer );
             rs->state.last_readers << Value( mod_inst, nout, gvm->type_Ressource );
@@ -411,65 +405,59 @@ void Vm::if_else( const Variable &cond_var, const std::function<void ()> &ok, co
 
 void Vm::externalize_common_insts( Inst *main_inst, const Vec<Inst *> &inst_out, const Vec<Inst *> &inst_inp ) {
     // first traversal: mark op_id
-    Inst::dfs( inst_out[ 0 ], []( Inst * ) {} );
+    size_t init_op_id = Inst::cur_op_id + 1;
+    for( Inst *out : inst_out )
+        Inst::dfs( out, []( Inst * ) {} );
 
-    // seconde ones: get instructions in common
-    Vec<Inst *> res;
-    size_t init_op_id = Inst::cur_op_id;
-    for( size_t i = 1; i < inst_out.size(); ++i ) {
-        ++Inst::cur_op_id;
-        insts_to_externalize_rec( res, inst_out[ i ], init_op_id );
-    }
-
-    //    ++Inst::cur_op_id;
-    //    insts_to_externalize_rec( res, main_inst, init_op_id );
-
-    // common inst cannot depend on an inst_inp
-    for( Inst *inst : res )
-        inst->op_id = init_op_id - 1;
-
-    // replace parents from inst_a or inst_b by if_inp and if inp
-    for( Inst *inst : res ) {
-        Vec<Inst::Parent> parents = inst->parents;
-        for( const Inst::Parent &p : parents ) {
-            if ( p.inst->op_id < init_op_id )
-                continue;
-
-            // num input of If (we want raw outputs, without offset or subtyping)
-            int ind, nout = p.inst->children[ p.ninp ].nout;
-            Type *base_out_type = inst->out_type( nout );
-            for( size_t i = 0; ; ++i ) {
-                if ( i == main_inst->children.size() ) {
-                    ind = main_inst->children.size();
-                    main_inst->add_child( Value( inst, nout, base_out_type ) );
-                    break;
-                }
-                const Value &ch = main_inst->children[ i ];
-                if ( ch.inst == inst && ch.nout == nout && ch.type == base_out_type && ch.offset == 0 ) {
-                    ind = i;
-                    break;
-                }
-            }
-
-            // replace (once)
-            if ( p.inst->op_id - init_op_id < inst_inp.size() )
-                p.inst->mod_child( p.ninp, Value( inst_inp[ p.inst->op_id - init_op_id ], ind, p.inst->children[ p.ninp ].type, p.inst->children[ p.ninp ].offset ) );
-        }
-    }
+    // find instruction with parents from != contexts
+    ++Inst::cur_op_id;
+    for( Inst *out : inst_out )
+        externalize_common_inst_p2_rec( main_inst, inst_inp, out, init_op_id );
 }
 
-void Vm::insts_to_externalize_rec( Vec<Inst *> &res, Inst *inst, size_t init_op_id ) {
+void Vm::externalize_common_inst_p2_rec( Inst *main_inst, const Vec<Inst *> &inst_inp, Inst *inst, size_t init_op_id ) {
     if ( inst->op_id == Inst::cur_op_id )
         return;
-    if ( inst->op_id >= init_op_id ) {
-        inst->op_id = Inst::cur_op_id;
-        res << inst;
-        return;
-    }
     inst->op_id = Inst::cur_op_id;
 
-    for( const Value &val : inst->children )
-        insts_to_externalize_rec( res, val.inst.ptr(), init_op_id );
+    // chack if inst has parents in different spaces
+    if ( ! inst->parents.empty() ) {
+        int pos_parent = std::max( int( inst->parents[ 0 ].inst->op_id - init_op_id ), -1 );
+        for( size_t i = 1; i < inst->parents.size(); ++i ) {
+            int new_pos_parent = std::max( int( inst->parents[ i ].inst->op_id - init_op_id ), -1 );
+            if ( new_pos_parent != pos_parent ) {
+                P( new_pos_parent, pos_parent );
+                // -> yes, inst has parents in different spaces
+                Vec<Inst::Parent> parents = inst->parents;
+                for( const Inst::Parent &p : parents ) {
+                    // num input of If (we want raw outputs, without offset or subtyping)
+                    int ind, nout = p.inst->children[ p.ninp ].nout;
+                    Type *base_out_type = inst->out_type( nout );
+                    for( size_t i = 0; ; ++i ) {
+                        if ( i == main_inst->children.size() ) {
+                            ind = main_inst->children.size();
+                            main_inst->add_child( Value( inst, nout, base_out_type ) );
+                            break;
+                        }
+                        const Value &ch = main_inst->children[ i ];
+                        if ( ch.inst == inst && ch.nout == nout && ch.type == base_out_type && ch.offset == 0 ) {
+                            ind = i;
+                            break;
+                        }
+                    }
+
+                    // if p.inst is from an IfOut, use IfInp replace (once)
+                    if ( p.inst->op_id - init_op_id >= 0 && p.inst->op_id - init_op_id < inst_inp.size() )
+                        p.inst->mod_child( p.ninp, Value( inst_inp[ p.inst->op_id - init_op_id ], ind, p.inst->children[ p.ninp ].type, p.inst->children[ p.ninp ].offset ) );
+                }
+                return;
+            }
+        }
+    }
+
+
+    for( const Value &ch : inst->children )
+        externalize_common_inst_p2_rec( main_inst, inst_inp, ch.inst.ptr(), init_op_id );
 }
 
 Variable Vm::visit( const RcString &names, const RcString &code, bool want_ret ) {
