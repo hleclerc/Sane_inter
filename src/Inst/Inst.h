@@ -33,6 +33,7 @@ public:
 
     bool             all_children_with_op_id( size_t oi ) const;
     int              nb_parents_on_nout     ( int nout ) const;
+    virtual void     externalize            ( Inst *inst, size_t ninp );
     virtual int      nb_outputs             () const;
     virtual int      inp_corr               ( int nout ) const;
     virtual Inp      val_corr               ( int nout ) const;

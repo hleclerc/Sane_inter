@@ -15,4 +15,4 @@ if rand()
 
 stdout << a + b
 
-__primitive_ct_display_graph()
+# __primitive_ct_display_graph()

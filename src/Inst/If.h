@@ -29,6 +29,7 @@ public:
     IfOut( AttrClone, const IfOut *a ) {}
 
     virtual Inst *parent_out_inst() const override;
+    virtual void  externalize    ( Inst *inst, size_t ninp ) override;
     virtual void  write_code     ( StreamSep &ss, Codegen &cg ) override;
     virtual int   nb_outputs     () const override;
     virtual void  write_dot      ( std::ostream &os ) const override;

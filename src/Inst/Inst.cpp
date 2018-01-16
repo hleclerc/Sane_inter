@@ -72,6 +72,11 @@ int Inst::nb_parents_on_nout( int nout ) const {
     return res;
 }
 
+void Inst::externalize( Inst *inst, size_t ninp ) {
+    write_dot( std::cerr << __FUNCTION__ << " " );
+    TODO;
+}
+
 int Inst::inp_corr( int nout ) const {
     return -1;
 }
@@ -130,7 +135,7 @@ bool Inst::write_graph_rec( std::ostream &ss, std::set<const Inst *> &seen_insts
             label << ( label.str().size() ? "\\n" : "" ) << "off:" << v.offset;
         // label << v.type()->name;
 
-        const char *style = "plain";
+        const char *style = "solid";
         if ( v.type == gvm->type_Ressource )
             style = "dotted";
 

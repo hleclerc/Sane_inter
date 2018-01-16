@@ -53,6 +53,28 @@ Inst *IfOut::parent_out_inst() const {
     return if_inst;
 }
 
+void IfOut::externalize( Inst *inst, size_t ninp ) {
+    // get index in if_inp
+    int ind;
+    Value &och = inst->children[ ninp ];
+    Type *base_out_type = och.inst->out_type( och.nout );
+    for( size_t i = 0; ; ++i ) {
+        if ( i == if_inst->children.size() ) {
+            ind = if_inst->children.size();
+            if_inst->add_child( Value( och.inst, och.nout, base_out_type, 0 ) );
+            break;
+        }
+        const Value &ich = if_inst->children[ i ];
+        if ( ich.inst == och.inst && ich.nout == och.nout && ich.type == base_out_type && ich.offset == 0 ) {
+            ind = i;
+            break;
+        }
+    }
+
+    // replace ninp child in inst
+    inst->mod_child( ninp, Value( if_inp, ind, och.type, och.offset ) );
+}
+
 If::If( const Vec<Value> &inp, RcPtr<IfInp> inp_ok, IfOut *out_ok, RcPtr<IfInp> inp_ko, IfOut *out_ko ) : inp_ok( inp_ok ), out_ok( out_ok ), inp_ko( inp_ko ), out_ko( out_ko ) {
     inp_ok->if_inst = this;
     inp_ko->if_inst = this;

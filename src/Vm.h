@@ -57,9 +57,6 @@ public:
 
     void          if_else                       ( const Variable &cond_var, const std::function<void(void)> &ok, const std::function<void(void)> &ko );
 
-    void          externalize_common_insts      ( Inst *main_inst, const Vec<Inst *> &inst_out, const Vec<Inst *> &inst_inp );
-    void          externalize_common_inst_p2_rec( Inst *main_inst, const Vec<Inst *> &inst_inp, Inst *inst, size_t init_op_id );
-
     #define BT( T ) Type *type_##T;
     #include "BaseTypes.h"
     #undef BT
