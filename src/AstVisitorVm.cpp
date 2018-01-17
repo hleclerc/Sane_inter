@@ -1,6 +1,7 @@
 #include "AstVisitorCatchedVariables.h"
 #include "AstVisitorVm.h"
 #include "Interceptor.h"
+#include "Inst/While.h"
 #include "Inst/Cst.h"
 //#include "System/rcast.h"
 //#include "System/LVec.h"
@@ -541,7 +542,8 @@ Variable AstVisitorVm::on_class( RcString name, RcString cname, PI8 nb_scopes_re
         sl_var.apply( false, {}, {}, ApplyFlags::DONT_CALL_CTOR );
 
     // return
-    return sl_var;
+    return gvm->ref_void;
+    // return sl_var;
 }
 
 Variable AstVisitorVm::on_if( RcString cond, const Vec<RcString> &ok ) {
@@ -562,18 +564,83 @@ Variable AstVisitorVm::on_if_else( RcString cond, const Vec<RcString> &ok, const
 }
 
 Variable AstVisitorVm::on_while( RcString cond, const Vec<RcString> &ok ) {
-    TODO; return {};
-//    size_t os = vm->el.size();
-//    while ( true ) {
-//        Scope new_scope( Scope::Scope_type::WHILE, scope );
-//        Variable cond_var = new_scope.visit( names, cond, true );
-//        if ( ! cond_var.is_true( scope ) )
-//            break;
-//        new_scope.visit( names, ok, false );
-//        if ( os != vm->el.size() || new_scope.nb_breaks || new_scope.nb_conts > 1 )
-//            break;
-//    }
-//    ret_or_dec_ref( vm->ref_void );
+    TODO;
+    //    // run until stability of 'mod'
+    //    Value cond_val;
+    //    Interceptor inter;
+    //    RcPtr<While> wh = new While;
+    //    //    std::map<RcPtr<Ref>,Value> mod_co;
+    //    //    std::map<RcPtr<Ref>,Ref::Interception> mod;
+    //    // we want modified Value to be inputs also
+    //    while ( true ) {
+    //        size_t old_size = inter.mod_refs.size(), old_err_size = gvm->error_list.size();
+    //        Scope new_scope( Scope::ScopeType::WHILE );
+
+    //        //
+    //        int num = 0;
+    //        wh->clear_children();
+    //        for( auto &p : inter.mod_refs ) {
+    //            p.first->val.inst = wh->inp_co;
+    //            p.first->val.nout = num++;
+    //            wh->add_child( p.second.o );
+    //        }
+
+    //        Interceptor.run( [&]() {
+    //            //            AstVisitorVm av( source_vec, &new_scope, true );
+    //            //            ast_visit( av, cond );
+    //            gvm->visit( name, ok, false );
+    //        } );
+    //        for( auto &p : mod )
+    //            mod_co[ p.first ] = p.second.n;
+
+    //        // stop the loop if error or if stability if modified variables
+    //        if ( old_err_size != gvm->error_list.size() ) {
+    //            for( auto &p : mod )
+    //                p.first->val = p.second.o;
+    //            return false;
+    //        }
+
+    //        if ( old_size == mod.size() )
+    //            break;
+    //    }
+
+    //    // continue / break
+    //    Value break_val;
+    //    for( const Ref::Break &br : breaks_lo )
+    //        if ( br.nb_l >= 1 )
+    //            break_val = break_val ? make_Or_log( break_val, br.cond ) : br.cond;
+
+    //    // make a while inst
+    //    for( auto &p : mod ) {
+    //        wh->out_co->add_child( mod_co[ p.first ] );
+    //        wh->out_lo->add_child( p.second.n );
+    //    }
+    //    wh->out_co->add_child( cond_val );
+    //    if ( break_val ) {
+    //        wh->out_lo->add_child( break_val );
+    //        // wh->out_lo->cond = true;
+    //    }
+
+    //    // use it
+    //    int num = 0;
+    //    for( auto &p : mod )
+    //        p.first->change_value( scope, Value( wh, num++ ), -1 );
+
+    //    // break relay
+    //    //    bool need_inc_inter_date = false;
+    //    //    for( const Ref::Break &br : breaks_lo ) {
+    //    //        if ( br.nb_l >= 2 ) {
+    //    //            if ( ! need_inc_inter_date ) {
+    //    //                need_inc_inter_date = true;
+    //    //                ++Ref::inter_date;
+    //    //            }
+    //    //            Ref::breaks << Ref::Break{ br.nb_l - 2, Ref::inter_date, br.cond };
+    //    //        }
+    //    //    }
+
+    //    if ( want_ret )
+    //        TODO;
+    return gvm->ref_void;
 }
 
 Variable AstVisitorVm::on_return( RcString value ) {

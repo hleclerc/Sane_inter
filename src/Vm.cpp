@@ -12,7 +12,6 @@
 #include "Import.h"
 #include "Vm.h"
 
-#include "Inst/RessourceInst.h"
 #include "Inst/KnownVal.h"
 #include "Inst/Gatherer.h"
 #include "Inst/Void.h"
@@ -265,38 +264,19 @@ void Vm::mod_fd( RcPtr<Inst> mod_inst ) {
     // for each ressource descriptor directly modified by mod_inst
     for( std::pair<Ressource *,int> mod : modifications ) {
         Ressource *rs = mod.first;
-        if ( ! rs->state.last_writer )
-            rs->state.last_writer = make_RessourceInst( rs );
-
-        //
-        if ( interceptor ) {
-            auto iter = interceptor->mod_ressources.find( rs );
-            if ( iter == interceptor->mod_ressources.end() )
-                iter = interceptor->mod_ressources.emplace_hint( iter, rs, Interceptor::RessourceChange{ rs->state, { rs->state.last_writer, {} } } );
-        }
 
         // write ?
         int nout = mod_inst->nb_outputs();
-        if ( mod.second ) {
-            mod_inst->ressource_writers.insert( mod_inst->children.size() );
-
-            Value val = rs->state.make_single_inst();
-            rs->state.last_readers.clear();
-            mod_inst->add_child( val );
-
-            rs->state.last_writer = Value( mod_inst, nout, gvm->type_Ressource );
-        } else {
-            mod_inst->add_child( rs->state.last_writer );
-            rs->state.last_readers << Value( mod_inst, nout, gvm->type_Ressource );
-        }
+        mod_inst->add_child( rs->state.get() );
+        if ( mod.second )
+            rs->state.set( Value( mod_inst, nout, rs->state.value.type ) );
     }
 }
 
 void Vm::display_graph( const char *fn ) {
     Vec<Inst *> to_disp;
     ressource_map.visit( [&]( Ressource *rs ) {
-        if ( rs->state.last_writer )
-            to_disp << rs->state.last_writer.inst.ptr() ;
+        to_disp << rs->state.get().inst.ptr();
     } );
 
     Inst::display_graphviz( to_disp, [](std::ostream &, const Inst *) {}, fn );
@@ -305,8 +285,7 @@ void Vm::display_graph( const char *fn ) {
 void Vm::codegen( Codegen &cg ) {
     Vec<Inst *> targets;
     ressource_map.visit( [&]( Ressource *rs ) {
-        if ( rs->state.last_writer )
-            targets << rs->state.last_writer.inst.ptr() ;
+        targets << rs->state.get().inst.ptr();
     } );
 
     cg.gen_code_for( targets );
@@ -360,23 +339,6 @@ void Vm::if_else( const Variable &cond_var, const std::function<void ()> &ok, co
         out_ko << p.second.n;
     }
 
-    for( const std::pair<Ressource *,Interceptor::RessourceChange> &p : inter_ok.mod_ressources ) {
-        out_ok << p.second.n.make_single_inst();
-        auto iter_out_ko = inter_ko.mod_ressources.find( p.first );
-        if ( iter_out_ko == inter_ko.mod_ressources.end() )
-            out_ko << p.second.o.make_single_inst();
-        else
-            out_ko << iter_out_ko->second.n.make_single_inst();
-    }
-
-    for( auto &p : inter_ko.mod_ressources ) {
-        if ( inter_ok.mod_ressources.count( p.first ) )
-            continue;
-        int num = out_ok.size();
-        out_ok << Value( inp_ok, num, gvm->type_Ressource );
-        out_ko << p.second.n.make_single_inst();
-    }
-
     // new If inst
     RcPtr<If> inst_if = new If( cond_var.get(), inp_ok, new IfOut( out_ok ), inp_ko, new IfOut( out_ko ) );
 
@@ -387,9 +349,6 @@ void Vm::if_else( const Variable &cond_var, const std::function<void ()> &ok, co
     for( auto &p : inter_ko.mod_refs )
         if ( inter_ok.mod_refs.count( p.first ) == 0 )
             p.first->set( Value{ inst_if, num++, p.second.o.type }, -1 );
-
-    // ressources modified by the the if instruction
-    gvm->mod_fd( inst_if );
 
     // update RefLeaf::breaks
     //    if ( breaks_ok.size() || breaks_ko.size() )

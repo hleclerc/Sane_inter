@@ -24,6 +24,7 @@ public:
     Inst();
     virtual ~Inst();
 
+    void             clear_children         ();
     void             add_child              ( const Value &ch );
     void             mod_child              ( int ninp, const Value &ch );
     void             rem_child              ( int ninp );
@@ -69,7 +70,6 @@ public:
     Vec<Value>       children;
     Vec<Parent>      parents;
 
-    std::set<int>    ressource_writers; ///< ninp of the ressources changed by this
     CodegenData      cd;
 
     mutable void    *op_mp;

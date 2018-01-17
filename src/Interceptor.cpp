@@ -21,16 +21,5 @@ void Interceptor::run( const std::function<void ()> &func ) {
         }
     }
 
-    // save and remove new mod fds
-    for( auto p = mod_ressources.begin(); p != mod_ressources.end(); ) {
-        if ( p->first->state == p->second.o ) {
-            p = mod_ressources.erase( p );
-        } else {
-            p->second.n = p->first->state;
-            p->first->state = p->second.o;
-            ++p;
-        }
-    }
-
     // new_breaks = breaks;
 }

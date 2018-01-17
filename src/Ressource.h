@@ -1,7 +1,6 @@
 #pragma once
 
-#include "RessourceState.h"
-
+#include "RefLeaf.h"
 
 /**
 */
@@ -11,7 +10,7 @@ public:
 
     void        write_to_stream( std::ostream &os ) const;
 
-    RessourceState state;
-    const char    *desc;
+    RefLeaf     state;
+    const char *desc;
 };
 

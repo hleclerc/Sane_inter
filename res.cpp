@@ -48,13 +48,10 @@ void write_fd( int fd, const SI32 &content ) {
 }
 
 int main( int argc, char **argv ) {
-    Stream R0 = {0};
-    SI32 R1 = 5;
-    SI32 R2 = 6;
-    Bool R3 = {};
-    R3 = rand();
-    if ( R3 ) {
-        R1 = R2;
+    Bool R0 = {};
+    R0 = rand();
+    if ( R0 ) {
+        Stream R1 = {0};
+        write_fd(R1.fd,11);
     }
-    write_fd(R0.fd,R1 + R2);
 }

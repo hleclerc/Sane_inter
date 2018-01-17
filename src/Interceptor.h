@@ -1,7 +1,5 @@
 #pragma once
 
-#include "RessourceState.h"
-#include "Variable.h"
 #include "RefLeaf.h"
 #include <map>
 
@@ -9,10 +7,6 @@
 */
 class Interceptor {
 public:
-    struct RessourceChange {
-        RessourceState o; ///< old value
-        RessourceState n; ///< new value
-    };
     struct ValueChange {
         Value o; ///< old value
         Value n; ///< new value
@@ -23,12 +17,10 @@ public:
         Value  cond;
     };
 
-    using MapRRC = std::map<Ressource *,RessourceChange>;
     using MapRVC = std::map<RcPtr<RefLeaf>,ValueChange>;
 
     void       run( const std::function<void()> &func );
 
-    MapRRC     mod_ressources;
     PI64       inter_date;
     MapRVC     mod_refs;
     Vec<Break> breaks;

@@ -8,11 +8,7 @@
 
 # stdout << 10
 
-a := 5
-b := 6
 if rand()
-    a = b
-
-stdout << a + b
+    stdout << 11
 
 # __primitive_ct_display_graph()

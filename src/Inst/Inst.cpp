@@ -17,6 +17,12 @@ Inst::~Inst() {
         children[ ninp ].inst->parents.remove_first( Parent{ this, ninp } );
 }
 
+void Inst::clear_children() {
+    for( size_t ninp = 0; ninp < children.size(); ++ninp )
+        children[ ninp ].inst->parents.remove_first( Parent{ this, int( ninp ) } );
+    children.clear();
+}
+
 void Inst::add_child( const Value &ch ) {
     ch.inst->parents << Parent{ this, int( children.size() ) };
     children << ch;
