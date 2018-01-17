@@ -1,10 +1,17 @@
 #include "RessourceMap.h"
 
-RessourceMap::RessourceMap() : file_content( "file content" ) {
+RessourceMap::RessourceMap() : file_content( 0 ) {
+}
+
+RessourceMap::~RessourceMap() {
+    delete file_content;
 }
 
 void RessourceMap::get_prs_on_file_content( const Value &fd, const std::function<void (Ressource *)> &cb ) {
-    cb( &file_content );
+    if ( ! file_content )
+        file_content = new Ressource( "file content" );
+
+    cb( file_content );
 }
 
 void RessourceMap::get_prs_on_file_cursor( const Value &fd, const std::function<void (Ressource *)> &cb ) {
@@ -20,7 +27,8 @@ void RessourceMap::get_prs_on_file_cursor( const Value &fd, const std::function<
 }
 
 void RessourceMap::visit( std::function<void (Ressource *)> visitor ) {
-    visitor( &file_content );
+    if ( file_content )
+        visitor( file_content );
 
     for( std::pair<const Value,Ressource> &vr : file_cursors  )
         visitor( &vr.second );

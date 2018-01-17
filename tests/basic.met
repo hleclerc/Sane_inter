@@ -9,6 +9,6 @@
 # stdout << 10
 
 if rand()
-    stdout << 11
+    stdout << 2
 
 # __primitive_ct_display_graph()

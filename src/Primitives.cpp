@@ -12,8 +12,8 @@
 #include "System/Math.h"
 
 #include "Inst/ReadFdAt.h"
-#include "Inst/ReadFd.h"
 #include "Inst/WriteFd.h"
+#include "Inst/ReadFd.h"
 #include "Inst/BinOp.h"
 #include "Inst/UnaOp.h"
 #include "Inst/Conv.h"
@@ -432,25 +432,23 @@ REG_PRIMITIVE_TYPE( constified ) {
 REG_PRIMITIVE_TYPE( write_fd ) {
     if ( args.size() < 2 )
         return gvm->add_error( "__primitive_write_fd expects at least 2 arguments" );
-    gvm->mod_fd( new WriteFd( args.map( []( const Variable &v ) { return v.get(); } ), args.size() - 1 ) );
+    make_WriteFd( &gvm->ressource_map, args.map( []( const Variable &v ) { return v.get(); } ) );
     return gvm->ref_void;
 }
 
 REG_PRIMITIVE_TYPE( read_fd ) {
     if ( args.size() != 3 )
         return gvm->add_error( "__primitive_read_fd expects 3 arguments" );
-    RcPtr<Inst> inst = new ReadFd( args[ 0 ].get(), args[ 1 ].get(), args[ 2 ].get() );
-    const_cast<Variable &>( args[ 1 ] ).set_bv( Value( inst, 0, args[ 0 ].type ) );
-    gvm->mod_fd( inst );
+    Value inst = make_ReadFd( &gvm->ressource_map, args[ 0 ].get(), args[ 1 ].get(), args[ 2 ].get() );
+    const_cast<Variable &>( args[ 1 ] ).set_bv( inst );
     return gvm->ref_void;
 }
 
 REG_PRIMITIVE_TYPE( read_fd_at ) {
     if ( args.size() != 4 )
         return gvm->add_error( "__primitive_read_fd_at expects 3 arguments" );
-    RcPtr<Inst> inst = new ReadFdAt( args[ 0 ].get(), args[ 1 ].get(), args[ 2 ].get(), args[ 3 ].get() );
-    const_cast<Variable &>( args[ 1 ] ).set_bv( Value( inst, 0, args[ 0 ].type ) );
-    gvm->mod_fd( inst );
+    Value inst = make_ReadFdAt( &gvm->ressource_map, args[ 0 ].get(), args[ 1 ].get(), args[ 2 ].get(), args[ 3 ].get() );
+    const_cast<Variable &>( args[ 1 ] ).set_bv( inst );
     return gvm->ref_void;
 }
 

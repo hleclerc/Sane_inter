@@ -253,30 +253,10 @@ Type *Vm::type_ptr_for( const RcString &name, const Vec<Variable> &args ) {
     return res;
 }
 
-void Vm::mod_fd( RcPtr<Inst> mod_inst ) {
-    // get ressource descriptors directly modified by mod_inst
-    std::map<Ressource *,bool> modifications;
-    mod_inst->get_mod_ressources( [&]( Ressource *rs, bool write ) {
-        auto insert = modifications.insert( std::make_pair( rs, 0 ) );
-        insert.first->second = std::max( insert.first->second, write );
-    } );
-
-    // for each ressource descriptor directly modified by mod_inst
-    for( std::pair<Ressource *,int> mod : modifications ) {
-        Ressource *rs = mod.first;
-
-        // write ?
-        int nout = mod_inst->nb_outputs();
-        mod_inst->add_child( rs->state.get() );
-        if ( mod.second )
-            rs->state.set( Value( mod_inst, nout, rs->state.value.type ) );
-    }
-}
-
 void Vm::display_graph( const char *fn ) {
     Vec<Inst *> to_disp;
     ressource_map.visit( [&]( Ressource *rs ) {
-        to_disp << rs->state.get().inst.ptr();
+        to_disp << rs->state->get().inst.ptr();
     } );
 
     Inst::display_graphviz( to_disp, [](std::ostream &, const Inst *) {}, fn );
@@ -285,7 +265,7 @@ void Vm::display_graph( const char *fn ) {
 void Vm::codegen( Codegen &cg ) {
     Vec<Inst *> targets;
     ressource_map.visit( [&]( Ressource *rs ) {
-        targets << rs->state.get().inst.ptr();
+        targets << rs->state->get().inst.ptr();
     } );
 
     cg.gen_code_for( targets );

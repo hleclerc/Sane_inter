@@ -22,9 +22,9 @@ Type *RessourceInst::out_type( int nout ) const {
     return gvm->type_Ressource;
 }
 
-Value make_RessourceInst( Ressource *rs ) {
-    return { new RessourceInst( rs ), 0, gvm->type_Ressource };
+void RessourceInst::write_code( StreamSep &ss, Codegen &cg ) {
 }
 
-void RessourceInst::write_code( StreamSep &ss, Codegen &cg ) {
+Value make_RessourceInst( Ressource *rs ) {
+    return { new RessourceInst( rs ), 0, gvm->type_Ressource };
 }

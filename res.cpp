@@ -52,6 +52,6 @@ int main( int argc, char **argv ) {
     R0 = rand();
     if ( R0 ) {
         Stream R1 = {0};
-        write_fd(R1.fd,11);
+        write_fd(R1.fd,2);
     }
 }

@@ -50,8 +50,6 @@ public:
 
     bool          little_endian                 () const;
 
-    void          mod_fd                        ( RcPtr<Inst> mod_inst );
-
     void          display_graph                 ( const char *fn = ".res" );
     void          codegen                       ( Codegen &cg );
 

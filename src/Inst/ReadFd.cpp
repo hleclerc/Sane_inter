@@ -4,24 +4,23 @@
 #include "ReadFd.h"
 #include "Cst.h"
 
-ReadFd::ReadFd( const Value &fd, const Value &ptr, const Value &len ) {
+ReadFd::ReadFd( RessourceMap *ressource_map, const Value &fd, const Value &val, const Value &len ) {
     add_child( fd  );
-    add_child( ptr );
+    add_child( val );
     add_child( len );
+
+    ressource_map->get_prs_on_file_content( fd, [&]( Ressource *rs ) { add_child( rs->state->get() ); } );
+
+    int nout = 1;
+    beg_cursors = children.size();
+    ressource_map->get_prs_on_file_cursor( fd, [&]( Ressource *rs ) {
+        Value old = rs->state->get();
+        rs->state->set( Value( this, nout++, old.type, 0 ) );
+        add_child( old );
+    } );
 }
 
-ReadFd::ReadFd( AttrClone, const ReadFd *orig ) {
-}
-
-void ReadFd::get_mod_ressources( const std::function<void(Ressource *, bool)> &cb ) const {
-    // we read the content of fd
-    gvm->ressource_map.get_prs_on_file_content( children[ 0 ], [&]( Ressource *rs ) {
-        cb( rs, false );
-    } );
-    // we write the cursor of fd
-    gvm->ressource_map.get_prs_on_file_cursor( children[ 0 ], [&]( Ressource *rs ) {
-        cb( rs, true );
-    } );
+ReadFd::ReadFd( AttrClone, const ReadFd *orig ) : beg_cursors( orig->beg_cursors ) {
 }
 
 //void ReadFd::write_code( StreamSep &ss, Codegen &cg ) {
@@ -38,9 +37,7 @@ void ReadFd::write_dot( std::ostream &os ) const {
 }
 
 int ReadFd::inp_corr( int nout ) const {
-    if ( nout )
-        return nout + 2;
-    return 1;
+    return nout ? nout + beg_cursors - 1 : 1;
 }
 
 //bool ReadFd::expects_a_reg_at( int ninp ) const {
@@ -52,5 +49,9 @@ int ReadFd::inp_corr( int nout ) const {
 //}
 
 int ReadFd::nb_outputs() const {
-    return children.size() - 2;
+    return 1 + ( children.size() - beg_cursors );
+}
+
+Value make_ReadFd( RessourceMap *ressource_map, const Value &fd, const Value &val, const Value &len ) {
+    return { new ReadFd( ressource_map, fd, val, len ), 0, val.type };
 }

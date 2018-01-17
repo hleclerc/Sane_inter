@@ -90,39 +90,6 @@ If::If( const Vec<Value> &inp, RcPtr<IfInp> inp_ok, IfOut *out_ok, RcPtr<IfInp> 
 If::If( AttrClone, const If *a ) {
 }
 
-void If::get_mod_ressources( const std::function<void( Ressource *, bool)> &cb ) const {
-    std::map<Ressource *,bool> rm;
-
-    auto by_ch = [&]( const Value &ch ) {
-        if ( ch.type != gvm->type_Ressource )
-            return;
-        bool write = 0;
-        Ressource *rs = 0;
-        ch.thread_visitor( [&]( Inst *inst, int nout, int ninp ) {
-            if ( RessourceInst *ri = dynamic_cast<RessourceInst *>( inst ) )
-                rs = ri->rs;
-            else if ( inst->ressource_writers.count( ninp ) )
-                write = true;
-        } );
-
-        if ( rs ) {
-            auto iter = rm.find( rs );
-            if ( iter == rm.end() )
-                rm.emplace_hint( iter, rs, write );
-            else if ( write && ! iter->second )
-                iter->second = true;
-        }
-    };
-
-    for( const Value &ch : out_ok->children )
-        by_ch( ch );
-    for( const Value &ch : out_ko->children )
-        by_ch( ch );
-
-    for( std::pair<Ressource *,bool> rp : rm )
-        cb( rp.first, rp.second );
-}
-
 bool If::expects_a_reg_at( int ninp ) const {
     return true;
 }

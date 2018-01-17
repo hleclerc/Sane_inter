@@ -103,9 +103,6 @@ Inst *Inst::clone() const {
     return 0;
 }
 
-void Inst::get_mod_ressources( const std::function<void( Ressource *rs, bool write )> &cb ) const {
-}
-
 int Inst::nb_outputs() const {
     write_dot( std::cerr << __FUNCTION__ << " " );
     TODO;
