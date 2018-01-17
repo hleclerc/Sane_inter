@@ -30,6 +30,7 @@ public:
 
     void        thread_visitor ( const std::function<void( Inst *, int nout, int ninp )> &cb, bool call_before = true ) const;
 
+    // Ressource
     RcPtr<Inst> inst;
     Type       *type;
     SI32        nout;

@@ -7,7 +7,7 @@
 #include <set>
 class StreamPrio;
 class StreamSep;
-class Ressource;
+class Rss;
 class Codegen;
 class BoolVec;
 class Value;

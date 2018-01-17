@@ -6,7 +6,7 @@
 */
 class RessourceInst : public Clonable<RessourceInst> {
 public:
-    RessourceInst( Ressource *rs );
+    RessourceInst( Rss *rs );
     RessourceInst( AttrClone, const RessourceInst *orig );
 
     virtual int   nb_outputs() const override;
@@ -14,7 +14,7 @@ public:
     virtual void  write_dot ( std::ostream &os ) const override;
     virtual Type *out_type  ( int nout ) const override;
 
-    Ressource    *rs;
+    Rss    *rs;
 };
 
-Value make_RessourceInst( Ressource *rs );
+Value make_RessourceInst( Rss *rs );

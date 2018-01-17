@@ -1,7 +1,7 @@
 #include "RessourceInst.h"
 #include "../gvm.h"
 
-RessourceInst::RessourceInst( Ressource *rs ) : rs( rs ) {
+RessourceInst::RessourceInst( Rss *rs ) : rs( rs ) {
 }
 
 RessourceInst::RessourceInst( AttrClone, const RessourceInst *orig ) : rs( orig->rs ) {
@@ -25,6 +25,6 @@ Type *RessourceInst::out_type( int nout ) const {
 void RessourceInst::write_code( StreamSep &ss, Codegen &cg ) {
 }
 
-Value make_RessourceInst( Ressource *rs ) {
+Value make_RessourceInst( Rss *rs ) {
     return { new RessourceInst( rs ), 0, gvm->type_Ressource };
 }

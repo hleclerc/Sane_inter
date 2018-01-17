@@ -9,7 +9,7 @@ WriteFd::WriteFd( RessourceMap *ressource_map, const Vec<Value> &args ) {
         add_child( arg );
 
     int nout = 0;
-    auto af = [&]( Ressource *rs ) {
+    auto af = [&]( Rss *rs ) {
         add_child( rs->state->get() );
         rs->state->set( { this, nout++, gvm->type_Ressource, 0 } );
     };

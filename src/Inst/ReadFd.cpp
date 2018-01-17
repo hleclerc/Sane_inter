@@ -9,11 +9,11 @@ ReadFd::ReadFd( RessourceMap *ressource_map, const Value &fd, const Value &val, 
     add_child( val );
     add_child( len );
 
-    ressource_map->get_prs_on_file_content( fd, [&]( Ressource *rs ) { add_child( rs->state->get() ); } );
+    ressource_map->get_prs_on_file_content( fd, [&]( Rss *rs ) { add_child( rs->state->get() ); } );
 
     int nout = 1;
     beg_cursors = children.size();
-    ressource_map->get_prs_on_file_cursor( fd, [&]( Ressource *rs ) {
+    ressource_map->get_prs_on_file_cursor( fd, [&]( Rss *rs ) {
         Value old = rs->state->get();
         rs->state->set( Value( this, nout++, old.type, 0 ) );
         add_child( old );

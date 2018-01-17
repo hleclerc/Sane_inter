@@ -255,7 +255,7 @@ Type *Vm::type_ptr_for( const RcString &name, const Vec<Variable> &args ) {
 
 void Vm::display_graph( const char *fn ) {
     Vec<Inst *> to_disp;
-    ressource_map.visit( [&]( Ressource *rs ) {
+    ressource_map.visit( [&]( Rss *rs ) {
         to_disp << rs->state->get().inst.ptr();
     } );
 
@@ -264,7 +264,7 @@ void Vm::display_graph( const char *fn ) {
 
 void Vm::codegen( Codegen &cg ) {
     Vec<Inst *> targets;
-    ressource_map.visit( [&]( Ressource *rs ) {
+    ressource_map.visit( [&]( Rss *rs ) {
         targets << rs->state->get().inst.ptr();
     } );
 

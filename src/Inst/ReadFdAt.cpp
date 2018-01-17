@@ -10,7 +10,7 @@ ReadFdAt::ReadFdAt( RessourceMap *ressource_map, const Value &fd, const Value &v
     add_child( off_in_file );
     add_child( len         );
 
-    ressource_map->get_prs_on_file_content( fd, [&]( Ressource *rs ) { add_child( rs->state->get() ); } );
+    ressource_map->get_prs_on_file_content( fd, [&]( Rss *rs ) { add_child( rs->state->get() ); } );
 }
 
 ReadFdAt::ReadFdAt( AttrClone, const ReadFdAt *orig ) {

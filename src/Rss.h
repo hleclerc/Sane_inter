@@ -4,9 +4,9 @@
 
 /**
 */
-class Ressource {
+class Rss {
 public:
-    Ressource( const char *desc );
+    Rss( const char *desc );
 
     void           write_to_stream( std::ostream &os ) const;
 
